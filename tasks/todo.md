@@ -10,8 +10,8 @@
 ## Phase 1 — Compliance foundation (Fri–Sat)
 
 - [x] Task 1: KuponClaimRegistry — claims, roles, events (S)
-- [ ] Task 2: KuponComplianceModule — R1/R2/R3 with ruleIds (M)
-- [ ] Task 3: KuponToken — gated ERC20 + issue() (M)
+- [x] Task 2: KuponComplianceModule — R1/R2/R3 with ruleIds (M)
+- [x] Task 3: KuponToken — gated ERC20 + issue() (M)
 - [ ] Task 4: 3 JS-seeded fuzz invariants (S) *— may slip past Gate 1*
 
 **Checkpoint A:** compile + full test suite green; local deploy OK.
