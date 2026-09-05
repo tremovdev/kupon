@@ -1,83 +1,71 @@
-# 🏗 Scaffold-ETH 2
+# Kupon 🏛️
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+> **Tokenized Indonesian retail bonds where every transfer obeys on-chain compliance.**
+> A compliance-gated RWA token demo — built from scratch at ETHGlobal ETHOnline, Sep 4–13 2026.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+[![Live Demo](https://img.shields.io/badge/live-kupon--rwa.vercel.app-blue)](https://kupon-rwa.vercel.app/) [![Spec](https://img.shields.io/badge/spec-SPEC.md-green)](./SPEC.md) · [Bahasa Indonesia](./SPEC-ID.md)
 
-> [!NOTE]
-> 🤖 Scaffold-ETH 2 is AI-ready! It has everything agents need to build on Ethereum. Check `.agents/`, `.claude/`, `.opencode` or `.cursor/` for more info.
+---
 
-⚙️ Built using NextJS, RainbowKit, Hardhat, Wagmi, Viem, and Typescript.
+## Why Indonesia, why now
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+This quarter — **Q3 2026** — Indonesia's financial regulator (**OJK**) is scheduled to publish its rulebook for **real-world-asset tokenization**, completing the country's migration of digital-asset oversight into the securities perimeter:
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+- **UU P2SK** (Law No. 4/2023) — mandates the transfer of crypto oversight from commodity regulator Bappebti to the securities regulator
+- **POJK 27/2024** — digital financial asset trading framework, effective Jan 10 2025 (amended by **POJK 23/2025**)
+- **The transfer is complete** — OJK and Bappebti ended their transition MoU in 2026
+- **The RWA tokenization rulebook** — targeted for publication at the latest in Q3 2026 *(Kontan, Jun 8 2026)*
 
-## Requirements
+Kupon demonstrates the primitive that rulebook will require on public chains: **identity-gated issuance and transfer** — a retail government bond ("SBN Ritel 2027", *fictional*) whose compliance lives in the contract, not the interface.
 
-Before you begin, you need to install the following tools:
+## How it works
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
-
-## Quickstart
-
-To get started with Scaffold-ETH 2, follow the steps below:
-
-1. Install dependencies if it was skipped in CLI:
+Three contracts. Compliance is enforced **at the transfer level**, so it holds for any caller — not just our UI:
 
 ```
-cd my-dapp-example
+Registrar ──grant/revoke claims──▶ KuponClaimRegistry
+                                         │
+                                         │ reads live claims on every transfer
+                                         ▼
+Investor ──transfer──▶ KuponToken ──enforceTransfer──▶ KuponComplianceModule
+                       (ERC-3643-style)                 R1-RESIDENCY · R2-CAP · R3-FROZEN
+```
+
+| Rule | Policy (demo) | Mechanics |
+|---|---|---|
+| `R1-RESIDENCY` | WNI gate (retail tranche) | Sender & recipient must hold a `RESIDENCY_ID` or `ACCREDITED` claim |
+| `R2-CAP` | Retail per-investor cap | Retail wallets: balance ≤ 5,000 KPON (1 KPON = 1 bond = Rp1,000,000 nominal) |
+| `R3-FROZEN` | Post-revocation freeze | Claim revoked → balance frozen; re-granting unfreezes instantly |
+
+The demo follows **two wallets**: a non-compliant transfer *reverts naming the exact rule it violated*; the registrar grants the claim; the retry succeeds; the **regulator view** exposes the whole thing as a rule-by-rule audit trail.
+
+## Status — build log
+
+Honest progress, newest last. Everything below started at the Sep 4 kickoff (Classic "From Scratch" track):
+
+- **Sep 4** — repo bootstrapped (Scaffold-ETH 2, Hardhat), env-secret guardrails, first deploys to Vercel
+- **Sep 5** — PRD written via spec-driven workflow ([SPEC.md](./SPEC.md), [SPEC-ID.md](./SPEC-ID.md)), adversarial review pass, spec approved
+- **Next** — `token-core` (TDD, 3 fuzz invariants) → Investor/Registrar/Regulator UI → Base Sepolia + Arbitrum Sepolia deploys
+
+## Run locally
+
+```bash
 yarn install
+yarn chain        # terminal 1 — local Hardhat network
+yarn deploy       # terminal 2 — deploy contracts
+yarn start        # terminal 3 — http://localhost:3000
+yarn test         # hardhat test suite
 ```
 
-2. Run a local network in the first terminal:
+Requires Node ≥ 20.18 and [Yarn](https://yarnpkg.com/getting-started/install). Explorer API keys (Basescan/Etherscan) go in a gitignored local `.env` — never committed.
 
-```
-yarn chain
-```
+## Disclosures
 
-This command starts a local Ethereum network using Hardhat. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/hardhat/hardhat.config.ts`.
+- **Boilerplate:** built on [Scaffold-ETH 2](https://github.com/scaffold-eth/scaffold-eth-2) (Next.js, Hardhat, wagmi/viem, RainbowKit).
+- **Libraries:** [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) (ERC20, AccessControl).
+- **Reference pattern:** [ERC-3643 / T-REX](https://eips.ethereum.org/EIPS/eip-3643) permissioned-token standard. This is a **re-implementation of the pattern, simplified**: identity is a single on-chain claim registry (not a full per-wallet ONCHAINID contract). Deliberate scope decision — see [SPEC.md](./SPEC.md).
+- **AI-assisted development:** spec-driven workflow with Claude Code; all specs and prompts are committed to this repo; architecture, review, and final code are human-directed.
 
-3. On a second terminal, deploy the test contract:
+## Disclaimer
 
-```
-yarn deploy
-```
-
-This command deploys a test smart contract to the local network. The contract is located in `packages/hardhat/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/hardhat/deploy` to deploy the contract to the network. You can also customize the deploy script.
-
-4. On a third terminal, start your NextJS app:
-
-```
-yarn start
-```
-
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
-
-Run smart contract test with `yarn hardhat:test`
-
-- Edit your smart contracts in `packages/hardhat/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/hardhat/deploy`
-
-
-## Documentation
-
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
-
-## Contributing to Scaffold-ETH 2
-
-We welcome contributions to Scaffold-ETH 2!
-
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+**"SBN Ritel 2027" is a fictional asset** created for demonstration only. No affiliation with Kemenkeu, OJK, DJPPR, or any government body. Nothing here is legal, financial, or investment advice.
