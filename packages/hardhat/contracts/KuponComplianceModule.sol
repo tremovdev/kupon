@@ -15,7 +15,8 @@ interface IKuponClaimRegistry {
 /// - R1-RESIDENCY: a wallet may only RECEIVE while it holds `RESIDENCY_ID` or `ACCREDITED`
 ///   (also gates mints — issuance passes the same gate).
 /// - R2-CAP: a retail wallet (holds `RESIDENCY_ID` but not `ACCREDITED`) may never hold
-///   more than `cap`; accredited wallets are exempt.
+///   more than `cap`; accredited wallets are exempt. Self-transfers count as receives,
+///   so a retail wallet already at `cap` cannot self-transfer either.
 /// - R3-FROZEN: a wallet may only SEND while it holds at least one claim. Revoking a
 ///   wallet's last claim therefore freezes its balance, and re-granting instantly
 ///   unfreezes it — the state is derived live from the registry on every check, there is
@@ -85,7 +86,8 @@ contract KuponComplianceModule is AccessControl {
         }
 
         // R2-CAP: retail wallets (residency but not accredited) are capped; accredited exempt.
-        if (toHasResidency && !toIsAccredited && toBalance + value > cap) {
+        // Disjunct form cannot overflow even when toBalance + value wraps.
+        if (toHasResidency && !toIsAccredited && (value > cap || toBalance > cap - value)) {
             revert Kupon__RuleViolated(R2_CAP);
         }
     }

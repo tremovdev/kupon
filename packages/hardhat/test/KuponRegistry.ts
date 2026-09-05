@@ -96,5 +96,13 @@ describe("KuponClaimRegistry", function () {
         .to.be.revertedWithCustomError(registry, "AccessControlUnauthorizedAccount")
         .withArgs(stranger.address, REGISTRAR_ROLE);
     });
+
+    it("reverts revoking a claim type outside the known set", async function () {
+      const { registry, registrar, investor } = await networkHelpers.loadFixture(deployRegistryFixture);
+      const unknownClaim = ethers.id("UNKNOWN_CLAIM");
+      await expect(registry.connect(registrar).revokeClaim(investor.address, unknownClaim))
+        .to.be.revertedWithCustomError(registry, "Kupon__InvalidClaim")
+        .withArgs(unknownClaim);
+    });
   });
 });

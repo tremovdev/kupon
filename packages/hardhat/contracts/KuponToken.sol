@@ -25,6 +25,7 @@ contract KuponToken is ERC20, AccessControl {
     uint256 public constant SERIES_CAP = 100_000 * 10 ** 18;
 
     /// @notice Issuing `requested` would push total supply past the series cap.
+    /// Not a compliance rule: only R1/R2/R3 carry rule ids (see KuponComplianceModule).
     /// @param totalSupply Supply before the attempted issuance.
     /// @param requested The attempted issuance amount.
     error Kupon__SeriesCapExceeded(uint256 totalSupply, uint256 requested);
@@ -46,7 +47,9 @@ contract KuponToken is ERC20, AccessControl {
     function issue(address to, uint256 amount) external onlyRole(ISSUER_ROLE) {
         _compliance.enforceTransfer(address(0), to, amount, balanceOf(to));
         uint256 supplyBefore = totalSupply();
-        if (supplyBefore + amount > SERIES_CAP) {
+        // Subtraction form cannot overflow (supplyBefore ≤ SERIES_CAP invariant) even for
+        // amount ≈ 2^256-1, so absurd inputs revert with the custom error instead of a panic.
+        if (amount > SERIES_CAP - supplyBefore) {
             revert Kupon__SeriesCapExceeded(supplyBefore, amount);
         }
         _mint(to, amount);

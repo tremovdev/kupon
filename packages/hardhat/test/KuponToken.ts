@@ -93,6 +93,21 @@ describe("KuponToken", function () {
         .to.be.revertedWithCustomError(token, "Kupon__SeriesCapExceeded")
         .withArgs(SERIES_CAP, 1n);
     });
+
+    it("reverts a max-size issuance with the series-cap error, not an arithmetic panic", async function () {
+      const { token, admin, accredited } = await networkHelpers.loadFixture(deployKuponFixture);
+      const maxAmount = 2n ** 256n - 1n;
+      await expect(token.connect(admin).issue(accredited.address, maxAmount))
+        .to.be.revertedWithCustomError(token, "Kupon__SeriesCapExceeded")
+        .withArgs(FIXTURE_SUPPLY, maxAmount);
+    });
+
+    it("reverts issuing to the zero address, naming R1-RESIDENCY", async function () {
+      const { token, compliance, admin } = await networkHelpers.loadFixture(deployKuponFixture);
+      await expect(token.connect(admin).issue(ZERO_ADDRESS, ONE))
+        .to.be.revertedWithCustomError(compliance, "Kupon__RuleViolated")
+        .withArgs(R1_RESIDENCY);
+    });
   });
 
   describe("transfers (compliance hook)", function () {
@@ -134,6 +149,24 @@ describe("KuponToken", function () {
       await expect(token.connect(sender).transfer(recipient.address, ONE))
         .to.be.revertedWithCustomError(compliance, "Kupon__RuleViolated")
         .withArgs(R2_CAP);
+    });
+
+    it("reverts a balance-wrapping transfer to a retail wallet with R2-CAP, not an arithmetic panic", async function () {
+      const { token, compliance, registry, admin, sender, recipient } =
+        await networkHelpers.loadFixture(deployKuponFixture);
+      await registry.grantClaim(recipient.address, RESIDENCY_ID);
+      await token.connect(admin).issue(recipient.address, ONE); // toBalance + value must wrap
+      await expect(token.connect(sender).transfer(recipient.address, 2n ** 256n - 1n))
+        .to.be.revertedWithCustomError(compliance, "Kupon__RuleViolated")
+        .withArgs(R2_CAP);
+    });
+    it("reverts transfers to a revoked wallet, naming R1-RESIDENCY (act 4, receive side)", async function () {
+      const { token, compliance, registry, sender, recipient } = await networkHelpers.loadFixture(deployKuponFixture);
+      await registry.grantClaim(recipient.address, RESIDENCY_ID);
+      await registry.revokeClaim(recipient.address, RESIDENCY_ID);
+      await expect(token.connect(sender).transfer(recipient.address, ONE))
+        .to.be.revertedWithCustomError(compliance, "Kupon__RuleViolated")
+        .withArgs(R1_RESIDENCY);
     });
   });
 

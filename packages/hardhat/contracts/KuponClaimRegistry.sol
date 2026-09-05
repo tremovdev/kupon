@@ -19,6 +19,7 @@ contract KuponClaimRegistry is AccessControl {
     bytes32 public constant ACCREDITED = keccak256("ACCREDITED");
 
     /// @notice The claim type is not one of the known claims (RESIDENCY_ID, ACCREDITED).
+    /// Not a compliance rule: only R1/R2/R3 carry rule ids (see KuponComplianceModule).
     error Kupon__InvalidClaim(bytes32 claim);
 
     /// @notice Emitted when `account` gains `claim`.
@@ -35,6 +36,8 @@ contract KuponClaimRegistry is AccessControl {
     }
 
     /// @notice Grants `claim` to `account`.
+    /// @param account The wallet gaining the claim.
+    /// @param claim The claim type (RESIDENCY_ID or ACCREDITED).
     /// @return granted False if the claim was already held (no-op, no event).
     function grantClaim(address account, bytes32 claim) external onlyRole(REGISTRAR_ROLE) returns (bool granted) {
         _requireKnownClaim(claim);
@@ -47,6 +50,8 @@ contract KuponClaimRegistry is AccessControl {
     }
 
     /// @notice Revokes `claim` from `account`, freezing it for compliance purposes.
+    /// @param account The wallet losing the claim.
+    /// @param claim The claim type (RESIDENCY_ID or ACCREDITED).
     /// @return revoked False if the claim was not held (no-op, no event).
     function revokeClaim(address account, bytes32 claim) external onlyRole(REGISTRAR_ROLE) returns (bool revoked) {
         _requireKnownClaim(claim);
@@ -59,6 +64,8 @@ contract KuponClaimRegistry is AccessControl {
     }
 
     /// @notice Whether `account` currently holds `claim`. Always reflects live registry state.
+    /// @param account The wallet to query.
+    /// @param claim The claim type (RESIDENCY_ID or ACCREDITED).
     function hasClaim(address account, bytes32 claim) public view returns (bool) {
         return _claims[account][claim];
     }
