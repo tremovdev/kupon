@@ -1,6 +1,11 @@
 # Kupon — Task List
 
 > Source of truth: [plan.md](./plan.md). Mark `[x]` when acceptance + verification both pass.
+> Fixed dates (WIB): Check-in #1 Tue Sep 8 10:59 · Feedback session Thu Sep 10 20:00 (attend) · Freeze Thu Sep 10 night · Check-in #2 Fri Sep 11 10:59 · weekly X artifact + mentor check-in Sun Sep 6.
+
+## Phase 0 — Environment prep (Sat)
+
+- [ ] Task 0: Faucet gas (Base + Arbitrum Sepolia) + explorer API keys (S)
 
 ## Phase 1 — Compliance foundation (Fri–Sat)
 
@@ -20,11 +25,13 @@
 
 **Checkpoint B:** 4-act demo passes locally.
 
-## Phase 3 — Infra & ship prep (Sun–Wed)
+## Phase 3 — Infra & ship prep (Sun–Thu)
 
 - [ ] Task 9: Base Sepolia deploy + Vercel wiring — **GATE 1 with T5 + T6-min (S)**
 - [ ] Task 10: Arbitrum Sepolia deploy + verify (S)
 - [ ] Task 11: Threat model + diagram + README build-log + FEEDBACK.md (M)
 - [ ] Task 12: Demo rehearsal + video + submission (S)
 
-**Checkpoint C:** SPEC success criteria checked or consciously descoped (freeze Wed night).
+**Checkpoint C:** SPEC success criteria checked or consciously descoped (freeze Thu night).
+
+*Deferred by default (pull-forward rule): Privy (S), Uniswap v4 hook (M) — only after core locked + Gate 1 passed, with explicit sign-off.*

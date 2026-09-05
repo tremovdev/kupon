@@ -1,11 +1,13 @@
 # Implementation Plan: Kupon (ETHOnline Phase 1)
 
 > Approved spec: [SPEC.md](../SPEC.md) (canonical) · capability map: [CAPABILITY-MAP.md](../CAPABILITY-MAP.md)
-> Deadline anchors: **Gate 1 = Sun Sep 6 EOD** (skeleton end-to-end on testnet) · scope freeze Wed Sep 10 night · submit target Sat Sep 12.
+> Deadline anchors: **Gate 1 = Sun Sep 6 EOD** (skeleton end-to-end on testnet) · scope freeze **Thu** Sep 10 night · submit target Sat Sep 12.
+> **Fixed dates (WIB):** Check-in #1 dashboard — Tue Sep 8, 10:59 · **Feedback session — Thu Sep 10, 20:00 (attend)** · Check-in #2 — Fri Sep 11, 10:59 · weekly X artifact + mentor check-in — Sun Sep 6 (Gate 1 day).
 
 ## Overview
 
 Build a compliance-gated RWA token demo: three contracts (claim registry, compliance module, gated token), a three-page SE2 frontend (Investor / Registrar / Regulator view), deployed and verified on Base + Arbitrum Sepolia, with core-path tests and 3 JS-seeded fuzz invariants. Sliced so the Gate-1 critical path (foundation → minimal investor UI → Base Sepolia deploy) lands by Sunday EOD.
+Build sessions follow workspace `AGENTS.md` skill routing: ethskills for EVM-domain decisions (security/testing/gas), agent-skills for process, impeccable for UI.
 
 ## Architecture Decisions
 
@@ -18,6 +20,7 @@ Build a compliance-gated RWA token demo: three contracts (claim registry, compli
 ## Dependency Graph
 
 ```
+T0 env prep (faucet gas + explorer API keys) ──▶ T9 / T10
 T1 Registry ──▶ T2 ComplianceModule ──▶ T3 KuponToken ──▶ T5 deploy script/config ──▶ T9 Base Sepolia deploy + Vercel wiring
                      │                        │                                          (GATE 1 ✔)
                      │                        ├──▶ T4 fuzz invariants (can slip past Gate 1)
@@ -29,6 +32,11 @@ T12 demo rehearsal + submission checklist (after all)
 
 ## Task List
 
+### Phase 0 — Environment prep (Sat)
+
+- [ ] **Task 0: Environment prep** — fund the work wallet via faucets (Base Sepolia + Arbitrum Sepolia test ETH); create Basescan + Arbiscan API keys into the gitignored local `.env`. Faucets can lag — do this first, not right before deploying.
+  - Acceptance: deployer wallet holds gas on both chains; keys present locally, never committed.
+  - Verify: balance check on both explorers · Files: none (wallet + local `.env`) · Size: S
 ### Phase 1 — Compliance foundation (Fri–Sat)
 
 - [ ] **Task 1: KuponClaimRegistry** — claims mapping (`RESIDENCY_ID`, `ACCREDITED`), `REGISTRAR_ROLE` grant/revoke, `ClaimGranted`/`ClaimRevoked` events, custom errors.
@@ -63,11 +71,11 @@ T12 demo rehearsal + submission checklist (after all)
 
 **Checkpoint B:** 4-act demo passes on local chain; two-browser flow recorded once as rehearsal.
 
-### Phase 3 — Infra & ship prep (Sun–Wed)
+### Phase 3 — Infra & ship prep (Sun–Thu)
 
-- [ ] **Task 9: Base Sepolia deploy + Vercel wiring** — deploy, verify on Basescan, point Vercel env at testnet contracts. *(GATE 1: this + Task 5 + minimal Task 6 by Sun EOD)*
-  - Acceptance: contract verified on Basescan; live Vercel reads/writes Base Sepolia.
-  - Verify: explorer link + live-site transaction · Files: deploy config, `.env` (local) · Size: S
+- [ ] **Task 9: Base Sepolia deploy + Vercel wiring** — deploy, verify on Basescan, set `targetNetworks` to baseSepolia in `scaffold.config.ts` (SE2 defaults to mainnet), point Vercel env at testnet contracts. Requires Task 0. *(GATE 1: this + Task 5 + minimal Task 6 by Sun EOD)*
+  - Acceptance: contract verified on Basescan; live Vercel reads/writes Base Sepolia (not mainnet, not localhost).
+  - Verify: explorer link + live-site transaction · Files: deploy config, `scaffold.config.ts`, `.env` (local) · Size: S
 - [ ] **Task 10: Arbitrum Sepolia deploy + verify** — same policy, both chains.
   - Acceptance: verified on Arbiscan; identical rule behavior.
   - Verify: explorer link · Size: S
@@ -78,7 +86,9 @@ T12 demo rehearsal + submission checklist (after all)
   - Acceptance: video passes ETHGlobal rules checklist; form fields from `ethglobal/submission-drafts.md` finalized.
   - Verify: external review by Harry before upload · Size: S
 
-**Checkpoint C (freeze Wed night):** everything in SPEC success-criteria checked or consciously descoped.
+**Checkpoint C (freeze Thu night):** everything in SPEC success-criteria checked or consciously descoped.
+
+**Deferred by default — pull-forward rule (SPEC):** Privy embedded wallets (S) and the Uniswap v4 compliance hook (M) become eligible ONLY after the core is locked and Gate 1 has passed; each may be pulled in as T13 with explicit Harry sign-off during the Mon–Wed window, and dropped without ceremony if hours run short.
 
 ## Risks and Mitigations
 
