@@ -26,6 +26,10 @@ Kupon adalah demo tokenisasi RWA yang compliance-enforced di level transfer: obl
 - Network dev: Hardhat local → deploy: **Base Sepolia + Arbitrum Sepolia**
 - Di luar scope Fase 1 (pull-forward): Privy embedded wallet, Uniswap v4 hook, Foundry, ERC-4626/NAV
 
+## Non-Goals (Fase 1)
+
+Burn/penukaran saat jatuh tempo · distribusi kupon/dividen · pause global · registrar multisig · deploy mainnet · aplikasi mobile. Pengecualian ini adalah keputusan scoping yang sadar, bukan kelalaian — kupon dan redemption adalah kandidat Fase 2 di atas registry yang sama.
+
 ## Commands
 
 ```
@@ -76,6 +80,12 @@ Frontend: konvensi SE2 (hooks `useScaffoldReadContract` dsb.), komponen kecil, t
 
 Mint hanya oleh `ISSUER_ROLE` via `issue(to, amount)` — melewati compliance check yang sama; total issuance ≤ 100.000 KPON (cap seri). Claim: `RESIDENCY_ID`, `ACCREDITED` (bytes32, keccak). **Simplification disclosure:** identity = mapping di satu registry (bukan kontrak ONCHAINID per wallet) — ditulis jujur di README.
 
+**Unit framing:** 1 KPON = 1 obligasi = Rp1.000.000 nominal (copy demo; decimals 18).
+
+**Role (demo):** EOA deployer memegang `REGISTRAR_ROLE`, `ISSUER_ROLE`, dan `COMPLIANCE_ADMIN_ROLE` — sentralisasi demo yang disengaja, dicatat sebagai limitasi di threat model.
+
+**Live evaluation:** compliance membaca state registry terkini di setiap transfer; tidak ada flag freeze tersimpan — grant ulang claim langsung mendebekukan wallet.
+
 ## Testing Strategy
 
 - **Core paths** (Hardhat + chai): issue ok/blocked, transfer allow/block per rule, cap boundary (pas = ok, +1 = revert), grant→unblock, revoke→freeze, role guard.
@@ -97,6 +107,8 @@ Mint hanya oleh `ISSUER_ROLE` via `issue(to, amount)` — melewati compliance ch
 - [ ] Revert selalu membawa ruleId; UI menerjemahkannya ke bahasa kebijakan
 - [ ] Regulator view menampilkan: events claim, matriks rule per wallet, hasil simulasi transfer
 - [ ] Kontrak verified di Base Sepolia **dan** Arbitrum Sepolia; pola identik di kedua chain
+- [ ] Aplikasi Vercel live (kupon-rwa.vercel.app) terhubung ke deployment Base Sepolia — judge yang klik link melihat demo nyata, bukan build localhost
+- [ ] API key explorer tersimpan di `.env` lokal yang di-gitignore; setup didokumentasikan di README
 - [ ] 3 fuzz invariant lulus (seed reproducible); core tests lulus
 - [ ] README: diagram arsitektur + threat model 1 halaman + "Why Indonesia, why now" bersitasi + disclosure (OZ, referensi ERC-3643, simplification registry) + disclaimer fiktif
 - [ ] Semua spec/prompt di-commit; author commit `tremov`

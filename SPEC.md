@@ -26,6 +26,10 @@ Kupon is a compliance-enforced RWA tokenization demo: a **fictional** Indonesian
 - Dev network: local Hardhat node → deploy targets: **Base Sepolia + Arbitrum Sepolia**
 - Out of scope for Phase 1 (deferred per plan): Privy embedded wallets, Uniswap v4 hook, Foundry, ERC-4626/NAV
 
+## Non-Goals (Phase 1)
+
+Burn/redemption at maturity · coupon/dividend distribution · global pause · multisig registrar · mainnet deployment · mobile app. Excluding these is a conscious scoping decision, not an oversight — coupons and redemption are natural Phase-2 extensions on top of the same registry.
+
 ## Commands
 
 ```
@@ -76,6 +80,12 @@ Frontend: SE2 conventions (built-in `useScaffoldReadContract` etc.), small compo
 
 Minting is restricted to `ISSUER_ROLE` via `issue(to, amount)` — passing through the same compliance checks; total issuance capped at 100,000 KPON (series cap). Claims: `RESIDENCY_ID`, `ACCREDITED` (bytes32, keccak). **Simplification disclosure:** identity is a single registry mapping (not a per-wallet ONCHAINID contract) — stated plainly in the README.
 
+**Unit framing:** 1 KPON = 1 bond = Rp1,000,000 nominal (demo copy; decimals 18).
+
+**Roles (demo):** the deployer EOA holds `REGISTRAR_ROLE`, `ISSUER_ROLE`, and `COMPLIANCE_ADMIN_ROLE` — deliberate demo centralization, recorded as a limitation in the threat model.
+
+**Live evaluation:** compliance reads current registry state on every transfer; there is no cached freeze flag — re-granting a claim instantly unfreezes a wallet.
+
 ## Testing Strategy
 
 - **Core paths** (Hardhat + chai): issue ok/blocked, per-rule transfer allow/block, cap boundary (exact = ok, +1 = revert), grant→unblock, revoke→freeze, role guards.
@@ -97,6 +107,8 @@ Minting is restricted to `ISSUER_ROLE` via `issue(to, amount)` — passing throu
 - [ ] Reverts always carry a ruleId; the UI translates it into policy language
 - [ ] Regulator view shows: claim events, per-wallet rule matrix, transfer simulation results
 - [ ] Contracts verified on Base Sepolia **and** Arbitrum Sepolia; identical policy on both chains
+- [ ] The live Vercel app (kupon-rwa.vercel.app) is wired to the Base Sepolia deployment — a judge clicking the link sees the real demo, not a localhost build
+- [ ] Explorer API keys live in a gitignored local `.env`; the README documents the setup
 - [ ] 3 fuzz invariants pass (reproducible seed); core tests pass locally
 - [ ] README: architecture diagram + 1-page threat model + cited "Why Indonesia, why now" + disclosures (OZ, ERC-3643 reference, registry simplification) + fictional-asset disclaimer
 - [ ] All specs/prompts committed; commit author `tremov`
