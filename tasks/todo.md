@@ -19,7 +19,7 @@
 ## Phase 2 — Frontend (Sat–Sun)
 
 - [x] Task 5: Deploy script + SE2 contract wiring (S)
-- [ ] Task 6: Investor page — minimal = Gate 1 skeleton (M)
+- [x] Task 6: Investor page — minimal = Gate 1 skeleton (M)
 - [ ] Task 7: Registrar page (M)
 - [ ] Task 8: Regulator view (M)
 
