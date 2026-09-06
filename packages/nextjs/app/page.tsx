@@ -91,7 +91,7 @@ const Home: NextPage = () => {
           <div className="inline-flex items-center gap-2.5 px-4 py-1.5 mb-6 rounded bg-base-100/95 border border-kupon-gold shadow-sm">
             <span className="w-2 h-2 rounded-full bg-kupon-emerald animate-pulse" />
             <span className="text-xs font-mono tracking-widest text-kupon-emerald uppercase font-semibold">
-              Sovereign Debt RWA Tokenization · SBN Ritel 2027 Onchain
+              Indonesian Retail Bond on the Blockchain · SBN Ritel 2027
             </span>
           </div>
 
@@ -100,12 +100,11 @@ const Home: NextPage = () => {
             The retail bond that enforces its own rules.
           </h1>
 
-          {/* Grounded Value Subheadline */}
+          {/* Simple, Human Subheadline */}
           <p className="text-lg sm:text-xl md:text-2xl text-kupon-ink/85 max-w-3xl font-sans leading-relaxed mb-10">
-            In Indonesia, retail government bonds (SBN Ritel) face illiquid OTC secondary markets, T+2 settlement lag,
-            and quota exhaustion. Kupon brings sovereign yield onchain under <strong>UU P2SK &amp; POJK 3/2024</strong>
-            —embedding Single Investor Identification (SID) checks, anti-whale caps, and targeted enforcement directly
-            into smart contracts.
+            Buying government bonds today means waiting days for bank approvals, dealing with slow paperwork, and
+            battling sold-out quotas. Kupon turns national bonds into smart digital tokens: trade in seconds 24/7, earn
+            reliable ~6.5% government-backed yield, and let the code handle all safety rules automatically.
           </p>
 
           {/* Action-Oriented CTAs */}
@@ -114,14 +113,14 @@ const Home: NextPage = () => {
               href="/app"
               className="btn btn-primary btn-lg px-8 font-sans font-medium text-kupon-ivory certificate-border-emerald tracking-wide shadow-md hover:scale-[1.01] transition-transform w-full sm:w-auto flex items-center justify-center gap-2"
             >
-              <span>Enter Investor Portal</span>
+              <span>Launch Investor App</span>
               <ArrowRightIcon className="w-5 h-5" />
             </Link>
             <a
               href="#market-paradox"
               className="btn btn-outline btn-lg border-kupon-gold/80 text-kupon-ink hover:bg-kupon-gold/15 font-sans tracking-wide w-full sm:w-auto"
             >
-              The Indonesia RWA Opportunity ↓
+              How It Works ↓
             </a>
           </div>
 
@@ -140,7 +139,7 @@ const Home: NextPage = () => {
                 </div>
                 <div>
                   <span className="text-[10px] font-mono uppercase tracking-widest text-kupon-gold font-bold">
-                    Autonomous Sovereign Bond Certificate
+                    Official Digital Bond Specimen
                   </span>
                   <div className="font-serif font-bold text-lg text-kupon-emerald leading-tight">
                     REPUBLIK INDONESIA · SBN RITEL 2027
@@ -155,20 +154,20 @@ const Home: NextPage = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 text-xs font-sans">
               <div>
-                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Governing Authority</div>
-                <div className="font-semibold text-kupon-ink mt-0.5">DJPPR Kemenkeu Model</div>
+                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Issuer Model</div>
+                <div className="font-semibold text-kupon-ink mt-0.5">Ministry of Finance (DJPPR)</div>
               </div>
               <div>
-                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Registry Standard</div>
-                <div className="font-semibold text-kupon-ink mt-0.5">KSEI SID Onchain Mirror</div>
+                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Identity Check</div>
+                <div className="font-semibold text-kupon-ink mt-0.5">Verified Indonesian Citizens</div>
               </div>
               <div>
-                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Target Network</div>
-                <div className="font-semibold text-kupon-ink mt-0.5">Base Sepolia (Chain 84532)</div>
+                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Speed</div>
+                <div className="font-semibold text-kupon-emerald mt-0.5">Sub-Second on Base L2</div>
               </div>
               <div>
-                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Regulatory Sandbox</div>
-                <div className="font-semibold text-kupon-emerald mt-0.5">OJK POJK 3/2024 Track</div>
+                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Sandbox Track</div>
+                <div className="font-semibold text-kupon-ink mt-0.5">OJK POJK 3/2024</div>
               </div>
             </div>
           </div>
@@ -176,19 +175,19 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. THE INDONESIA RWA OPPORTUNITY (The 21M vs 1.1M Paradox) */}
+      {/* 2. THE MARKET THESIS (Simple, Eye-Opening Facts) */}
       {/* ========================================================================= */}
       <section id="market-paradox" className="py-20 px-4 sm:px-6 max-w-6xl mx-auto w-full">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="text-xs font-mono uppercase tracking-widest text-kupon-gold font-bold mb-2">
-            Market Thesis
+            Why This Matters
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-kupon-ink mb-4">
-            Why Indonesia is the ideal proving ground for sovereign RWAs.
+            Why tokenized bonds make sense in Indonesia.
           </h2>
           <p className="text-base sm:text-lg text-kupon-ink/80 font-sans leading-relaxed">
-            Indonesia ranks among the top global crypto adoption markets, yet traditional sovereign bond participation
-            remains confined to a fraction of the population. Kupon bridges this divide.
+            Over 21 million Indonesians already use crypto wallets, but only 1.1 million own government bonds. Kupon
+            bridges this gap: making safe, high-yield national bonds as easy to hold as digital cash.
           </p>
         </div>
 
@@ -197,83 +196,82 @@ const Home: NextPage = () => {
           <div className="bg-base-100 p-6 rounded certificate-border shadow-certificate flex flex-col justify-between">
             <div>
               <div className="text-3xl sm:text-4xl font-mono font-bold text-kupon-emerald mb-2">21M+ vs 1.1M</div>
-              <div className="font-serif font-bold text-lg text-kupon-ink mb-2">The Adoption Paradox</div>
+              <div className="font-serif font-bold text-lg text-kupon-ink mb-2">Huge Digital Audience</div>
               <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
-                Over 21 million Indonesians hold crypto accounts (Bappebti), but fewer than 1.1 million hold retail SBN
-                (KSEI). Young investors understand Web3 wallets, but state debt remains locked in legacy banking apps.
+                Over 21 million Indonesians own crypto accounts, but fewer than 1.1 million own government bonds. Young
+                people want digital assets; Kupon gives them a safe one backed by the nation.
               </p>
             </div>
             <div className="mt-6 pt-3 border-t border-base-300 text-[11px] font-mono text-kupon-ink/60">
-              Source: Bappebti &amp; KSEI Statistics
+              Source: Bappebti &amp; KSEI Data
             </div>
           </div>
 
           <div className="bg-base-100 p-6 rounded certificate-border shadow-certificate flex flex-col justify-between">
             <div>
               <div className="text-3xl sm:text-4xl font-mono font-bold text-kupon-gold mb-2">6.25% - 6.8%</div>
-              <div className="font-serif font-bold text-lg text-kupon-ink mb-2">Sovereign Risk-Free Yield</div>
+              <div className="font-serif font-bold text-lg text-kupon-ink mb-2">Government-Backed Yield</div>
               <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
-                Unlike volatile tokens or 4% USD RWAs, Indonesian SBN Ritel offers a compelling, state budget-backed
-                fixed return guaranteed by national law (UU APBN). Kupon tokenizes this premier sovereign yield.
+                Unlike risky meme tokens, Indonesian government bonds pay a predictable ~6.5% annual return guaranteed
+                by the national state budget. Kupon brings that reliable income straight onchain.
               </p>
             </div>
             <div className="mt-6 pt-3 border-t border-base-300 text-[11px] font-mono text-kupon-ink/60">
-              Benchmark: ORI &amp; SR 2024–2026 Issuances
+              Guaranteed by Indonesian Law (UU APBN)
             </div>
           </div>
 
           <div className="bg-base-100 p-6 rounded certificate-border shadow-certificate flex flex-col justify-between">
             <div>
-              <div className="text-3xl sm:text-4xl font-mono font-bold text-kupon-emerald mb-2">UU P2SK Ready</div>
-              <div className="font-serif font-bold text-lg text-kupon-ink mb-2">Explicit Regulatory Mandate</div>
+              <div className="text-3xl sm:text-4xl font-mono font-bold text-kupon-emerald mb-2">Legal Sandbox</div>
+              <div className="font-serif font-bold text-lg text-kupon-ink mb-2">Clear Regulatory Support</div>
               <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
-                Indonesia is not operating in a regulatory vacuum. Under <strong>UU P2SK</strong> and{" "}
-                <strong>POJK 3/2024</strong>, the Financial Services Authority (OJK) launched an active regulatory
-                sandbox specifically designed to incubate asset tokenization.
+                Indonesia&apos;s financial authority (OJK) has an active regulatory sandbox for real-world asset
+                tokenization under the new Financial Law (UU P2SK). This is built to fit official guidelines.
               </p>
             </div>
             <div className="mt-6 pt-3 border-t border-base-300 text-[11px] font-mono text-kupon-ink/60">
-              Framework: OJK Digital Financial Assets (ITSK)
+              Framework: OJK POJK 3/2024
             </div>
           </div>
         </div>
 
-        {/* The Operational Comparison */}
+        {/* The Practical Comparison */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16 pt-12 border-t border-base-300">
           {/* Legacy Pain Points */}
           <div className="bg-[#EFE8D6] p-8 rounded border border-base-300 flex flex-col justify-between">
             <div>
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-kupon-ink/10 text-xs font-mono uppercase tracking-wider text-kupon-ink font-semibold mb-4">
                 <ClockIcon className="w-4 h-4 text-kupon-ink/70" />
-                Current SBN Ritel Secondary Market
+                Traditional Government Bonds
               </div>
-              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-4">Frictional OTC Intermediaries</h3>
+              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-4">How It Works Today</h3>
               <ul className="space-y-4 text-sm font-sans text-kupon-ink/80 list-none p-0">
                 <li className="flex items-start gap-3">
                   <span className="text-red-700 font-bold mt-0.5">✕</span>
                   <div>
-                    <strong>Illiquid Secondary Trading:</strong> Retail secondary trading is bilateral OTC via
-                    distributing banks (Midis), plagued by wide bid-ask spreads and limited liquidity for small holders.
+                    <strong>Hard to Sell Early:</strong> If you need your money before the bond matures in 3 years,
+                    selling back to the bank is slow, expensive, and limited to bank hours.
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-700 font-bold mt-0.5">✕</span>
                   <div>
-                    <strong>T+2 Clearing Lag:</strong> Interbank and depository settlement through BI-SSSS and KSEI
-                    takes up to 48 hours, freezing investor capital between trades.
+                    <strong>Days to Settle (T+2):</strong> Traditional interbank clearing takes up to two full business
+                    days for cash to arrive in your account.
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-700 font-bold mt-0.5">✕</span>
                   <div>
-                    <strong>Siloed Primary Windows:</strong> Issuance is confined to periodic 3-week tranches (~7 times
-                    per year). When quotas sell out on fintech apps, latecomers cannot access retail allocations.
+                    <strong>Sold Out in Minutes:</strong> Bonds are only sold a few times a year. Quotas on apps like
+                    Bibit or Bareksa vanish quickly, leaving many everyday investors empty-handed.
                   </div>
                 </li>
               </ul>
             </div>
             <div className="mt-8 pt-4 border-t border-kupon-ink/15 text-xs font-mono text-kupon-ink/60">
-              Legacy Model: High friction, fragmented retail liquidity
+              Old Model: Slow, paper-heavy, limited trading hours
             </div>
           </div>
 
@@ -282,57 +280,55 @@ const Home: NextPage = () => {
             <div>
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-kupon-emerald/10 text-xs font-mono uppercase tracking-wider text-kupon-emerald font-semibold mb-4 border border-kupon-emerald/30">
                 <CpuChipIcon className="w-4 h-4 text-kupon-emerald" />
-                The Kupon Onchain Architecture
+                The Kupon Experience
               </div>
-              <h3 className="text-2xl font-serif font-bold text-kupon-emerald mb-4">
-                24/7 Autonomous Sovereign Liquidity
-              </h3>
+              <h3 className="text-2xl font-serif font-bold text-kupon-emerald mb-4">How It Works With Kupon</h3>
               <ul className="space-y-4 text-sm font-sans text-kupon-ink/85 list-none p-0">
                 <li className="flex items-start gap-3">
                   <span className="text-kupon-emerald font-bold mt-0.5">✓</span>
                   <div>
-                    <strong>Instant Atomic Settlement:</strong> Secondary transfers settle in sub-second blocks on L2,
-                    unlocking genuine liquidity without bank counterparty delays.
+                    <strong>Instant 24/7 Liquidity:</strong> Buy, sell, or transfer your bonds in seconds, day or night,
+                    on a fast Layer 2 network without waiting for banks to open.
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-kupon-emerald font-bold mt-0.5">✓</span>
                   <div>
-                    <strong>Autonomous Compliance Verification:</strong> Every transfer autonomously verifies
-                    eligibility (WNI status, retail holding limits) before executing.
+                    <strong>Automatic Rule Checks:</strong> The smart contract automatically checks citizen status and
+                    fair limits, stopping mistakes before you spend any gas fee.
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-kupon-emerald font-bold mt-0.5">✓</span>
                   <div>
-                    <strong>Surgical Enforcement Precision:</strong> Sanctions or AML freezes operate on individual
-                    wallets via identity claim revocation, without halting legitimate secondary markets.
+                    <strong>Targeted Safety Freezes:</strong> If a wallet is compromised or sanctioned, officials can
+                    freeze just that one account without stopping trading for the rest of the market.
                   </div>
                 </li>
               </ul>
             </div>
             <div className="mt-8 pt-4 border-t border-kupon-gold/30 text-xs font-mono text-kupon-emerald font-semibold">
-              Kupon Model: Zero friction, continuous compliance
+              Kupon Model: Instant settlement, automated protection
             </div>
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. THE THREE SOVEREIGN PILLARS */}
+      {/* 3. THE THREE SIMPLE RULES */}
       {/* ========================================================================= */}
       <section className="py-20 px-4 sm:px-6 bg-[#F6F0E0] border-t border-b border-kupon-gold/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <div className="text-xs font-mono uppercase tracking-widest text-kupon-emerald font-bold mb-2">
-              Statutory Foundations
+              Three Simple Rules
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-kupon-ink mb-4">
-              Three rules that protect national wealth.
+              Designed to protect everyday citizens.
             </h2>
             <p className="text-base sm:text-lg text-kupon-ink/80 font-sans leading-relaxed">
-              Every sovereign retail debt issuance balances national priority, wealth distribution, and state authority.
-              Kupon translates these statutory mandates into immutable smart contract guarantees.
+              Indonesian retail bond regulations exist to make sure national wealth is shared fairly. Kupon turns these
+              legal protections into simple, unskippable rules in code.
             </p>
           </div>
 
@@ -344,17 +340,17 @@ const Home: NextPage = () => {
                   <GlobeAltIcon className="w-6 h-6" />
                 </div>
                 <div className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold mb-1">
-                  Pillar I · Sovereignty
+                  Rule 1 · Citizens First
                 </div>
-                <h3 className="text-xl font-serif font-bold text-kupon-ink mb-3">WNI Domestic Priority</h3>
+                <h3 className="text-xl font-serif font-bold text-kupon-ink mb-3">Indonesian Residents Only</h3>
                 <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-4">
-                  Sovereign debt yields belong to citizens. Only wallets possessing an onchain identity claim (mirroring
-                  the KSEI SID / e-KTP registry) can hold tokens, preventing unauthorized foreign capital capture.
+                  National bond profits belong to citizens. Only wallets verified as Indonesian residents can hold or
+                  receive tokens, keeping national wealth in the country.
                 </p>
               </div>
               <div className="pt-4 border-t border-base-300 text-xs font-mono text-kupon-emerald font-medium flex items-center justify-between">
-                <span>Rule: R1-RESIDENCY</span>
-                <span className="text-[10px] text-kupon-ink/50 font-sans">KSEI SID Mirror</span>
+                <span>Code Rule: R1-RESIDENCY</span>
+                <span className="text-[10px] text-kupon-ink/50 font-sans">KTP/SID Verification</span>
               </div>
             </div>
 
@@ -365,17 +361,17 @@ const Home: NextPage = () => {
                   <ScaleIcon className="w-6 h-6" />
                 </div>
                 <div className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold mb-1">
-                  Pillar II · Fairness
+                  Rule 2 · Fair Shares
                 </div>
-                <h3 className="text-xl font-serif font-bold text-kupon-ink mb-3">Anti-Whale Distribution</h3>
+                <h3 className="text-xl font-serif font-bold text-kupon-ink mb-3">No Giant Whales</h3>
                 <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-4">
-                  Mirroring the Ministry of Finance&apos;s statutory order ceiling (PMK SBN Ritel), retail wallets are
-                  strictly capped at 5,000 KPON, preventing institutional whales from monopolizing retail quotas.
+                  Retail bonds are meant for ordinary families, not giant hedge funds. Every regular wallet has a strict
+                  5,000 token limit so rich whales can&apos;t hoard all the supply.
                 </p>
               </div>
               <div className="pt-4 border-t border-base-300 text-xs font-mono text-kupon-gold font-medium flex items-center justify-between">
-                <span>Rule: R2-CAP (5,000 KPON)</span>
-                <span className="text-[10px] text-kupon-ink/50 font-sans">Retail Ceiling</span>
+                <span>Code Rule: R2-CAP</span>
+                <span className="text-[10px] text-kupon-ink/50 font-sans">5,000 Token Max</span>
               </div>
             </div>
 
@@ -386,18 +382,17 @@ const Home: NextPage = () => {
                   <LockClosedIcon className="w-6 h-6" />
                 </div>
                 <div className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold mb-1">
-                  Pillar III · State Control
+                  Rule 3 · Rapid Safety
                 </div>
-                <h3 className="text-xl font-serif font-bold text-kupon-ink mb-3">Targeted Enforcement</h3>
+                <h3 className="text-xl font-serif font-bold text-kupon-ink mb-3">Instant Suspicious Freezes</h3>
                 <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-4">
-                  Regulatory compliance must be instantaneous. Revoking an investor&apos;s verified claim immediately
-                  freezes outgoing transfers under court order or AML sanctions, without disrupting the secondary
-                  market.
+                  If a wallet is stolen, compromised, or sanctioned, authorities can freeze that specific wallet in
+                  seconds without shutting down trading for honest users.
                 </p>
               </div>
               <div className="pt-4 border-t border-base-300 text-xs font-mono text-red-800 font-medium flex items-center justify-between">
-                <span>Rule: R3-FROZEN</span>
-                <span className="text-[10px] text-kupon-ink/50 font-sans">AML/CFT Freeze</span>
+                <span>Code Rule: R3-FROZEN</span>
+                <span className="text-[10px] text-kupon-ink/50 font-sans">Surgical Freeze</span>
               </div>
             </div>
           </div>
@@ -410,13 +405,13 @@ const Home: NextPage = () => {
       <section className="py-20 px-4 sm:px-6 max-w-6xl mx-auto w-full">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="text-xs font-mono uppercase tracking-widest text-kupon-gold font-bold mb-2">
-            The System in Action
+            Built for Real Use
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-kupon-ink mb-4">
-            Built for citizens, issuers, and regulators.
+            Simple portals for citizens, issuers, and watchdogs.
           </h2>
           <p className="text-base sm:text-lg text-kupon-ink/80 font-sans leading-relaxed">
-            Experience the three interactive personas governing the Kupon sovereign asset lifecycle.
+            See how different people interact with the Kupon system.
           </p>
         </div>
 
@@ -427,13 +422,13 @@ const Home: NextPage = () => {
               <div className="flex items-center gap-2 mb-3">
                 <UserGroupIcon className="w-5 h-5 text-kupon-emerald" />
                 <span className="text-xs font-mono uppercase tracking-wider text-kupon-emerald font-bold">
-                  Citizen Portal
+                  For Citizens
                 </span>
               </div>
-              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-2">Investor Experience</h3>
+              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-2">Investor Portal</h3>
               <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-6">
-                Send and receive government bond tokens with pre-flight compliance verification. If an address is
-                unregistered or exceeding limits, receive immediate plain-language feedback before spending gas.
+                Check your bond balance and send tokens easily. If you enter an address that isn&apos;t allowed to
+                receive bonds, the app explains why before you waste any gas fees.
               </p>
             </div>
             <Link
@@ -451,14 +446,13 @@ const Home: NextPage = () => {
               <div className="flex items-center gap-2 mb-3">
                 <BuildingLibraryIcon className="w-5 h-5 text-kupon-gold" />
                 <span className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold">
-                  Issuer Authority
+                  For the Government
                 </span>
               </div>
               <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-2">Debt Management Office</h3>
               <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-6">
-                Grant and revoke verified identity credentials (<code className="font-mono text-xs">RESIDENCY</code>,{" "}
-                <code className="font-mono text-xs">ACCREDITED</code>), issue fresh bond tranches within the series cap,
-                and maintain the onchain registry.
+                Authorize citizen identities, issue new bond batches within the legal limit, and manage the national
+                registry without manual spreadsheets.
               </p>
             </div>
             <Link
@@ -476,13 +470,13 @@ const Home: NextPage = () => {
               <div className="flex items-center gap-2 mb-3">
                 <ShieldCheckIcon className="w-5 h-5 text-kupon-emerald" />
                 <span className="text-xs font-mono uppercase tracking-wider text-kupon-emerald font-bold">
-                  Oversight &amp; Audit
+                  For Watchdogs
                 </span>
               </div>
               <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-2">Regulator Terminal</h3>
               <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-6">
-                Inspect real-time compliance telemetry, audit wallet holding distributions, simulate transfers with zero
-                blindspots, and evaluate four sequential demo scenarios.
+                Watch transactions live, check that no one is hoarding extra tokens, and test safety scenarios with
+                complete transparency and zero blind spots.
               </p>
             </div>
             <Link
@@ -509,24 +503,24 @@ const Home: NextPage = () => {
               </h2>
             </div>
             <div className="text-[11px] font-mono text-kupon-ink/60 mt-1 sm:mt-0">
-              Direct telemetry from deployed smart contracts
+              Live data direct from verified smart contracts
             </div>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-base-100 p-5 rounded border border-kupon-gold/40 shadow-sm">
               <div className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60 mb-1">
-                Active Circulation
+                Bonds in Circulation
               </div>
               <div className="text-2xl sm:text-3xl font-mono font-bold text-kupon-emerald tabular-nums">
                 {isLoadingSupply ? <span className="text-base text-kupon-ink/40">Polling...</span> : formattedSupply}
               </div>
-              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">KPON issued to date</div>
+              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">KPON issued so far</div>
             </div>
 
             <div className="bg-base-100 p-5 rounded border border-kupon-gold/40 shadow-sm">
               <div className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60 mb-1">
-                Max Series Cap
+                Max Series Limit
               </div>
               <div className="text-2xl sm:text-3xl font-mono font-bold text-kupon-ink tabular-nums">
                 {isLoadingSeriesCap ? (
@@ -535,12 +529,12 @@ const Home: NextPage = () => {
                   formattedSeriesCap
                 )}
               </div>
-              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">Issuance ceiling</div>
+              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">Total bond issuance cap</div>
             </div>
 
             <div className="bg-base-100 p-5 rounded border border-kupon-gold/40 shadow-sm">
               <div className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60 mb-1">
-                Per-Wallet Retail Cap
+                Max Limit Per Person
               </div>
               <div className="text-2xl sm:text-3xl font-mono font-bold text-kupon-gold tabular-nums">
                 {isLoadingRetailCap ? (
@@ -549,38 +543,38 @@ const Home: NextPage = () => {
                   formattedRetailCap
                 )}
               </div>
-              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">Enforced at transfer</div>
+              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">Stops hoarding by whales</div>
             </div>
 
             <div className="bg-base-100 p-5 rounded border border-kupon-gold/40 shadow-sm">
               <div className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60 mb-1">
-                Verified Bondholders
+                Verified Citizens
               </div>
               <div className="text-2xl sm:text-3xl font-mono font-bold text-kupon-emerald tabular-nums">
                 {totalClaimsCount}
               </div>
-              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">Claims recorded onchain</div>
+              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">Identity checks onchain</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 6. TECHNICAL AUDIT SPECIFICATION (Bridge for Judges) */}
+      {/* 6. TECHNICAL AUDIT BRIDGE (For Developers and Judges) */}
       {/* ========================================================================= */}
       <section className="py-16 px-4 sm:px-6 max-w-5xl mx-auto w-full">
         <div className="bg-base-100 p-8 sm:p-10 rounded certificate-border shadow-certificate flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-kupon-emerald/10 text-[10px] font-mono uppercase tracking-widest text-kupon-emerald font-bold mb-2">
               <CommandLineIcon className="w-4 h-4" />
-              For Technical Judges &amp; Smart Contract Auditors
+              For Smart Contract Auditors &amp; Judges
             </div>
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-kupon-ink mb-2">
-              Looking for bytecode proofs &amp; contract interfaces?
+              Want to see the actual smart contracts?
             </h2>
             <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
-              Inspect decoded custom error signatures (<code className="font-mono text-xs">Kupon__RuleViolated</code>),
-              interact directly with verified contracts, and test read/write calls in our integrated Protocol Debugger.
+              Inspect decoded rule errors (<code className="font-mono text-xs">Kupon__RuleViolated</code>), interact
+              directly with verified contracts on Base Sepolia, and test contract functions in our Protocol Debugger.
             </p>
           </div>
 
@@ -597,7 +591,7 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 7. REGULATORY SANDBOX & DISCLAIMER */}
+      {/* 7. REGULATORY SANDBOX & DEMO DISCLAIMER */}
       {/* ========================================================================= */}
       <section className="pb-16 px-4 sm:px-6 max-w-5xl mx-auto w-full">
         <div className="p-6 sm:p-8 rounded bg-[#F4EEDC] border border-kupon-gold/40 text-xs font-sans text-kupon-ink/85 leading-relaxed flex flex-col gap-4">
@@ -606,16 +600,16 @@ const Home: NextPage = () => {
             <span>Indonesian Financial Innovation Sandbox Framework</span>
           </div>
           <p className="m-0">
-            Engineered in statutory alignment with <strong>UU No. 4/2023 (UU P2SK)</strong> empowering Otoritas Jasa
-            Keuangan (OJK) over digital financial assets, alongside regulatory sandbox frameworks under{" "}
-            <strong>POJK No. 3/2024</strong> (Inovasi Teknologi Sektor Keuangan - ITSK).
+            Designed to fit <strong>UU No. 4/2023 (UU P2SK)</strong>, which places digital financial assets under
+            Otoritas Jasa Keuangan (OJK), and <strong>POJK No. 3/2024</strong> on regulatory sandboxes for financial
+            technology innovation.
           </p>
           <div className="p-3.5 rounded bg-amber-500/10 border border-amber-600/30 text-amber-900 text-[11px] flex items-start gap-2.5">
             <ExclamationTriangleIcon className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
             <div>
-              <strong>Demonstration Disclaimer:</strong> Kupon is a fictional technical demonstration created for{" "}
-              <strong>ETHGlobal ETHOnline 2026</strong>. It models an Indonesian government retail bond (SBN Ritel 2027)
-              and does not constitute an offering, underwriting, or solicitation of actual securities.
+              <strong>Demonstration Disclaimer:</strong> Kupon is an educational technical project built for the{" "}
+              <strong>ETHGlobal ETHOnline 2026</strong> hackathon. It models an Indonesian government retail bond (SBN
+              Ritel 2027) and is not an actual government debt offering.
             </div>
           </div>
         </div>
