@@ -9,11 +9,14 @@ import { useAccount } from "wagmi";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  BanknotesIcon,
+  CalendarDaysIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
   InformationCircleIcon,
   KeyIcon,
   MinusCircleIcon,
+  SparklesIcon,
   UserPlusIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
@@ -37,6 +40,121 @@ const DEMO_PRESETS = [
   { label: "Alice (Retail Demo)", address: "0x1111111111111111111111111111111111111111" },
   { label: "Bob (Institutional Demo)", address: "0x2222222222222222222222222222222222222222" },
 ] as const;
+
+export type SBNSeries = {
+  id: string;
+  code: string;
+  name: string;
+  alias: string;
+  category: "Conventional" | "Sharia";
+  tenorYears: number;
+  tenorLabel: string;
+  maturityDate: string;
+  couponRate: number; // in percent p.a.
+  couponType: "Fixed Rate" | "Floating with Floor";
+  payoutSchedule: string;
+  tradable: boolean;
+  minPurchaseKPON: number;
+  maxPurchaseRetailKPON: number;
+  isBenchmark: boolean;
+  description: string;
+};
+
+// Modeled from real Indonesian Ministry of Finance (DJPPR) 2026/2027 retail issuance schedule
+export const SBN_SERIES_CATALOG: SBNSeries[] = [
+  {
+    id: "ori026-t3",
+    code: "ORI026-T3",
+    name: "Obligasi Negara Ritel Seri 026 (Tenor 3 Tahun)",
+    alias: "Sovereign Retail Fixed Benchmark",
+    category: "Conventional",
+    tenorYears: 3,
+    tenorLabel: "3 Years (2026 – 2029)",
+    maturityDate: "15 Oct 2029",
+    couponRate: 6.4,
+    couponType: "Fixed Rate",
+    payoutSchedule: "Monthly (every 15th)",
+    tradable: true,
+    minPurchaseKPON: 1,
+    maxPurchaseRetailKPON: 5000,
+    isBenchmark: true,
+    description: "Benchmark sovereign retail bond. 24/7 onchain secondary trading enabled via Kupon compliance hook.",
+  },
+  {
+    id: "ori026-t6",
+    code: "ORI026-T6",
+    name: "Obligasi Negara Ritel Seri 026 (Tenor 6 Tahun)",
+    alias: "Long-Horizon Sovereign Yield",
+    category: "Conventional",
+    tenorYears: 6,
+    tenorLabel: "6 Years (2026 – 2032)",
+    maturityDate: "15 Oct 2032",
+    couponRate: 6.65,
+    couponType: "Fixed Rate",
+    payoutSchedule: "Monthly (every 15th)",
+    tradable: true,
+    minPurchaseKPON: 1,
+    maxPurchaseRetailKPON: 10000,
+    isBenchmark: false,
+    description: "Extended maturity offering premium sovereign yield. Tradable post minimum holding period.",
+  },
+  {
+    id: "sr021-t3",
+    code: "SR021-T3",
+    name: "Sukuk Ritel Seri 021 (Tenor 3 Tahun)",
+    alias: "Sovereign Sharia Ijarah Sukuk",
+    category: "Sharia",
+    tenorYears: 3,
+    tenorLabel: "3 Years (2026 – 2029)",
+    maturityDate: "10 Sep 2029",
+    couponRate: 6.45,
+    couponType: "Fixed Rate",
+    payoutSchedule: "Monthly (every 10th)",
+    tradable: true,
+    minPurchaseKPON: 1,
+    maxPurchaseRetailKPON: 5000,
+    isBenchmark: false,
+    description: "100% Sharia-compliant sovereign debt backed by state asset leases (Ijarah Asset to be Leased).",
+  },
+  {
+    id: "sbr013-t2",
+    code: "SBR013-T2",
+    name: "Savings Bond Ritel Seri 013 (Tenor 2 Tahun)",
+    alias: "Floating with Floor Inflation Shield",
+    category: "Conventional",
+    tenorYears: 2,
+    tenorLabel: "2 Years (2026 – 2028)",
+    maturityDate: "10 Jul 2028",
+    couponRate: 6.5,
+    couponType: "Floating with Floor",
+    payoutSchedule: "Monthly (every 10th)",
+    tradable: false,
+    minPurchaseKPON: 1,
+    maxPurchaseRetailKPON: 5000,
+    isBenchmark: false,
+    description:
+      "Floating coupon linked to BI-Rate with guaranteed 6.50% floor. Non-tradable with 50% early redemption option.",
+  },
+  {
+    id: "st013-t4",
+    code: "ST013-T4",
+    name: "Sukuk Tabungan Seri 013 (Tenor 4 Tahun)",
+    alias: "Green Sukuk Renewable Energy",
+    category: "Sharia",
+    tenorYears: 4,
+    tenorLabel: "4 Years (2026 – 2030)",
+    maturityDate: "10 Nov 2030",
+    couponRate: 6.75,
+    couponType: "Floating with Floor",
+    payoutSchedule: "Monthly (every 10th)",
+    tradable: false,
+    minPurchaseKPON: 1,
+    maxPurchaseRetailKPON: 10000,
+    isBenchmark: false,
+    description:
+      "Funds green infrastructure projects (solar, geothermal, eco-transport) under national APBN Green Framework.",
+  },
+];
 
 type ClaimType = "RESIDENCY_ID" | "ACCREDITED";
 type StepMode = 1 | 2;
@@ -75,9 +193,15 @@ const RegistrarPage: NextPage = () => {
   const [selectedClaim, setSelectedClaim] = useState<ClaimType>("RESIDENCY_ID");
   const [isProcessingClaim, setIsProcessingClaim] = useState(false);
 
-  // Step 2 state: Issuance
-  const [issueAmount, setIssueAmount] = useState<string>("");
+  // Step 2 state: Selected Bond Series & Issuance Amount
+  const [selectedSeriesId, setSelectedSeriesId] = useState<string>("ori026-t3");
+  const [issueAmount, setIssueAmount] = useState<string>("500");
   const [isIssuingTokens, setIsIssuingTokens] = useState(false);
+
+  const selectedBond = useMemo(
+    () => SBN_SERIES_CATALOG.find(b => b.id === selectedSeriesId) ?? SBN_SERIES_CATALOG[0],
+    [selectedSeriesId],
+  );
 
   // Contract Reads: Authority checks on connected wallet
   const targetWallet = connectedAddress ?? ZERO_ADDRESS;
@@ -209,6 +333,29 @@ const RegistrarPage: NextPage = () => {
     investorBalance,
   ]);
 
+  // Yield & Profit Calculation
+  const financialForecast = useMemo(() => {
+    const rawUnits = Number(issueAmount.trim());
+    if (isNaN(rawUnits) || rawUnits <= 0) return null;
+
+    const principalIDR = rawUnits * 1_000_000;
+    const annualRate = selectedBond.couponRate / 100;
+    const annualCouponIDR = principalIDR * annualRate;
+    const monthlyCouponIDR = annualCouponIDR / 12;
+    const totalCouponProfitIDR = annualCouponIDR * selectedBond.tenorYears;
+    const totalMaturityPayoutIDR = principalIDR + totalCouponProfitIDR;
+    const totalProfitPercentage = (selectedBond.couponRate * selectedBond.tenorYears).toFixed(2);
+
+    return {
+      principalIDR,
+      annualCouponIDR,
+      monthlyCouponIDR,
+      totalCouponProfitIDR,
+      totalMaturityPayoutIDR,
+      totalProfitPercentage,
+    };
+  }, [issueAmount, selectedBond]);
+
   // Actions
   const handleGrantClaim = async () => {
     if (!isAddressValid) {
@@ -265,8 +412,9 @@ const RegistrarPage: NextPage = () => {
         functionName: "issue",
         args: [investorAddress, parsedIssueAmount],
       });
-      notification.success(`Successfully issued ${issueAmount} KPON to investor wallet.`);
-      setIssueAmount("");
+      notification.success(
+        `Successfully allocated ${issueAmount} KPON (${selectedBond.code}) to ${investorAddress.slice(0, 6)}…`,
+      );
       await Promise.all([refetchSupply(), refetchBalance()]);
     } catch (err) {
       notification.error(translateRegistrarError(err), { duration: 7000 });
@@ -495,7 +643,7 @@ const RegistrarPage: NextPage = () => {
           {/* RIGHT COLUMN: ACTION WORKBENCH (7 COLS, SINGLE BORDER) */}
           {/* ----------------------------------------------------------------- */}
           <div className="lg:col-span-7 flex flex-col gap-6 bg-[#F8F3E5] p-6 sm:p-8 rounded-xl border border-kupon-gold/30">
-            {/* Step Guided Header (Not Random Tabs) */}
+            {/* Step Guided Header */}
             <div className="flex items-center justify-between border-b border-kupon-gold/20 pb-4">
               <div className="flex items-center gap-3">
                 <button
@@ -531,7 +679,7 @@ const RegistrarPage: NextPage = () => {
                   >
                     2
                   </span>
-                  <span>Tranche Issuance</span>
+                  <span>Bond Series Issuance</span>
                 </button>
               </div>
 
@@ -553,7 +701,7 @@ const RegistrarPage: NextPage = () => {
                   </p>
                 </div>
 
-                {/* Clear, Dedicated Status Display (Not Buttons!) */}
+                {/* Clear, Dedicated Status Display */}
                 <div className="bg-[#FAF6EC] p-4 rounded-lg border border-kupon-gold/30 flex flex-col gap-3">
                   <span className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60">
                     On-Chain Credentials Status
@@ -697,13 +845,13 @@ const RegistrarPage: NextPage = () => {
                   <div className="bg-[#EEF7F2] p-4 rounded-lg border border-kupon-emerald/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
                     <div className="flex items-center gap-2 text-xs font-sans text-kupon-emerald">
                       <CheckCircleIcon className="w-5 h-5 shrink-0" />
-                      <span>Investor is verified! Ready to receive sovereign bond allocations.</span>
+                      <span>Investor is verified! Ready to select bond series and issue tokens.</span>
                     </div>
 
                     <button
                       type="button"
                       onClick={() => setCurrentStep(2)}
-                      className="btn btn-sm bg-kupon-emerald hover:bg-kupon-emerald/90 text-kupon-ivory border-none font-sans flex items-center gap-1.5 self-start sm:self-auto"
+                      className="btn btn-sm bg-kupon-emerald hover:bg-kupon-emerald/90 text-kupon-ivory border-none font-sans flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
                     >
                       <span>Proceed to Issue Bonds</span>
                       <ArrowRightIcon className="w-3.5 h-3.5" />
@@ -714,7 +862,7 @@ const RegistrarPage: NextPage = () => {
             )}
 
             {/* =============================================================== */}
-            {/* STEP 2: TRANCHE ISSUANCE (MINT) */}
+            {/* STEP 2: TRANCHE ISSUANCE & SBN SERIES SELECTION */}
             {/* =============================================================== */}
             {currentStep === 2 && (
               <div className="flex flex-col gap-6">
@@ -722,8 +870,8 @@ const RegistrarPage: NextPage = () => {
                   <div className="space-y-1">
                     <h3 className="text-xl font-serif font-bold text-kupon-ink m-0">Primary Tranche Issuance</h3>
                     <p className="text-xs text-kupon-ink/75 font-sans m-0 leading-relaxed">
-                      Mint newly authorized debt tokens directly to the verified investor wallet within the series
-                      quota.
+                      Select sovereign bond instrument, configure tranche size, and mint tokens to the verified
+                      investor.
                     </p>
                   </div>
 
@@ -737,11 +885,73 @@ const RegistrarPage: NextPage = () => {
                   </button>
                 </div>
 
-                {/* Amount Input */}
+                {/* 1. SBN Series Catalog Selector */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-sans">
+                    <label className="font-semibold text-kupon-ink flex items-center gap-1.5">
+                      <BanknotesIcon className="w-4 h-4 text-kupon-emerald" />
+                      <span>Choose Sovereign Bond (SBN) Series:</span>
+                    </label>
+                    <span className="text-[11px] font-mono text-kupon-ink/60">Reference: DJPPR 2026/2027</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {SBN_SERIES_CATALOG.map(series => {
+                      const isSelected = selectedSeriesId === series.id;
+                      return (
+                        <button
+                          key={series.id}
+                          type="button"
+                          onClick={() => setSelectedSeriesId(series.id)}
+                          className={`p-3.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between gap-2 ${
+                            isSelected
+                              ? "bg-[#FAF6EC] border-kupon-emerald ring-1 ring-kupon-emerald"
+                              : "bg-[#FAF6EC]/60 border-kupon-gold/20 hover:border-kupon-gold/40"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="font-bold text-xs font-mono text-kupon-ink flex items-center gap-1.5">
+                                <span>{series.code}</span>
+                                {series.isBenchmark && (
+                                  <span className="text-[9px] font-mono uppercase bg-kupon-emerald/15 text-kupon-emerald px-1.5 py-0.2 rounded">
+                                    Benchmark
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[11px] font-sans text-kupon-ink/75 mt-0.5 line-clamp-1">
+                                {series.alias}
+                              </div>
+                            </div>
+
+                            <span
+                              className={`text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0 ${
+                                series.category === "Sharia"
+                                  ? "bg-kupon-gold/15 text-kupon-gold font-semibold"
+                                  : "bg-base-200 text-kupon-ink/60"
+                              }`}
+                            >
+                              {series.category}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between text-[11px] font-mono pt-1.5 border-t border-kupon-gold/15">
+                            <span className="text-kupon-emerald font-semibold">{series.couponRate}% p.a.</span>
+                            <span className="text-kupon-ink/60">
+                              {series.tenorYears} Yrs ({series.maturityDate.slice(-4)})
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Volume Input & Presets */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs font-sans">
                     <span className="font-medium text-kupon-ink">Tranche Volume (KPON)</span>
-                    <span className="text-kupon-ink/60 font-mono">1 KPON = Rp1,000,000 Par Value</span>
+                    <span className="text-kupon-ink/60 font-mono">1 KPON = 1 Bond Unit (Rp1,000,000)</span>
                   </div>
 
                   <div className="relative">
@@ -779,7 +989,92 @@ const RegistrarPage: NextPage = () => {
                   </div>
                 </div>
 
-                {/* Pre-Flight Eligibility Feedback */}
+                {/* 3. Comprehensive Profit & Maturity Return Card */}
+                {financialForecast && (
+                  <div className="bg-[#FAF6EC] p-4 sm:p-5 rounded-xl border border-kupon-gold/30 flex flex-col gap-3.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-kupon-gold/20 gap-2">
+                      <div>
+                        <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-kupon-emerald">
+                          <SparklesIcon className="w-4 h-4 text-kupon-gold" />
+                          <span>{selectedBond.code} · Yield & Maturity Projection</span>
+                        </div>
+                        <div className="text-xs text-kupon-ink/70 font-sans mt-0.5">
+                          {selectedBond.couponType} · Payout: {selectedBond.payoutSchedule}
+                        </div>
+                      </div>
+
+                      <div className="text-xs font-sans text-right sm:self-auto">
+                        <span className="text-kupon-ink/60">Tenor Maturity: </span>
+                        <strong className="text-kupon-ink font-mono">{selectedBond.maturityDate}</strong>
+                      </div>
+                    </div>
+
+                    {/* Financial Numbers Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                      {/* Principal */}
+                      <div className="space-y-0.5">
+                        <span className="text-kupon-ink/60 font-sans text-[11px]">Principal Capital</span>
+                        <div className="font-serif font-bold text-sm text-kupon-ink">
+                          Rp{financialForecast.principalIDR.toLocaleString("id-ID")}
+                        </div>
+                        <span className="text-[10px] font-mono text-kupon-ink/50">{issueAmount} KPON</span>
+                      </div>
+
+                      {/* Coupon Rate */}
+                      <div className="space-y-0.5">
+                        <span className="text-kupon-ink/60 font-sans text-[11px]">Coupon Yield</span>
+                        <div className="font-serif font-bold text-sm text-kupon-emerald">
+                          {selectedBond.couponRate}% p.a.
+                        </div>
+                        <span className="text-[10px] font-sans text-kupon-ink/50">Gross annual return</span>
+                      </div>
+
+                      {/* Monthly Payout */}
+                      <div className="space-y-0.5">
+                        <span className="text-kupon-ink/60 font-sans text-[11px]">Monthly Payout</span>
+                        <div className="font-serif font-bold text-sm text-kupon-ink">
+                          Rp{Math.round(financialForecast.monthlyCouponIDR).toLocaleString("id-ID")}
+                        </div>
+                        <span className="text-[10px] font-sans text-kupon-ink/50">Cashflow / month</span>
+                      </div>
+
+                      {/* Cumulative Total Profit */}
+                      <div className="space-y-0.5">
+                        <span className="text-kupon-ink/60 font-sans text-[11px]">
+                          Total Profit ({selectedBond.tenorYears}Y)
+                        </span>
+                        <div className="font-serif font-bold text-sm text-kupon-gold">
+                          +Rp{financialForecast.totalCouponProfitIDR.toLocaleString("id-ID")}
+                        </div>
+                        <span className="text-[10px] font-mono text-kupon-gold/80 font-semibold">
+                          +{financialForecast.totalProfitPercentage}% Cumulative
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Final Payout Banner */}
+                    <div className="bg-[#F8F3E5] p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between text-xs font-sans border border-kupon-gold/20 gap-2">
+                      <div className="flex items-center gap-2">
+                        <CalendarDaysIcon className="w-4 h-4 text-kupon-emerald shrink-0" />
+                        <span className="text-kupon-ink/80">
+                          Total Liquidity Received at Maturity (Principal + Profit):
+                        </span>
+                      </div>
+                      <div className="font-mono font-bold text-sm text-kupon-emerald">
+                        Rp{financialForecast.totalMaturityPayoutIDR.toLocaleString("id-ID")}
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] font-sans text-kupon-ink/60 flex items-center justify-between">
+                      <span>{selectedBond.description}</span>
+                      <span className="font-mono text-kupon-ink/50 shrink-0 ml-2">
+                        {selectedBond.tradable ? "24/7 Tradable Secondary Market" : "50% Early Redemption Facility"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Pre-Flight Compliance Feedback */}
                 <div
                   className={`p-4 rounded-lg border text-xs font-sans leading-relaxed flex items-start gap-3 transition-colors ${
                     isAddressValid && parsedIssueAmount !== undefined && parsedIssueAmount > 0n
@@ -810,7 +1105,7 @@ const RegistrarPage: NextPage = () => {
                   </div>
                 </div>
 
-                {/* Primary Issue Button */}
+                {/* 5. Primary Issue Button */}
                 <button
                   type="button"
                   onClick={handleIssueTranche}
@@ -822,7 +1117,9 @@ const RegistrarPage: NextPage = () => {
                   ) : (
                     <KeyIcon className="w-4 h-4" />
                   )}
-                  <span>Authorize & Issue {issueAmount ? `${issueAmount} KPON` : "Tranche"}</span>
+                  <span>
+                    Authorize & Issue {issueAmount ? `${issueAmount} KPON` : "Tranche"} ({selectedBond.code})
+                  </span>
                 </button>
               </div>
             )}
