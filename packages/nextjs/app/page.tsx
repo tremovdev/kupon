@@ -10,7 +10,6 @@ import {
   ArrowRightIcon,
   ArrowTopRightOnSquareIcon,
   BuildingLibraryIcon,
-  CheckBadgeIcon,
   CheckIcon,
   GlobeAltIcon,
   LockClosedIcon,
@@ -677,35 +676,25 @@ const Home: NextPage = () => {
         </div>
       </section>
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
       {/* 6. REGULATORY & STATUTORY FRAMEWORK BRIEF */}
       {/* ========================================================================= */}
-      <section className="pb-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
-        <div className="bg-base-100 p-8 sm:p-10 rounded certificate-border shadow-certificate flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-kupon-emerald/10 text-[10px] font-mono uppercase tracking-widest text-kupon-emerald font-bold mb-2">
-              <CheckBadgeIcon className="w-4 h-4" />
-              Regulatory &amp; Statutory Architecture
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-kupon-ink mb-2">
-              Grounded in Indonesian Law &amp; OJK Sandbox
-            </h2>
-            <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
-              Kupon is engineered in accordance with <strong>UU No. 4/2023 (UU P2SK)</strong> and the OJK Digital
-              Financial Assets Regulatory Sandbox (<strong>POJK No. 3/2024</strong>). Read our institutional brief, KSEI
-              SID mapping, and sovereign debt thesis.
-            </p>
-          </div>
-
-          <div className="shrink-0 w-full md:w-auto">
-            <Link
-              href="/framework"
-              className="btn btn-primary text-kupon-ivory certificate-border-emerald font-sans tracking-wide w-full md:w-auto flex items-center justify-center gap-2"
-            >
-              <span>Read Legal Framework</span>
-              <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full text-center">
+        <h2 className="text-2xl sm:text-4xl font-serif font-bold text-kupon-ink mb-3">
+          Grounded in Indonesian Law &amp; OJK Sandbox.
+        </h2>
+        <p className="text-sm sm:text-base text-kupon-ink/75 font-sans leading-relaxed max-w-2xl mx-auto mb-6">
+          Kupon is built in statutory alignment with <strong>UU No. 4/2023 (P2SK)</strong> and OJK&apos;s digital asset
+          sandbox (<strong>POJK No. 3/2024</strong>). Explore our complete legal thesis, KSEI SID mapping, and
+          compliance architecture.
+        </p>
+        <Link
+          href="/framework"
+          className="btn btn-outline border-kupon-gold/80 text-kupon-ink hover:bg-kupon-gold/15 font-sans text-sm tracking-wide inline-flex items-center gap-2"
+        >
+          <span>Read Full Legal Framework</span>
+          <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+        </Link>
       </section>
     </div>
   );
