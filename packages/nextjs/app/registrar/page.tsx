@@ -7,12 +7,15 @@ import type { NextPage } from "next";
 import { formatEther, isAddress, keccak256, parseEther, toHex } from "viem";
 import { useAccount } from "wagmi";
 import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
   InformationCircleIcon,
   KeyIcon,
   MinusCircleIcon,
   UserPlusIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { GuillochePattern } from "~~/components/GuillochePattern";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
@@ -29,19 +32,19 @@ const DEFAULT_ADMIN_ROLE = "0x00000000000000000000000000000000000000000000000000
 
 const DEPLOYER_AUTHORITY_ADDRESS = "0x2b97bea17da0ff83fd95a73dc60881d5b27a2b9b";
 
-// Preset accounts for testing & review
+// Preset accounts for testing & demonstration
 const DEMO_PRESETS = [
   { label: "Alice (Retail Demo)", address: "0x1111111111111111111111111111111111111111" },
   { label: "Bob (Institutional Demo)", address: "0x2222222222222222222222222222222222222222" },
 ] as const;
 
 type ClaimType = "RESIDENCY_ID" | "ACCREDITED";
-type ActiveTab = "verify" | "issue";
+type StepMode = 1 | 2;
 
 function translateRegistrarError(rawError: unknown): string {
   const parsed = getParsedError(rawError);
   if (/AccessControlUnauthorizedAccount/i.test(parsed) || /unauthorized/i.test(parsed) || /0x4e487b71/i.test(parsed)) {
-    return "Access Denied: Connected wallet lacks REGISTRAR_ROLE or ISSUER_ROLE authorization.";
+    return "Access Denied: Connected wallet lacks REGISTRAR_ROLE or ISSUER_ROLE authority.";
   }
   if (/Kupon__SeriesCapExceeded/i.test(parsed)) {
     return "Issuance Rejected: Proposed tranche exceeds the remaining series cap of 100,000 KPON.";
@@ -66,13 +69,13 @@ const RegistrarPage: NextPage = () => {
 
   // Active workspace state: single investor address drives all actions
   const [investorAddress, setInvestorAddress] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<ActiveTab>("verify");
+  const [currentStep, setCurrentStep] = useState<StepMode>(1);
 
-  // Tab 1 state: Verification
+  // Step 1 state: Verification
   const [selectedClaim, setSelectedClaim] = useState<ClaimType>("RESIDENCY_ID");
   const [isProcessingClaim, setIsProcessingClaim] = useState(false);
 
-  // Tab 2 state: Issuance
+  // Step 2 state: Issuance
   const [issueAmount, setIssueAmount] = useState<string>("");
   const [isIssuingTokens, setIsIssuingTokens] = useState(false);
 
@@ -99,7 +102,7 @@ const RegistrarPage: NextPage = () => {
 
   const hasRegistrarAuthority = Boolean(isRegistrar || isRegistryAdmin);
   const hasIssuerAuthority = Boolean(isIssuer);
-  const isCurrentActionAuthorized = activeTab === "verify" ? hasRegistrarAuthority : hasIssuerAuthority;
+  const isCurrentActionAuthorized = currentStep === 1 ? hasRegistrarAuthority : hasIssuerAuthority;
 
   // Contract Reads: Global Token Metrics
   const { data: totalSupply, refetch: refetchSupply } = useScaffoldReadContract({
@@ -145,6 +148,7 @@ const RegistrarPage: NextPage = () => {
     args: [safeTarget],
   });
 
+  const isInvestorVerified = Boolean(hasResidency || hasAccredited);
   const currentClaimActive = selectedClaim === "RESIDENCY_ID" ? Boolean(hasResidency) : Boolean(hasAccredited);
 
   // Pre-flight check for tranche issuance
@@ -178,7 +182,7 @@ const RegistrarPage: NextPage = () => {
     if (!hasResidency && !hasAccredited) {
       return {
         ok: false,
-        text: "Blocked by R1-RESIDENCY: Investor holds no active identity credential. Grant citizenship in the Verify tab before issuing bonds.",
+        text: "Blocked by R1-RESIDENCY: Investor holds no active identity credential. Grant citizenship in Step 1 before issuing bonds.",
       };
     }
     const isRetail = hasResidency && !hasAccredited;
@@ -284,9 +288,9 @@ const RegistrarPage: NextPage = () => {
         <GuillochePattern variant="seal" width={680} height={680} color="emerald" />
       </div>
 
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 pb-24 relative z-10 flex flex-col gap-10">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 pb-24 relative z-10 flex flex-col gap-8">
         {/* ===================================================================== */}
-        {/* 1. EDITORIAL HEADER & METRICS (EXPANSIVE, CLEAN, NO BORDER OVERKILL) */}
+        {/* 1. EDITORIAL HEADER & METRICS STRIP (SINGLE BORDER) */}
         {/* ===================================================================== */}
         <header className="flex flex-col gap-6">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2">
@@ -301,14 +305,14 @@ const RegistrarPage: NextPage = () => {
             </div>
 
             {/* Authority Status Pill */}
-            <div className="inline-flex items-center gap-3 bg-[#F4EEDC] px-4 py-2.5 rounded-full text-xs font-sans self-start lg:self-auto">
+            <div className="inline-flex items-center gap-3 bg-[#F4EEDC] px-4 py-2.5 rounded-full text-xs font-sans self-start lg:self-auto border border-kupon-gold/30">
               <span
                 className={`w-2.5 h-2.5 rounded-full ${
                   isCurrentActionAuthorized ? "bg-kupon-emerald animate-pulse" : "bg-kupon-gold"
                 }`}
               />
               <span className="font-semibold text-kupon-ink">
-                {isCurrentActionAuthorized ? "Authorized Session" : "Observer Mode"}
+                {isCurrentActionAuthorized ? "Authorized Authority" : "Observer Mode"}
               </span>
               <span className="text-kupon-ink/40">|</span>
               <span className="font-mono text-kupon-ink/70">
@@ -317,8 +321,8 @@ const RegistrarPage: NextPage = () => {
             </div>
           </div>
 
-          {/* Series Quota Strip: Tonal Surface instead of heavy borders */}
-          <div className="bg-[#F4EEDC]/60 px-6 py-4 rounded-xl flex flex-col gap-2.5">
+          {/* Series Quota Strip (Single Border) */}
+          <div className="bg-[#F8F3E5] px-6 py-4 rounded-xl border border-kupon-gold/30 flex flex-col gap-2.5">
             <div className="flex flex-wrap items-center justify-between text-xs font-sans text-kupon-ink/80 gap-2">
               <div className="flex items-center gap-2">
                 <span className="text-kupon-ink/60">Issued Volume:</span>
@@ -343,9 +347,9 @@ const RegistrarPage: NextPage = () => {
             </div>
           </div>
 
-          {/* Polite notice for guest/observer accounts */}
+          {/* Observer Notification Banner */}
           {connectedAddress && !hasRegistrarAuthority && (
-            <div className="bg-[#FAF1DF] px-4 py-3 rounded-lg text-xs text-kupon-ink/85 flex items-center gap-2.5">
+            <div className="bg-[#FAF1DF] px-4 py-3 rounded-lg border border-kupon-gold/30 text-xs text-kupon-ink/85 flex items-center gap-2.5">
               <InformationCircleIcon className="w-4 h-4 text-kupon-gold shrink-0" />
               <span>
                 You are viewing in read-only mode. Connect the deployer authority wallet (
@@ -359,17 +363,17 @@ const RegistrarPage: NextPage = () => {
         </header>
 
         {/* ===================================================================== */}
-        {/* 2. 2-COLUMN ASYMMETRIC WORKBENCH (5 : 7 RATIO, BROAD & CALM) */}
+        {/* 2. ASYMMETRIC WORKBENCH (5 : 7 RATIO, SINGLE BORDER CONTAINERS) */}
         {/* ===================================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* ----------------------------------------------------------------- */}
-          {/* LEFT COLUMN: INVESTOR SELECTION & IDENTITY DOSSIER (5 COLS) */}
+          {/* LEFT COLUMN: INVESTOR ACCOUNT DOSSIER (5 COLS, SINGLE BORDER) */}
           {/* ----------------------------------------------------------------- */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             <div className="space-y-1">
-              <h2 className="text-xl font-serif font-bold text-kupon-ink m-0">Select Investor Account</h2>
+              <h2 className="text-xl font-serif font-bold text-kupon-ink m-0">Target Investor</h2>
               <p className="text-xs text-kupon-ink/70 font-sans m-0">
-                Inspect compliance credentials and live token holdings for any participant.
+                Input an address to query live credentials and ledger holdings.
               </p>
             </div>
 
@@ -383,12 +387,12 @@ const RegistrarPage: NextPage = () => {
 
               {/* Quick Presets */}
               <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs font-sans">
-                <span className="text-kupon-ink/50 text-[11px]">Presets:</span>
+                <span className="text-kupon-ink/50 text-[11px]">Quick presets:</span>
                 {connectedAddress && (
                   <button
                     type="button"
                     onClick={() => setInvestorAddress(connectedAddress)}
-                    className="px-2 py-0.5 rounded bg-[#F4EEDC] hover:bg-[#EAE2C8] text-kupon-emerald font-mono text-[11px] cursor-pointer transition-colors"
+                    className="px-2 py-0.5 rounded bg-[#F4EEDC] hover:bg-[#EAE2C8] text-kupon-emerald font-mono text-[11px] cursor-pointer transition-colors border border-kupon-gold/20"
                   >
                     My Wallet
                   </button>
@@ -398,7 +402,7 @@ const RegistrarPage: NextPage = () => {
                     key={preset.label}
                     type="button"
                     onClick={() => setInvestorAddress(preset.address)}
-                    className="px-2 py-0.5 rounded bg-[#F4EEDC] hover:bg-[#EAE2C8] text-kupon-ink/80 text-[11px] cursor-pointer transition-colors"
+                    className="px-2 py-0.5 rounded bg-[#F4EEDC] hover:bg-[#EAE2C8] text-kupon-ink/80 text-[11px] cursor-pointer transition-colors border border-kupon-gold/20"
                   >
                     {preset.label}
                   </button>
@@ -406,32 +410,32 @@ const RegistrarPage: NextPage = () => {
               </div>
             </div>
 
-            {/* Investor Identity Dossier (Clean Tonal Surface, No Nested Box Clutter) */}
+            {/* Investor Dossier Card (Single Clean Border) */}
             {isAddressValid ? (
-              <div className="bg-[#F8F3E5] p-6 rounded-2xl flex flex-col gap-5">
+              <div className="bg-[#F8F3E5] p-6 rounded-xl border border-kupon-gold/30 flex flex-col gap-5">
                 <div className="space-y-1">
                   <span className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/50">
-                    Selected Account
+                    Selected Investor
                   </span>
                   <div className="pt-0.5">
                     <Address address={investorAddress} format="long" size="sm" />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#E5DEC7]">
-                  {/* Verification Tier */}
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-kupon-gold/20">
+                  {/* Status Overview */}
                   <div className="space-y-1">
-                    <span className="text-[11px] font-mono text-kupon-ink/50">Credential Tier</span>
+                    <span className="text-[11px] font-mono text-kupon-ink/50">Classification</span>
                     <div className="font-sans font-semibold text-xs text-kupon-ink flex items-center gap-1.5">
                       {hasAccredited ? (
                         <>
                           <span className="w-2 h-2 rounded-full bg-kupon-gold" />
-                          <span>Accredited / Institutional</span>
+                          <span>Accredited Entity</span>
                         </>
                       ) : hasResidency ? (
                         <>
                           <span className="w-2 h-2 rounded-full bg-kupon-emerald" />
-                          <span>Indonesian Citizen (WNI)</span>
+                          <span>WNI Retail Citizen</span>
                         </>
                       ) : (
                         <>
@@ -444,7 +448,7 @@ const RegistrarPage: NextPage = () => {
 
                   {/* Balance Holdings */}
                   <div className="space-y-1">
-                    <span className="text-[11px] font-mono text-kupon-ink/50">Current Holdings</span>
+                    <span className="text-[11px] font-mono text-kupon-ink/50">Current Balance</span>
                     <div className="font-serif font-bold text-lg text-kupon-ink leading-none">
                       {investorBalance !== undefined ? formatEther(investorBalance) : "0"}{" "}
                       <span className="text-xs font-sans font-normal text-kupon-ink/60">KPON</span>
@@ -459,177 +463,278 @@ const RegistrarPage: NextPage = () => {
                   </div>
                 </div>
 
-                {/* Practical Advice Note */}
-                <div className="text-xs font-sans leading-relaxed text-kupon-ink/75 bg-[#FAF6EC] p-3.5 rounded-lg">
+                {/* Practical Rule Note */}
+                <div className="text-xs font-sans leading-relaxed text-kupon-ink/75 bg-[#FAF6EC] p-3.5 rounded-lg border border-kupon-gold/20">
                   {!hasResidency && !hasAccredited ? (
                     <span className="text-kupon-ink/80">
-                      This account holds no active identity credential. Use the action desk on the right to grant KYC
-                      verification before issuing bond tokens.
+                      This wallet holds no verified identity claims. Outgoing and incoming transfers are blocked under
+                      rule R1 until certified.
                     </span>
                   ) : hasResidency && !hasAccredited ? (
                     <span className="text-kupon-ink/80">
-                      Certified as <strong>Retail Indonesian Citizen</strong>. Transfers and issuances are capped at
-                      5,000 KPON (Rp5 Billion) under statutory rules.
+                      Verified as <strong>Retail Indonesian Citizen</strong>. Holding cap of 5,000 KPON (Rp5 Billion) is
+                      enforced by rule R2.
                     </span>
                   ) : (
                     <span className="text-kupon-ink/80">
-                      Certified as <strong>Institutional / Accredited</strong>. Exempt from retail investor quota caps.
+                      Verified as <strong>Institutional / Accredited</strong>. Exempt from the retail cap for primary
+                      liquidity operations.
                     </span>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="bg-[#F8F3E5]/60 p-8 rounded-2xl text-center text-xs font-sans text-kupon-ink/60 space-y-1">
-                <p className="m-0 font-medium text-kupon-ink/70">No account selected</p>
-                <p className="m-0">Enter an address or click a preset above to inspect compliance status.</p>
+              <div className="bg-[#F8F3E5] p-8 rounded-xl border border-dashed border-kupon-gold/30 text-center text-xs font-sans text-kupon-ink/60 space-y-1">
+                <p className="m-0 font-medium text-kupon-ink/70">No investor address selected</p>
+                <p className="m-0">Type an address or pick one of the presets above to inspect live on-chain status.</p>
               </div>
             )}
           </div>
 
           {/* ----------------------------------------------------------------- */}
-          {/* RIGHT COLUMN: ACTION WORKBENCH (7 COLS) */}
+          {/* RIGHT COLUMN: ACTION WORKBENCH (7 COLS, SINGLE BORDER) */}
           {/* ----------------------------------------------------------------- */}
-          <div className="lg:col-span-7 flex flex-col gap-6 bg-[#F8F3E5] p-6 sm:p-8 rounded-2xl">
-            {/* Minimal Segmented Tab Switcher */}
-            <div className="flex items-center gap-2 p-1 bg-[#EAE2C8]/70 rounded-xl self-start text-xs font-sans">
-              <button
-                type="button"
-                onClick={() => setActiveTab("verify")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all cursor-pointer ${
-                  activeTab === "verify"
-                    ? "bg-[#FAF6EC] text-kupon-ink shadow-sm"
-                    : "text-kupon-ink/70 hover:text-kupon-ink"
-                }`}
-              >
-                1. Verify Identity (KYC)
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("issue")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all cursor-pointer ${
-                  activeTab === "issue"
-                    ? "bg-[#FAF6EC] text-kupon-ink shadow-sm"
-                    : "text-kupon-ink/70 hover:text-kupon-ink"
-                }`}
-              >
-                2. Issue Bond Tokens (Mint)
-              </button>
+          <div className="lg:col-span-7 flex flex-col gap-6 bg-[#F8F3E5] p-6 sm:p-8 rounded-xl border border-kupon-gold/30">
+            {/* Step Guided Header (Not Random Tabs) */}
+            <div className="flex items-center justify-between border-b border-kupon-gold/20 pb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(1)}
+                  className={`flex items-center gap-2 text-xs font-sans font-semibold cursor-pointer transition-colors ${
+                    currentStep === 1 ? "text-kupon-emerald" : "text-kupon-ink/50 hover:text-kupon-ink"
+                  }`}
+                >
+                  <span
+                    className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs ${
+                      currentStep === 1 ? "bg-kupon-emerald text-kupon-ivory" : "bg-[#EAE2C8] text-kupon-ink/70"
+                    }`}
+                  >
+                    1
+                  </span>
+                  <span>Identity Verification</span>
+                </button>
+
+                <span className="text-kupon-ink/30">→</span>
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(2)}
+                  className={`flex items-center gap-2 text-xs font-sans font-semibold cursor-pointer transition-colors ${
+                    currentStep === 2 ? "text-kupon-gold" : "text-kupon-ink/50 hover:text-kupon-ink"
+                  }`}
+                >
+                  <span
+                    className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs ${
+                      currentStep === 2 ? "bg-kupon-gold text-kupon-ink" : "bg-[#EAE2C8] text-kupon-ink/70"
+                    }`}
+                  >
+                    2
+                  </span>
+                  <span>Tranche Issuance</span>
+                </button>
+              </div>
+
+              <span className="text-[11px] font-mono text-kupon-ink/50 uppercase tracking-wider hidden sm:inline">
+                {currentStep === 1 ? "Step 1 of 2" : "Step 2 of 2"}
+              </span>
             </div>
 
             {/* =============================================================== */}
-            {/* TAB 1: IDENTITY CERTIFICATION DESK */}
+            {/* STEP 1: IDENTITY CERTIFICATION & CLEAR STATUS DISPLAY */}
             {/* =============================================================== */}
-            {activeTab === "verify" && (
-              <div className="flex flex-col gap-6 pt-2">
+            {currentStep === 1 && (
+              <div className="flex flex-col gap-6">
                 <div className="space-y-1">
-                  <h3 className="text-xl font-serif font-bold text-kupon-ink m-0">Investor Identity Certification</h3>
+                  <h3 className="text-xl font-serif font-bold text-kupon-ink m-0">Identity Claims Verification</h3>
                   <p className="text-xs text-kupon-ink/75 font-sans m-0 leading-relaxed">
-                    Investors must hold an authenticated identity claim on the registry to satisfy transfer and issuance
-                    compliance gates.
+                    Query and update on-chain identity credentials in KuponClaimRegistry before bond tokens can be
+                    issued or received.
                   </p>
                 </div>
 
-                {/* Claim Options */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedClaim("RESIDENCY_ID")}
-                    className={`p-4 rounded-xl text-left transition-all cursor-pointer ${
-                      selectedClaim === "RESIDENCY_ID"
-                        ? "bg-[#FAF6EC] ring-2 ring-kupon-emerald shadow-sm"
-                        : "bg-[#FAF6EC]/60 hover:bg-[#FAF6EC]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-serif font-bold text-sm text-kupon-emerald">Indonesian Citizen (WNI)</span>
-                      <span className="text-[10px] font-mono text-kupon-ink/40">RESIDENCY_ID</span>
-                    </div>
-                    <p className="text-xs text-kupon-ink/70 font-sans m-0 leading-relaxed">
-                      Natural persons with verified national identity. Eligible for retail tranches subject to the 5,000
-                      KPON cap.
-                    </p>
-                  </button>
+                {/* Clear, Dedicated Status Display (Not Buttons!) */}
+                <div className="bg-[#FAF6EC] p-4 rounded-lg border border-kupon-gold/30 flex flex-col gap-3">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60">
+                    On-Chain Credentials Status
+                  </span>
 
-                  <button
-                    type="button"
-                    onClick={() => setSelectedClaim("ACCREDITED")}
-                    className={`p-4 rounded-xl text-left transition-all cursor-pointer ${
-                      selectedClaim === "ACCREDITED"
-                        ? "bg-[#FAF6EC] ring-2 ring-kupon-gold shadow-sm"
-                        : "bg-[#FAF6EC]/60 hover:bg-[#FAF6EC]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-serif font-bold text-sm text-kupon-gold">Accredited / Institutional</span>
-                      <span className="text-[10px] font-mono text-kupon-ink/40">ACCREDITED</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Residency Claim Status */}
+                    <div className="bg-[#F8F3E5] p-3.5 rounded-lg border border-kupon-gold/20 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-kupon-ink font-sans">Indonesian Citizen (WNI)</span>
+                        {hasResidency ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-kupon-emerald bg-kupon-emerald/10 px-2 py-0.5 rounded">
+                            <CheckCircleIcon className="w-3.5 h-3.5" />
+                            ACTIVE
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-mono text-kupon-ink/50 bg-base-200 px-2 py-0.5 rounded">
+                            <XCircleIcon className="w-3.5 h-3.5" />
+                            NOT GRANTED
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-kupon-ink/65 font-sans">
+                        RESIDENCY_ID · Required for retail tranche (5,000 KPON cap).
+                      </span>
                     </div>
-                    <p className="text-xs text-kupon-ink/70 font-sans m-0 leading-relaxed">
-                      Financial institutions, funds, and qualified corporate entities. Exempt from retail quota caps.
-                    </p>
-                  </button>
+
+                    {/* Accredited Claim Status */}
+                    <div className="bg-[#F8F3E5] p-3.5 rounded-lg border border-kupon-gold/20 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-kupon-ink font-sans">
+                          Institutional / Accredited
+                        </span>
+                        {hasAccredited ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-kupon-gold bg-kupon-gold/10 px-2 py-0.5 rounded">
+                            <CheckCircleIcon className="w-3.5 h-3.5" />
+                            ACTIVE
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-mono text-kupon-ink/50 bg-base-200 px-2 py-0.5 rounded">
+                            <XCircleIcon className="w-3.5 h-3.5" />
+                            NOT GRANTED
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-kupon-ink/65 font-sans">
+                        ACCREDITED · Exempts holder from retail per-investor cap.
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Status Indicator */}
-                {isAddressValid && (
-                  <div className="text-xs font-sans text-kupon-ink/80 bg-[#FAF6EC] px-4 py-3 rounded-lg flex items-center justify-between">
-                    <span>
-                      {selectedClaim === "RESIDENCY_ID" ? "Indonesian Residency" : "Accreditation"} status for this
-                      account:
-                    </span>
-                    <span className="font-semibold text-kupon-ink">
-                      {currentClaimActive ? "✓ Active Claim" : "✗ Not Granted"}
-                    </span>
-                  </div>
-                )}
+                {/* Form to Grant / Select Credential */}
+                <div className="flex flex-col gap-3">
+                  <label className="text-xs font-mono font-medium text-kupon-ink">Select Credential to Issue:</label>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label
+                      className={`p-3.5 rounded-lg border cursor-pointer flex items-start gap-3 transition-colors ${
+                        selectedClaim === "RESIDENCY_ID"
+                          ? "bg-[#FAF6EC] border-kupon-emerald"
+                          : "bg-[#FAF6EC]/60 border-kupon-gold/20 hover:border-kupon-gold/40"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="claimSelection"
+                        checked={selectedClaim === "RESIDENCY_ID"}
+                        onChange={() => setSelectedClaim("RESIDENCY_ID")}
+                        className="radio radio-primary radio-sm mt-0.5"
+                      />
+                      <div className="text-xs">
+                        <div className="font-semibold text-kupon-ink">Indonesian Citizen (WNI)</div>
+                        <div className="text-[11px] text-kupon-ink/65 mt-0.5">
+                          Unlocks retail tranche up to Rp5 Billion limit
+                        </div>
+                      </div>
+                    </label>
+
+                    <label
+                      className={`p-3.5 rounded-lg border cursor-pointer flex items-start gap-3 transition-colors ${
+                        selectedClaim === "ACCREDITED"
+                          ? "bg-[#FAF6EC] border-kupon-gold"
+                          : "bg-[#FAF6EC]/60 border-kupon-gold/20 hover:border-kupon-gold/40"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="claimSelection"
+                        checked={selectedClaim === "ACCREDITED"}
+                        onChange={() => setSelectedClaim("ACCREDITED")}
+                        className="radio radio-primary radio-sm mt-0.5"
+                      />
+                      <div className="text-xs">
+                        <div className="font-semibold text-kupon-ink">Accredited / Institutional</div>
+                        <div className="text-[11px] text-kupon-ink/65 mt-0.5">
+                          Exempt from retail cap for qualified entities
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Primary Grant Button (Dominant) */}
                   <button
                     type="button"
                     onClick={handleGrantClaim}
                     disabled={isProcessingClaim || !isAddressValid || currentClaimActive}
-                    className="btn btn-primary font-sans font-medium text-kupon-ivory flex-1 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
+                    className="btn btn-primary font-sans font-medium text-kupon-ivory flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 mt-1"
                   >
                     {isProcessingClaim ? (
                       <span className="loading loading-spinner loading-xs" />
                     ) : (
                       <UserPlusIcon className="w-4 h-4" />
                     )}
-                    <span>Grant Claim ({selectedClaim === "RESIDENCY_ID" ? "WNI Citizen" : "Accredited"})</span>
+                    <span>
+                      {currentClaimActive
+                        ? `Already Holds ${selectedClaim === "RESIDENCY_ID" ? "Residency" : "Accreditation"}`
+                        : `Grant ${selectedClaim === "RESIDENCY_ID" ? "Indonesian Residency" : "Accreditation"} Claim`}
+                    </span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={handleRevokeClaim}
-                    disabled={isProcessingClaim || !isAddressValid || !currentClaimActive}
-                    className="btn btn-outline border-error/50 text-error hover:bg-error/10 font-sans font-medium flex-1 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
-                  >
-                    {isProcessingClaim ? (
-                      <span className="loading loading-spinner loading-xs" />
-                    ) : (
-                      <MinusCircleIcon className="w-4 h-4" />
-                    )}
-                    <span>Revoke Claim (Freeze Transfers)</span>
-                  </button>
+                  {/* Subdued Revoke Button (Non-Dominant, Subtle Secondary Action) */}
+                  {currentClaimActive && (
+                    <div className="flex items-center justify-between pt-2 border-t border-kupon-gold/20 text-xs font-sans">
+                      <span className="text-kupon-ink/65 text-[11px]">Administrative Override:</span>
+                      <button
+                        type="button"
+                        onClick={handleRevokeClaim}
+                        disabled={isProcessingClaim}
+                        className="text-error hover:underline flex items-center gap-1 font-medium cursor-pointer text-[11px]"
+                      >
+                        <MinusCircleIcon className="w-3.5 h-3.5" />
+                        <span>Revoke this claim (Freezes Account)</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                <p className="text-[11px] text-kupon-ink/60 font-sans m-0 leading-relaxed">
-                  Regulatory Notice: Revoking all credentials instantly freezes the investor&apos;s outgoing transfers
-                  (Compliance Rule R3). Balances remain secure in custody but cannot be transferred until re-certified.
-                </p>
+                {/* Transition Action to Step 2 if Verified */}
+                {isInvestorVerified && (
+                  <div className="bg-[#EEF7F2] p-4 rounded-lg border border-kupon-emerald/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
+                    <div className="flex items-center gap-2 text-xs font-sans text-kupon-emerald">
+                      <CheckCircleIcon className="w-5 h-5 shrink-0" />
+                      <span>Investor is verified! Ready to receive sovereign bond allocations.</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(2)}
+                      className="btn btn-sm bg-kupon-emerald hover:bg-kupon-emerald/90 text-kupon-ivory border-none font-sans flex items-center gap-1.5 self-start sm:self-auto"
+                    >
+                      <span>Proceed to Issue Bonds</span>
+                      <ArrowRightIcon className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
             {/* =============================================================== */}
-            {/* TAB 2: TRANCHE ISSUANCE DESK */}
+            {/* STEP 2: TRANCHE ISSUANCE (MINT) */}
             {/* =============================================================== */}
-            {activeTab === "issue" && (
-              <div className="flex flex-col gap-6 pt-2">
-                <div className="space-y-1">
-                  <h3 className="text-xl font-serif font-bold text-kupon-ink m-0">Primary Tranche Issuance</h3>
-                  <p className="text-xs text-kupon-ink/75 font-sans m-0 leading-relaxed">
-                    Mint newly authorized debt tokens directly to the verified investor wallet within the series quota.
-                  </p>
+            {currentStep === 2 && (
+              <div className="flex flex-col gap-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-serif font-bold text-kupon-ink m-0">Primary Tranche Issuance</h3>
+                    <p className="text-xs text-kupon-ink/75 font-sans m-0 leading-relaxed">
+                      Mint newly authorized debt tokens directly to the verified investor wallet within the series
+                      quota.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="text-xs font-sans text-kupon-emerald hover:underline flex items-center gap-1 self-start cursor-pointer"
+                  >
+                    <ArrowLeftIcon className="w-3.5 h-3.5" />
+                    <span>Back to Step 1</span>
+                  </button>
                 </div>
 
                 {/* Amount Input */}
@@ -646,16 +751,16 @@ const RegistrarPage: NextPage = () => {
                       value={issueAmount}
                       onChange={e => setIssueAmount(e.target.value)}
                       placeholder="e.g. 500"
-                      className="input w-full font-mono text-lg bg-[#FAF6EC] text-kupon-ink focus:outline-none pr-16"
+                      className="input w-full font-mono text-lg bg-[#FAF6EC] border border-kupon-gold/30 text-kupon-ink focus:outline-none pr-16 rounded-lg"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 font-mono text-sm text-kupon-ink/50 pointer-events-none">
                       KPON
                     </span>
                   </div>
 
-                  {/* Nominal Chips */}
+                  {/* Nominal Quick Buttons */}
                   <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs font-sans">
-                    <span className="text-kupon-ink/50 text-[11px]">Quick Amounts:</span>
+                    <span className="text-kupon-ink/50 text-[11px]">Quick presets:</span>
                     {[
                       { label: "100 (Rp100M)", val: "100" },
                       { label: "500 (Rp500M)", val: "500" },
@@ -666,7 +771,7 @@ const RegistrarPage: NextPage = () => {
                         key={chip.label}
                         type="button"
                         onClick={() => setIssueAmount(chip.val)}
-                        className="px-2.5 py-1 rounded bg-[#FAF6EC] hover:bg-[#FAF6EC]/80 text-kupon-ink text-xs cursor-pointer transition-colors font-mono"
+                        className="px-2.5 py-1 rounded bg-[#FAF6EC] hover:bg-[#FAF6EC]/80 border border-kupon-gold/20 text-kupon-ink text-xs cursor-pointer transition-colors font-mono"
                       >
                         {chip.label}
                       </button>
@@ -674,14 +779,14 @@ const RegistrarPage: NextPage = () => {
                   </div>
                 </div>
 
-                {/* Live Pre-Flight Feedback */}
+                {/* Pre-Flight Eligibility Feedback */}
                 <div
-                  className={`p-4 rounded-xl text-xs font-sans leading-relaxed flex items-start gap-3 transition-colors ${
+                  className={`p-4 rounded-lg border text-xs font-sans leading-relaxed flex items-start gap-3 transition-colors ${
                     isAddressValid && parsedIssueAmount !== undefined && parsedIssueAmount > 0n
                       ? issuanceValidation.ok
-                        ? "bg-[#EEF7F2] text-kupon-emerald"
-                        : "bg-[#FDF2F1] text-error"
-                      : "bg-[#FAF6EC] text-kupon-ink/75"
+                        ? "bg-[#EEF7F2] border-kupon-emerald/30 text-kupon-emerald"
+                        : "bg-[#FDF2F1] border-error/30 text-error"
+                      : "bg-[#FAF6EC] border-kupon-gold/20 text-kupon-ink/75"
                   }`}
                 >
                   {isAddressValid && parsedIssueAmount !== undefined && parsedIssueAmount > 0n ? (
@@ -697,9 +802,9 @@ const RegistrarPage: NextPage = () => {
                     <div className="font-semibold mb-0.5">
                       {isAddressValid && parsedIssueAmount !== undefined && parsedIssueAmount > 0n
                         ? issuanceValidation.ok
-                          ? "Issuance Requirements Satisfied"
+                          ? "Issuance Gate Passed"
                           : "Issuance Pre-Flight Blocked"
-                        : "Compliance Verification Status"}
+                        : "Compliance Rule Evaluation"}
                     </div>
                     <p className="m-0 text-kupon-ink/80">{issuanceValidation.text}</p>
                   </div>
@@ -725,9 +830,9 @@ const RegistrarPage: NextPage = () => {
         </div>
 
         {/* ===================================================================== */}
-        {/* 3. CLEAN FOOTER LINKS */}
+        {/* 3. CLEAN FOOTER LINKS (SINGLE BORDER DIVIDER) */}
         {/* ===================================================================== */}
-        <footer className="flex flex-wrap items-center justify-between pt-8 text-xs text-kupon-ink/70 font-sans gap-4 border-t border-[#E5DEC7]">
+        <footer className="flex flex-wrap items-center justify-between pt-8 text-xs text-kupon-ink/70 font-sans gap-4 border-t border-kupon-gold/30">
           <div className="flex items-center gap-4">
             <Link href="/app" className="text-kupon-emerald hover:underline font-medium">
               ← Return to Investor Application
