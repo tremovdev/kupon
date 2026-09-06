@@ -1,13 +1,14 @@
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { hardhat } from "viem/chains";
-import { ArrowTopRightOnSquareIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { Faucet } from "~~/components/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
 /**
  * Sovereign Certificate Footer
- * Displays mandatory fictional asset disclaimers, regulatory framework citations, and audit links.
+ * Refined institutional footer with Kupon seal mark, clean navigation, and concise legal notices.
  */
 export const Footer = () => {
   const { targetNetwork } = useTargetNetwork();
@@ -15,7 +16,7 @@ export const Footer = () => {
 
   return (
     <footer className="mt-auto border-t border-kupon-gold/30 bg-base-100 text-kupon-ink/80 text-xs font-sans">
-      {/* Decorative double rule */}
+      {/* Decorative sovereign double rule */}
       <div className="h-[2px] bg-gradient-to-r from-transparent via-kupon-gold/50 to-transparent" />
 
       {/* Floating local faucet if running on hardhat */}
@@ -27,89 +28,97 @@ export const Footer = () => {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
-        {/* Mandatory Fictional Asset Disclaimer Box */}
-        <div className="p-4 rounded border border-kupon-gold/40 bg-kupon-ivory/80 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <ShieldCheckIcon className="w-6 h-6 text-kupon-emerald shrink-0 mt-0.5 sm:mt-0" />
-          <div className="text-[11px] leading-relaxed text-kupon-ink/90">
-            <strong className="text-kupon-emerald font-semibold uppercase tracking-wider block sm:inline mr-2 font-mono">
-              Fictional Asset Notice:
-            </strong>
-            Kupon is an educational and demonstration project for <strong>ETHGlobal ETHOnline 2026</strong>. It models a
-            fictional Indonesian retail government bond (&quot;SBN Ritel 2027&quot;) with ERC-3643-style on-chain
-            compliance gates. It is not an actual sovereign bond, financial product, or securities offering.
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-10">
+        {/* Main Footer Row: Brand Column + Navigation Links */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+          {/* Brand Column (Col 1-5) */}
+          <div className="md:col-span-5 flex flex-col items-start text-left">
+            <Link href="/" className="flex items-center gap-3 mb-3 group">
+              <div className="w-10 h-10 shrink-0 flex items-center justify-center">
+                <Image
+                  src="/kupon-logo.svg"
+                  alt="Kupon Seal Mark"
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-serif font-bold text-lg tracking-tight text-kupon-emerald leading-none group-hover:text-kupon-gold transition-colors">
+                  KUPON
+                </span>
+                <div className="h-[1px] w-full bg-kupon-gold/60 my-0.5" />
+                <span className="text-[9px] font-mono tracking-wider text-kupon-ink/75 uppercase font-medium leading-none">
+                  SBN RITEL 2027 · ONCHAIN
+                </span>
+              </div>
+            </Link>
+
+            <p className="text-xs text-kupon-ink/70 leading-relaxed max-w-sm m-0">
+              Autonomous Indonesian retail government bond tokens onchain. Guaranteed citizen priority, fair retail
+              quotas, and 24/7 instant settlement.
+            </p>
+          </div>
+
+          {/* Navigation Column 1: Platform (Col 6-8) */}
+          <div className="md:col-span-3 flex flex-col gap-2.5 text-left">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-kupon-gold font-bold mb-1">
+              Platform Portals
+            </div>
+            <Link href="/app" className="text-xs text-kupon-ink/80 hover:text-kupon-emerald transition-colors">
+              Investor App
+            </Link>
+            <Link href="/registrar" className="text-xs text-kupon-ink/80 hover:text-kupon-emerald transition-colors">
+              Registrar Portal (DJPPR)
+            </Link>
+            <Link href="/regulator" className="text-xs text-kupon-ink/80 hover:text-kupon-emerald transition-colors">
+              Regulator Terminal (OJK)
+            </Link>
+          </div>
+
+          {/* Navigation Column 2: Resources & Verification (Col 9-12) */}
+          <div className="md:col-span-4 flex flex-col gap-2.5 text-left">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-kupon-gold font-bold mb-1">
+              Verification &amp; Governance
+            </div>
+            <Link href="/framework" className="text-xs text-kupon-ink/80 hover:text-kupon-emerald transition-colors">
+              Regulatory Framework (UU P2SK)
+            </Link>
+            <Link href="/debugger" className="text-xs text-kupon-ink/80 hover:text-kupon-emerald transition-colors">
+              Contract Debugger &amp; ABI
+            </Link>
+            <Link
+              href="/blockexplorer"
+              className="text-xs text-kupon-ink/80 hover:text-kupon-emerald transition-colors"
+            >
+              SE-2 Block Explorer
+            </Link>
+            <a
+              href="https://github.com/tremovdev/kupon"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-kupon-emerald hover:text-kupon-gold transition-colors font-medium"
+            >
+              <span>GitHub Repository (@tremovdev)</span>
+              <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+            </a>
           </div>
         </div>
 
-        {/* Citations & Metadata Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-base-300/60">
-          <div>
-            <div className="font-serif font-bold text-kupon-emerald text-sm mb-2">Regulatory Foundations</div>
-            <p className="text-[11px] text-kupon-ink/75 leading-relaxed m-0">
-              Designed around the Indonesian digital asset regulatory roadmap:
-            </p>
-            <ul className="text-[11px] text-kupon-ink/85 mt-2 space-y-1 font-mono list-none p-0">
-              <li>• UU No. 4/2023 (P2SK)</li>
-              <li>• POJK No. 27/2024 &amp; POJK No. 23/2025</li>
-              <li>• OJK Q3-2026 RWA Sandbox Framework</li>
-            </ul>
+        {/* Bottom Bar: Concise Disclaimer + Network & Author Status */}
+        <div className="pt-6 border-t border-base-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[11px] text-kupon-ink/60">
+          <div className="max-w-2xl leading-relaxed">
+            <strong>Demonstration Notice:</strong> Kupon is an educational technical project for{" "}
+            <strong>ETHGlobal ETHOnline 2026</strong>. It models an Indonesian sovereign bond (SBN Ritel 2027) under
+            regulatory sandbox guidelines and is not an actual debt offering.
           </div>
 
-          <div>
-            <div className="font-serif font-bold text-kupon-emerald text-sm mb-2">Protocol Architecture</div>
-            <p className="text-[11px] text-kupon-ink/75 leading-relaxed m-0">
-              On-chain transfer gates enforced deterministically via Solidity custom errors:
-            </p>
-            <ul className="text-[11px] text-kupon-ink/85 mt-2 space-y-1 font-mono list-none p-0">
-              <li>
-                • <span className="font-semibold text-kupon-emerald">R1-RESIDENCY</span>: WNI identity gate
-              </li>
-              <li>
-                • <span className="font-semibold text-kupon-emerald">R2-CAP</span>: 5,000 KPON retail ceiling
-              </li>
-              <li>
-                • <span className="font-semibold text-kupon-emerald">R3-FROZEN</span>: instant claim revocation
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col justify-between">
-            <div>
-              <div className="font-serif font-bold text-kupon-emerald text-sm mb-2">Verification &amp; Links</div>
-              <div className="flex flex-col gap-1.5 text-[11px]">
-                <a
-                  href="https://github.com/tremovdev/kupon"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-kupon-emerald hover:text-kupon-gold font-medium"
-                >
-                  <span>GitHub Repository (@tremovdev)</span>
-                  <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
-                </a>
-                <Link
-                  href="/blockexplorer"
-                  className="inline-flex items-center gap-1 text-kupon-ink/80 hover:text-kupon-emerald"
-                >
-                  <span>SE-2 Block Explorer</span>
-                </Link>
-                <Link
-                  href="/framework"
-                  className="inline-flex items-center gap-1 text-kupon-ink/80 hover:text-kupon-emerald"
-                >
-                  <span>Regulatory Framework &amp; Sandbox</span>
-                </Link>
-                <Link
-                  href="/debugger"
-                  className="inline-flex items-center gap-1 text-kupon-ink/80 hover:text-kupon-emerald"
-                >
-                  <span>Interactive Contract Debugger</span>
-                </Link>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-2 border-t border-base-300/40 text-[10px] text-kupon-ink/60 font-mono">
-              Network: {targetNetwork.name} ({targetNetwork.id}) · Author: tremov
-            </div>
+          <div className="flex items-center gap-3 shrink-0 font-mono text-[10px]">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-base-200 border border-base-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+              {targetNetwork.name} ({targetNetwork.id})
+            </span>
+            <span>tremov</span>
           </div>
         </div>
       </div>
