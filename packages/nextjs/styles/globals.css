@@ -5,10 +5,10 @@
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-ibm-plex-mono), Menlo, monospace;
 
-  --color-kupon-emerald: #0E5E4A;
-  --color-kupon-gold: #C9A227;
-  --color-kupon-ivory: #FAF6EC;
-  --color-kupon-ink: #14201C;
+  --color-kupon-emerald: #0e5e4a;
+  --color-kupon-gold: #c9a227;
+  --color-kupon-ivory: #faf6ec;
+  --color-kupon-ink: #14201c;
 
   --shadow-center: 0 0 12px -2px rgb(0 0 0 / 0.05);
   --shadow-certificate: 0 1px 3px 0 rgba(20, 32, 28, 0.06), 0 4px 12px -2px rgba(14, 94, 74, 0.08);
@@ -23,22 +23,22 @@
 @plugin "daisyui/theme" {
   name: "light";
 
-  --color-primary: #0E5E4A;
-  --color-primary-content: #FAF6EC;
-  --color-secondary: #C9A227;
-  --color-secondary-content: #14201C;
-  --color-accent: #C9A227;
-  --color-accent-content: #14201C;
-  --color-neutral: #14201C;
-  --color-neutral-content: #FAF6EC;
-  --color-base-100: #FAF6EC;
-  --color-base-200: #F3EEDB;
-  --color-base-300: #E6DDC4;
-  --color-base-content: #14201C;
-  --color-info: #0E5E4A;
-  --color-success: #1B7A5F;
-  --color-warning: #C9A227;
-  --color-error: #B93829;
+  --color-primary: #0e5e4a;
+  --color-primary-content: #faf6ec;
+  --color-secondary: #c9a227;
+  --color-secondary-content: #14201c;
+  --color-accent: #c9a227;
+  --color-accent-content: #14201c;
+  --color-neutral: #14201c;
+  --color-neutral-content: #faf6ec;
+  --color-base-100: #faf6ec;
+  --color-base-200: #f3eedb;
+  --color-base-300: #e6ddc4;
+  --color-base-content: #14201c;
+  --color-info: #0e5e4a;
+  --color-success: #1b7a5f;
+  --color-warning: #c9a227;
+  --color-error: #b93829;
 
   --radius-field: 0.25rem;
   --radius-box: 0.375rem;
@@ -50,22 +50,22 @@
 @plugin "daisyui/theme" {
   name: "kupon";
 
-  --color-primary: #0E5E4A;
-  --color-primary-content: #FAF6EC;
-  --color-secondary: #C9A227;
-  --color-secondary-content: #14201C;
-  --color-accent: #C9A227;
-  --color-accent-content: #14201C;
-  --color-neutral: #14201C;
-  --color-neutral-content: #FAF6EC;
-  --color-base-100: #FAF6EC;
-  --color-base-200: #F3EEDB;
-  --color-base-300: #E6DDC4;
-  --color-base-content: #14201C;
-  --color-info: #0E5E4A;
-  --color-success: #1B7A5F;
-  --color-warning: #C9A227;
-  --color-error: #B93829;
+  --color-primary: #0e5e4a;
+  --color-primary-content: #faf6ec;
+  --color-secondary: #c9a227;
+  --color-secondary-content: #14201c;
+  --color-accent: #c9a227;
+  --color-accent-content: #14201c;
+  --color-neutral: #14201c;
+  --color-neutral-content: #faf6ec;
+  --color-base-100: #faf6ec;
+  --color-base-200: #f3eedb;
+  --color-base-300: #e6ddc4;
+  --color-base-content: #14201c;
+  --color-info: #0e5e4a;
+  --color-success: #1b7a5f;
+  --color-warning: #c9a227;
+  --color-error: #b93829;
 
   --radius-field: 0.25rem;
   --radius-box: 0.375rem;
@@ -80,7 +80,7 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-base-300, #E6DDC4);
+    border-color: var(--color-base-300, #e6ddc4);
   }
 
   p {
@@ -89,8 +89,8 @@
 
   body {
     min-height: 100vh;
-    background-color: #FAF6EC;
-    color: #14201C;
+    background-color: #faf6ec;
+    color: #14201c;
     font-family: var(--font-sans);
   }
 
@@ -106,8 +106,8 @@
 
 :root,
 [data-theme] {
-  background: #FAF6EC;
-  color: #14201C;
+  background: #faf6ec;
+  color: #14201c;
 }
 
 .btn {
@@ -124,24 +124,30 @@
 
 /* Sovereign Certificate utilities */
 .certificate-border {
-  border: 1px solid #C9A227;
-  box-shadow: inset 0 0 0 3px #FAF6EC, inset 0 0 0 4px #C9A227;
+  border: 1px solid #c9a227;
+  box-shadow:
+    inset 0 0 0 3px #faf6ec,
+    inset 0 0 0 4px #c9a227;
 }
 
 .certificate-border-emerald {
-  border: 1px solid #0E5E4A;
-  box-shadow: inset 0 0 0 3px #FAF6EC, inset 0 0 0 4px #0E5E4A;
+  border: 1px solid #0e5e4a;
+  box-shadow:
+    inset 0 0 0 3px #faf6ec,
+    inset 0 0 0 4px #0e5e4a;
 }
 
 .certificate-border-subtle {
   border: 1px solid rgba(201, 162, 39, 0.45);
-  box-shadow: inset 0 0 0 2px #FAF6EC, inset 0 0 0 3px rgba(201, 162, 39, 0.3);
+  box-shadow:
+    inset 0 0 0 2px #faf6ec,
+    inset 0 0 0 3px rgba(201, 162, 39, 0.3);
 }
 
 .certificate-double-rule {
   position: relative;
-  border-top: 1px solid #C9A227;
-  border-bottom: 1px solid #C9A227;
+  border-top: 1px solid #c9a227;
+  border-bottom: 1px solid #c9a227;
   padding: 4px 0;
 }
 
@@ -160,10 +166,14 @@
 .engraved-rule {
   border: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #C9A227 15%, #0E5E4A 50%, #C9A227 85%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, #c9a227 15%, #0e5e4a 50%, #c9a227 85%, transparent 100%);
   opacity: 0.5;
 }
 
 .certificate-seal-ring {
-  box-shadow: 0 0 0 2px #FAF6EC, 0 0 0 4px #C9A227, 0 0 0 6px #FAF6EC, 0 0 0 7px #0E5E4A;
+  box-shadow:
+    0 0 0 2px #faf6ec,
+    0 0 0 4px #c9a227,
+    0 0 0 6px #faf6ec,
+    0 0 0 7px #0e5e4a;
 }

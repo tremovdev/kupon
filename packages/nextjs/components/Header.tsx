@@ -1,29 +1,36 @@
 "use client";
 
 import React, { useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { hardhat } from "viem/chains";
-import { Bars3Icon, BugAntIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon } from "@heroicons/react/24/outline";
+import { GuillochePattern } from "~~/components/GuillochePattern";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
 type HeaderMenuLink = {
   label: string;
   href: string;
-  icon?: React.ReactNode;
+  badge?: string;
 };
 
 export const menuLinks: HeaderMenuLink[] = [
   {
-    label: "Home",
-    href: "/",
+    label: "App",
+    href: "/app",
   },
   {
-    label: "Debug Contracts",
-    href: "/debug",
-    icon: <BugAntIcon className="h-4 w-4" />,
+    label: "Registrar",
+    href: "/registrar",
+  },
+  {
+    label: "Regulator",
+    href: "/regulator",
+  },
+  {
+    label: "Debugger",
+    href: "/debugger",
   },
 ];
 
@@ -32,19 +39,25 @@ export const HeaderMenuLinks = () => {
 
   return (
     <>
-      {menuLinks.map(({ label, href, icon }) => {
-        const isActive = pathname === href;
+      {menuLinks.map(({ label, href, badge }) => {
+        const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
         return (
-          <li key={href} className="h-full">
+          <li key={href} className="h-full flex items-center">
             <Link
               href={href}
               passHref
-              className={`${
-                isActive ? "bg-base-300" : ""
-              } hover:bg-base-300 focus:!bg-base-300 h-full px-4 text-sm gap-2 flex items-center whitespace-nowrap`}
+              className={`px-3 py-1.5 rounded-none text-sm font-sans tracking-wide transition-all border-b-2 flex items-center gap-1.5 ${
+                isActive
+                  ? "border-kupon-emerald text-kupon-emerald font-semibold bg-kupon-ivory/50"
+                  : "border-transparent text-kupon-ink/75 hover:text-kupon-emerald hover:border-kupon-gold/50"
+              }`}
             >
-              {icon}
               <span>{label}</span>
+              {badge && (
+                <span className="text-[10px] font-mono uppercase px-1 py-0.2 bg-kupon-gold/20 text-kupon-ink rounded border border-kupon-gold/40">
+                  {badge}
+                </span>
+              )}
             </Link>
           </li>
         );
@@ -54,7 +67,7 @@ export const HeaderMenuLinks = () => {
 };
 
 /**
- * Site header
+ * Site header with sovereign certificate logo lockup & navigation
  */
 export const Header = () => {
   const { targetNetwork } = useTargetNetwork();
@@ -66,14 +79,14 @@ export const Header = () => {
   });
 
   return (
-    <div className="sticky lg:static top-0 navbar bg-base-100 min-h-16 shrink-0 justify-between z-20 border-b-2 border-base-300 p-0 sm:px-2">
-      <div className="navbar-start w-auto self-stretch">
+    <div className="sticky top-0 navbar bg-base-100 min-h-16 shrink-0 justify-between z-20 border-b border-kupon-gold/30 px-3 sm:px-6 shadow-sm">
+      <div className="navbar-start w-auto self-stretch flex items-center">
         <details className="dropdown" ref={burgerMenuRef}>
-          <summary className="ml-1 btn btn-ghost lg:hidden hover:bg-transparent">
-            <Bars3Icon className="h-1/2" />
+          <summary className="btn btn-ghost btn-sm lg:hidden hover:bg-transparent px-2">
+            <Bars3Icon className="h-5 w-5 text-kupon-ink" />
           </summary>
           <ul
-            className="menu menu-compact dropdown-content mt-3 p-2 shadow-lg bg-base-100 w-52"
+            className="menu menu-compact dropdown-content mt-3 p-3 shadow-lg bg-base-100 rounded border border-kupon-gold/40 w-56 z-50 gap-1"
             onClick={() => {
               burgerMenuRef?.current?.removeAttribute("open");
             }}
@@ -81,20 +94,40 @@ export const Header = () => {
             <HeaderMenuLinks />
           </ul>
         </details>
-        <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
-          <div className="flex relative w-10 h-10">
-            <Image alt="SE2 logo" className="cursor-pointer" fill src="/logo.svg" />
+
+        {/* Brand Logo & Wordmark Lockup */}
+        <Link href="/" passHref className="flex items-center gap-3 ml-1 mr-6 shrink-0 group">
+          <div className="relative w-9 h-9 flex items-center justify-center rounded-full bg-kupon-emerald text-kupon-gold certificate-seal-ring shrink-0">
+            <GuillochePattern
+              variant="seal"
+              width={36}
+              height={36}
+              color="gold"
+              opacity={0.6}
+              className="absolute inset-0"
+            />
+            <span className="font-serif font-bold text-base text-kupon-gold relative z-10 leading-none select-none">
+              K
+            </span>
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold leading-tight">Scaffold-ETH</span>
-            <span className="text-xs">Ethereum dev stack</span>
+          <div className="flex flex-col text-left">
+            <span className="font-serif font-bold text-lg tracking-tight text-kupon-emerald leading-tight group-hover:text-kupon-gold transition-colors">
+              KUPON
+            </span>
+            <div className="h-[1px] w-full bg-kupon-gold/60 my-0.5" />
+            <span className="text-[9px] font-mono tracking-wider text-kupon-ink/75 uppercase font-medium leading-none">
+              SBN RITEL 2027 · ONCHAIN
+            </span>
           </div>
         </Link>
-        <ul className="hidden lg:flex lg:flex-nowrap h-full m-0 p-0 list-none">
+
+        {/* Desktop Navigation */}
+        <ul className="hidden lg:flex lg:flex-nowrap h-full m-0 p-0 list-none gap-1 items-center">
           <HeaderMenuLinks />
         </ul>
       </div>
-      <div className="navbar-end grow mr-4">
+
+      <div className="navbar-end grow flex items-center justify-end gap-2">
         <RainbowKitCustomConnectButton />
         {isLocalNetwork && <FaucetButton />}
       </div>

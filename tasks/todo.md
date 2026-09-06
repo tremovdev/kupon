@@ -35,7 +35,7 @@
 ## Phase B — Brand overhaul (T13, fresh session)
 
 - [x] T13a Theme foundation + YourContract cleanup (S)
-- [ ] T13b Layout shell + navigation (/app, /debugger) (S)
+- [x] T13b Layout shell + navigation (/app, /debugger) (S)
 - [ ] T13c Landing page — narasi + stats live (M)
 - [ ] T13d Debugger page merge (S)
 - [ ] T13e Logo & asset integration (S) *— menunggu aset Harry*

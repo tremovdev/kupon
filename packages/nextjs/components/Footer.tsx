@@ -1,78 +1,112 @@
 import React from "react";
 import Link from "next/link";
-import { useFetchNativeCurrencyPrice } from "@scaffold-ui/hooks";
 import { hardhat } from "viem/chains";
-import { CurrencyDollarIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { HeartIcon } from "@heroicons/react/24/outline";
-import { BuidlGuidlLogo } from "~~/components/assets/BuidlGuidlLogo";
+import { ArrowTopRightOnSquareIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { Faucet } from "~~/components/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
 /**
- * Site footer
+ * Sovereign Certificate Footer
+ * Displays mandatory fictional asset disclaimers, regulatory framework citations, and audit links.
  */
 export const Footer = () => {
   const { targetNetwork } = useTargetNetwork();
   const isLocalNetwork = targetNetwork.id === hardhat.id;
-  const { price: nativeCurrencyPrice } = useFetchNativeCurrencyPrice();
 
   return (
-    <div className="min-h-0 py-5 px-1 mb-11 lg:mb-0">
-      <div>
-        <div className="fixed flex justify-between items-center w-full z-10 p-4 bottom-0 left-0 pointer-events-none">
-          <div className="flex flex-col md:flex-row gap-2 pointer-events-auto">
-            {nativeCurrencyPrice > 0 && (
-              <div>
-                <div className="btn btn-primary btn-sm font-normal gap-1 cursor-auto">
-                  <CurrencyDollarIcon className="h-4 w-4" />
-                  <span>{nativeCurrencyPrice.toFixed(2)}</span>
-                </div>
-              </div>
-            )}
-            {isLocalNetwork && (
-              <>
-                <Faucet />
-                <Link href="/blockexplorer" passHref className="btn btn-primary btn-sm font-normal gap-1">
-                  <MagnifyingGlassIcon className="h-4 w-4" />
-                  <span>Block Explorer</span>
+    <footer className="mt-auto border-t border-kupon-gold/30 bg-base-100 text-kupon-ink/80 text-xs font-sans">
+      {/* Decorative double rule */}
+      <div className="h-[2px] bg-gradient-to-r from-transparent via-kupon-gold/50 to-transparent" />
+
+      {/* Floating local faucet if running on hardhat */}
+      {isLocalNetwork && (
+        <div className="fixed flex justify-start items-center z-10 p-4 bottom-0 left-0 pointer-events-none">
+          <div className="pointer-events-auto">
+            <Faucet />
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
+        {/* Mandatory Fictional Asset Disclaimer Box */}
+        <div className="p-4 rounded border border-kupon-gold/40 bg-kupon-ivory/80 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <ShieldCheckIcon className="w-6 h-6 text-kupon-emerald shrink-0 mt-0.5 sm:mt-0" />
+          <div className="text-[11px] leading-relaxed text-kupon-ink/90">
+            <strong className="text-kupon-emerald font-semibold uppercase tracking-wider block sm:inline mr-2 font-mono">
+              Fictional Asset Notice:
+            </strong>
+            Kupon is an educational and demonstration project for <strong>ETHGlobal ETHOnline 2026</strong>. It models a
+            fictional Indonesian retail government bond (&quot;SBN Ritel 2027&quot;) with ERC-3643-style on-chain
+            compliance gates. It is not an actual sovereign bond, financial product, or securities offering.
+          </div>
+        </div>
+
+        {/* Citations & Metadata Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-base-300/60">
+          <div>
+            <div className="font-serif font-bold text-kupon-emerald text-sm mb-2">Regulatory Foundations</div>
+            <p className="text-[11px] text-kupon-ink/75 leading-relaxed m-0">
+              Designed around the Indonesian digital asset regulatory roadmap:
+            </p>
+            <ul className="text-[11px] text-kupon-ink/85 mt-2 space-y-1 font-mono list-none p-0">
+              <li>• UU No. 4/2023 (P2SK)</li>
+              <li>• POJK No. 27/2024 &amp; POJK No. 23/2025</li>
+              <li>• OJK Q3-2026 RWA Sandbox Framework</li>
+            </ul>
+          </div>
+
+          <div>
+            <div className="font-serif font-bold text-kupon-emerald text-sm mb-2">Protocol Architecture</div>
+            <p className="text-[11px] text-kupon-ink/75 leading-relaxed m-0">
+              On-chain transfer gates enforced deterministically via Solidity custom errors:
+            </p>
+            <ul className="text-[11px] text-kupon-ink/85 mt-2 space-y-1 font-mono list-none p-0">
+              <li>
+                • <span className="font-semibold text-kupon-emerald">R1-RESIDENCY</span>: WNI identity gate
+              </li>
+              <li>
+                • <span className="font-semibold text-kupon-emerald">R2-CAP</span>: 5,000 KPON retail ceiling
+              </li>
+              <li>
+                • <span className="font-semibold text-kupon-emerald">R3-FROZEN</span>: instant claim revocation
+              </li>
+            </ul>
+          </div>
+
+          <div className="flex flex-col justify-between">
+            <div>
+              <div className="font-serif font-bold text-kupon-emerald text-sm mb-2">Verification &amp; Links</div>
+              <div className="flex flex-col gap-1.5 text-[11px]">
+                <a
+                  href="https://github.com/tremovdev/kupon"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-kupon-emerald hover:text-kupon-gold font-medium"
+                >
+                  <span>GitHub Repository (@tremovdev)</span>
+                  <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
+                </a>
+                <Link
+                  href="/blockexplorer"
+                  className="inline-flex items-center gap-1 text-kupon-ink/80 hover:text-kupon-emerald"
+                >
+                  <span>SE-2 Block Explorer</span>
                 </Link>
-              </>
-            )}
+                <Link
+                  href="/debugger"
+                  className="inline-flex items-center gap-1 text-kupon-ink/80 hover:text-kupon-emerald"
+                >
+                  <span>Interactive Contract Debugger</span>
+                </Link>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-2 border-t border-base-300/40 text-[10px] text-kupon-ink/60 font-mono">
+              Network: {targetNetwork.name} ({targetNetwork.id}) · Author: tremov
+            </div>
           </div>
         </div>
       </div>
-      <div className="w-full">
-        <ul className="menu menu-horizontal w-full">
-          <div className="flex justify-center items-center gap-2 text-sm w-full">
-            <div className="text-center">
-              <a href="https://github.com/scaffold-eth/se-2" target="_blank" rel="noreferrer" className="link">
-                Fork me
-              </a>
-            </div>
-            <span>·</span>
-            <div className="flex justify-center items-center gap-2">
-              <p className="m-0 text-center">
-                Built with <HeartIcon className="inline-block h-4 w-4" /> at
-              </p>
-              <a
-                className="flex justify-center items-center gap-1"
-                href="https://buidlguidl.com/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <BuidlGuidlLogo className="w-3 h-5 pb-1" />
-                <span className="link">BuidlGuidl</span>
-              </a>
-            </div>
-            <span>·</span>
-            <div className="text-center">
-              <a href="https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA" target="_blank" rel="noreferrer" className="link">
-                Support
-              </a>
-            </div>
-          </div>
-        </ul>
-      </div>
-    </div>
+    </footer>
   );
 };
