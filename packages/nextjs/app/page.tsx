@@ -8,6 +8,7 @@ import { useAccount } from "wagmi";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const RESIDENCY_ID = keccak256(toHex("RESIDENCY_ID"));
 const ACCREDITED = keccak256(toHex("ACCREDITED"));
 
@@ -17,20 +18,54 @@ const RULE_IDS = {
   r3: keccak256(toHex("R3-FROZEN")),
 } as const;
 
+type ViemErrorLike = {
+  data?: { errorName?: string; args?: readonly unknown[] };
+  cause?: unknown;
+  error?: unknown;
+  walk?: () => unknown;
+};
+
+// viem's BaseError is structurally compatible; the cast only names the checked shape.
+function asErrorLike(value: unknown): ViemErrorLike | null {
+  if (value && typeof value === "object" && ("data" in value || "cause" in value || "walk" in value)) {
+    return value as ViemErrorLike;
+  }
+  return null;
+}
+
+/** Walks a viem error tree to find the decoded Kupon__RuleViolated ruleId. */
+function extractRuleViolatedId(error: unknown): string | null {
+  let current: unknown = error;
+  for (let depth = 0; depth < 6; depth++) {
+    const node = asErrorLike(current);
+    if (node?.data && node.data.errorName === "Kupon__RuleViolated") {
+      const arg = Array.isArray(node.data.args) ? node.data.args[0] : node.data.args;
+      if (typeof arg === "string" && /^0x[0-9a-fA-F]{64}$/.test(arg)) return arg;
+    }
+    if (!node) break;
+    const next = node.cause ?? node.error ?? (typeof node.walk === "function" ? node.walk() : undefined);
+    if (next === undefined || next === current) break;
+    current = next;
+  }
+  const text = typeof error === "string" ? error : getParsedError(error);
+  const match = text.match(/Kupon__RuleViolated\(0x([0-9a-fA-F]{64})\)/);
+  return match ? `0x${match[1]}` : null;
+}
+
 /** Translates an on-chain compliance revert into plain-language policy. */
 function translateRevert(rawError: unknown): string {
-  const parsed = getParsedError(rawError);
-  const match = parsed.match(/Kupon__RuleViolated\(0x([0-9a-fA-F]{64})\)/);
-  if (match) {
-    const ruleId = `0x${match[1]}`;
-    if (ruleId === RULE_IDS.r1)
-      return "Blocked by R1-RESIDENCY — the recipient must hold a residency claim. Ask the registrar to grant it, then retry.";
-    if (ruleId === RULE_IDS.r2)
-      return "Blocked by R2-CAP — retail wallets hold at most 5,000 KPON (accredited wallets are exempt).";
-    if (ruleId === RULE_IDS.r3)
-      return "Blocked by R3-FROZEN — this wallet's claims were revoked, so its balance is frozen until a claim is re-granted.";
-  }
-  return parsed;
+  const ruleId = extractRuleViolatedId(rawError);
+  if (ruleId === RULE_IDS.r1)
+    return "Blocked by R1-RESIDENCY — the recipient must hold a residency claim. Ask the registrar to grant it, then retry.";
+  if (ruleId === RULE_IDS.r2)
+    return "Blocked by R2-CAP — retail wallets hold at most 5,000 KPON (accredited wallets are exempt).";
+  if (ruleId === RULE_IDS.r3)
+    return "Blocked by R3-FROZEN — this wallet's claims were revoked, so its balance is frozen until a claim is re-granted.";
+
+  const raw = getParsedError(rawError);
+  if (/execution reverted/i.test(raw))
+    return "Transfer reverted — most likely a compliance rule (R1 residency, R2 retail cap, or R3 frozen). Check the compliance status above.";
+  return raw;
 }
 
 const InvestorPage: NextPage = () => {
@@ -42,17 +77,17 @@ const InvestorPage: NextPage = () => {
   const { data: balance } = useScaffoldReadContract({
     contractName: "KuponToken",
     functionName: "balanceOf",
-    args: [connectedAddress ?? "0x0000000000000000000000000000000000000000"],
+    args: [connectedAddress ?? ZERO_ADDRESS],
   });
   const { data: hasResidency } = useScaffoldReadContract({
     contractName: "KuponClaimRegistry",
     functionName: "hasClaim",
-    args: [connectedAddress ?? "0x0000000000000000000000000000000000000000", RESIDENCY_ID],
+    args: [connectedAddress ?? ZERO_ADDRESS, RESIDENCY_ID],
   });
   const { data: hasAccredited } = useScaffoldReadContract({
     contractName: "KuponClaimRegistry",
     functionName: "hasClaim",
-    args: [connectedAddress ?? "0x0000000000000000000000000000000000000000", ACCREDITED],
+    args: [connectedAddress ?? ZERO_ADDRESS, ACCREDITED],
   });
 
   const { writeContractAsync: transferKpon } = useScaffoldWriteContract({ contractName: "KuponToken" });
@@ -87,7 +122,9 @@ const InvestorPage: NextPage = () => {
       notification.success(`Sent ${sendAmount} KPON to ${sendTo.slice(0, 6)}…${sendTo.slice(-4)}`);
       setSendAmount("");
     } catch (e) {
-      notification.error(translateRevert(e));
+      notification.error(translateRevert(e), {
+        duration: 8000,
+      });
     } finally {
       setIsSending(false);
     }
@@ -105,17 +142,19 @@ const InvestorPage: NextPage = () => {
           <>
             {/* Compliance identity */}
             <div className="card bg-base-100 border border-base-300 mb-4">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm opacity-70">Your wallet</span>
-                <Address address={connectedAddress} size="sm" />
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm opacity-70">Compliance status</span>
-                {complianceStatus ? (
-                  <span className={`badge ${complianceStatus.badge}`}>{complianceStatus.label}</span>
-                ) : (
-                  <span className="loading loading-spinner loading-xs" />
-                )}
+              <div className="card-body py-4 gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm opacity-70">Your wallet</span>
+                  <Address address={connectedAddress} size="sm" />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm opacity-70">Compliance status</span>
+                  {complianceStatus ? (
+                    <span className={`badge ${complianceStatus.badge}`}>{complianceStatus.label}</span>
+                  ) : (
+                    <span className="loading loading-spinner loading-xs" />
+                  )}
+                </div>
               </div>
             </div>
 
