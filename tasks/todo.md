@@ -27,7 +27,7 @@
 
 ## Phase 3 — Infra & ship prep (Sun–Thu)
 
-- [ ] Task 9: Base Sepolia deploy + Vercel wiring — **GATE 1 with T5 + T6-min (S)**
+- [x] Task 9: Base Sepolia deploy + Vercel wiring — **GATE 1 with T5 + T6-min (S)**
 - [ ] Task 10: Arbitrum Sepolia deploy + verify (S)
 - [ ] Task 11: Threat model + diagram + README build-log + FEEDBACK.md (M)
 - [ ] Task 12: Demo rehearsal + video + submission (S)
