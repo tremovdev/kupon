@@ -11,6 +11,7 @@ import { getParsedError, notification } from "~~/utils/scaffold-eth";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const RESIDENCY_ID = keccak256(toHex("RESIDENCY_ID"));
 const ACCREDITED = keccak256(toHex("ACCREDITED"));
+const CAP = 5_000n * 10n ** 18n; // retail per-investor cap (matches the compliance module default)
 
 const RULE_IDS = {
   r1: keccak256(toHex("R1-RESIDENCY")),
@@ -52,7 +53,7 @@ function extractRuleViolatedId(error: unknown): string | null {
   return match ? `0x${match[1]}` : null;
 }
 
-/** Translates an on-chain compliance revert into plain-language policy. */
+/** Translates an on-chain compliance revert into plain-language policy (fallback path). */
 function translateRevert(rawError: unknown): string {
   const ruleId = extractRuleViolatedId(rawError);
   if (ruleId === RULE_IDS.r1)
@@ -66,6 +67,44 @@ function translateRevert(rawError: unknown): string {
   if (/execution reverted/i.test(raw))
     return "Transfer reverted — most likely a compliance rule (R1 residency, R2 retail cap, or R3 frozen). Check the compliance status above.";
   return raw;
+}
+
+const isAddress = (value: string): boolean => /^0x[0-9a-fA-F]{40}$/.test(value);
+
+type SendVerdict = { ok: boolean; text: string };
+
+/** Client-side mirror of the three rules — shows the verdict BEFORE spending gas. */
+function evaluateSend(input: {
+  senderHasClaim: boolean | undefined;
+  recipientHasResidency: boolean | undefined;
+  recipientHasAccredited: boolean | undefined;
+  recipientBalance: bigint | undefined;
+  amount: bigint | undefined;
+  cap: bigint;
+}): SendVerdict | null {
+  const { senderHasClaim, recipientHasResidency, recipientHasAccredited, recipientBalance, amount, cap } = input;
+
+  if (senderHasClaim === undefined) return null;
+  if (!senderHasClaim)
+    return { ok: false, text: "Blocked by R3-FROZEN — your wallet holds no claim, so its balance is frozen." };
+
+  if (recipientHasResidency === undefined || recipientHasAccredited === undefined) return null;
+  if (!recipientHasResidency && !recipientHasAccredited)
+    return {
+      ok: false,
+      text: "Blocked by R1-RESIDENCY — the recipient must hold a residency claim. Ask the registrar to grant it, then retry.",
+    };
+
+  const recipientIsRetail = recipientHasResidency && !recipientHasAccredited;
+  if (recipientIsRetail && amount !== undefined && recipientBalance !== undefined) {
+    if (amount > cap || recipientBalance > cap - amount)
+      return {
+        ok: false,
+        text: "Blocked by R2-CAP — retail wallets hold at most 5,000 KPON (accredited wallets are exempt).",
+      };
+  }
+
+  return { ok: true, text: "Compliance looks good — this transfer should pass." };
 }
 
 const InvestorPage: NextPage = () => {
@@ -90,6 +129,24 @@ const InvestorPage: NextPage = () => {
     args: [connectedAddress ?? ZERO_ADDRESS, ACCREDITED],
   });
 
+  const sendToIsValid = isAddress(sendTo);
+  const sendTarget = sendToIsValid ? sendTo : ZERO_ADDRESS;
+  const { data: sendToHasResidency } = useScaffoldReadContract({
+    contractName: "KuponClaimRegistry",
+    functionName: "hasClaim",
+    args: [sendTarget, RESIDENCY_ID],
+  });
+  const { data: sendToHasAccredited } = useScaffoldReadContract({
+    contractName: "KuponClaimRegistry",
+    functionName: "hasClaim",
+    args: [sendTarget, ACCREDITED],
+  });
+  const { data: sendToBalance } = useScaffoldReadContract({
+    contractName: "KuponToken",
+    functionName: "balanceOf",
+    args: [sendTarget],
+  });
+
   const { writeContractAsync: transferKpon } = useScaffoldWriteContract({ contractName: "KuponToken" });
 
   const complianceStatus =
@@ -101,14 +158,39 @@ const InvestorPage: NextPage = () => {
           ? { badge: "badge-info", label: "Retail investor — cap 5,000 KPON" }
           : { badge: "badge-error", label: "No claims — cannot receive KPON (R1)" };
 
+  const senderHasClaim =
+    hasResidency === undefined || hasAccredited === undefined ? undefined : hasResidency || hasAccredited;
+
+  let amount: bigint | undefined;
+  try {
+    amount = sendAmount.trim() === "" ? undefined : parseEther(sendAmount);
+  } catch {
+    amount = undefined;
+  }
+
+  const verdict = sendToIsValid
+    ? evaluateSend({
+        senderHasClaim,
+        recipientHasResidency: sendToHasResidency,
+        recipientHasAccredited: sendToHasAccredited,
+        recipientBalance: sendToBalance,
+        amount,
+        cap: CAP,
+      })
+    : null;
+
   const handleSend = async () => {
     if (!sendTo || !sendAmount) {
       notification.error("Fill in the recipient and the amount first.");
       return;
     }
-    let amount: bigint;
+    if (verdict && !verdict.ok) {
+      notification.error(verdict.text, { duration: 8000 });
+      return;
+    }
+    let parsedAmount: bigint;
     try {
-      amount = parseEther(sendAmount);
+      parsedAmount = parseEther(sendAmount);
     } catch {
       notification.error("Invalid amount — use decimal KPON, e.g. 10 or 0.5.");
       return;
@@ -117,14 +199,12 @@ const InvestorPage: NextPage = () => {
     try {
       await transferKpon({
         functionName: "transfer",
-        args: [sendTo, amount],
+        args: [sendTo, parsedAmount],
       });
       notification.success(`Sent ${sendAmount} KPON to ${sendTo.slice(0, 6)}…${sendTo.slice(-4)}`);
       setSendAmount("");
     } catch (e) {
-      notification.error(translateRevert(e), {
-        duration: 8000,
-      });
+      notification.error(translateRevert(e), { duration: 8000 });
     } finally {
       setIsSending(false);
     }
@@ -182,6 +262,12 @@ const InvestorPage: NextPage = () => {
                     onChange={e => setSendAmount(e.target.value)}
                     inputMode="decimal"
                   />
+                  {verdict ? (
+                    <p className={`text-xs ${verdict.ok ? "text-success" : "text-error"}`}>
+                      {verdict.ok ? "✓ " : "⛔ "}
+                      {verdict.text}
+                    </p>
+                  ) : null}
                   <button className="btn btn-primary" onClick={handleSend} disabled={isSending}>
                     {isSending ? <span className="loading loading-spinner loading-xs" /> : null}
                     Send
