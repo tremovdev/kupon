@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { NextPage } from "next";
@@ -117,17 +118,28 @@ const Home: NextPage = () => {
 
           {/* Sovereign Certificate Preview Ribbon */}
           <div className="mt-14 w-full max-w-3xl bg-base-100 p-6 rounded certificate-border shadow-certificate text-left relative overflow-hidden">
-            <div className="absolute top-0 right-0 transform translate-x-8 -translate-y-8 opacity-10 pointer-events-none">
-              <GuillochePattern variant="seal" width={180} height={180} color="emerald" />
+            <div className="absolute top-0 right-0 transform translate-x-8 -translate-y-8 opacity-15 pointer-events-none">
+              <Image src="/kupon-logo.svg" alt="Seal Mark Watermark" width={180} height={180} />
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-kupon-gold/30 gap-2">
-              <div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-kupon-gold font-bold">
-                  On-Chain Certificate Registry
-                </span>
-                <div className="font-serif font-bold text-base text-kupon-emerald">
-                  REPUBLIK INDONESIA · SBN RITEL 2027
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-kupon-gold/30 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-kupon-gold/50 shadow-sm bg-[#0c5242]">
+                  <Image
+                    src="/kupon-logo.svg"
+                    alt="Kupon Seal Mark"
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-kupon-gold font-bold">
+                    On-Chain Certificate Registry
+                  </span>
+                  <div className="font-serif font-bold text-base text-kupon-emerald">
+                    REPUBLIK INDONESIA · SBN RITEL 2027
+                  </div>
                 </div>
               </div>
               <div className="text-left sm:text-right font-mono text-xs text-kupon-ink/70">

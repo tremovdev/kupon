@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { hardhat } from "viem/chains";
 import { Bars3Icon } from "@heroicons/react/24/outline";
-import { GuillochePattern } from "~~/components/GuillochePattern";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
@@ -97,18 +97,15 @@ export const Header = () => {
 
         {/* Brand Logo & Wordmark Lockup */}
         <Link href="/" passHref className="flex items-center gap-3 ml-1 mr-6 shrink-0 group">
-          <div className="relative w-9 h-9 flex items-center justify-center rounded-full bg-kupon-emerald text-kupon-gold certificate-seal-ring shrink-0">
-            <GuillochePattern
-              variant="seal"
+          <div className="relative w-9 h-9 flex items-center justify-center rounded-full overflow-hidden shrink-0 certificate-seal-ring bg-[#0c5242]">
+            <Image
+              src="/kupon-logo.svg"
+              alt="Kupon Seal Mark"
               width={36}
               height={36}
-              color="gold"
-              opacity={0.6}
-              className="absolute inset-0"
+              className="w-full h-full object-contain"
+              priority
             />
-            <span className="font-serif font-bold text-base text-kupon-gold relative z-10 leading-none select-none">
-              K
-            </span>
           </div>
           <div className="flex flex-col text-left">
             <span className="font-serif font-bold text-lg tracking-tight text-kupon-emerald leading-tight group-hover:text-kupon-gold transition-colors">
