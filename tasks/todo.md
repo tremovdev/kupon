@@ -38,7 +38,7 @@
 - [x] T13b Layout shell + navigation (/app, /debugger) (S)
 - [x] T13c Landing page — narasi + stats live (M)
 - [x] T13d Debugger page merge (S)
-- [ ] T13e Logo & asset integration (S) *— menunggu aset Harry*
+- [x] T13e Logo & asset integration (S) — kupon-logo.svg integrated into Header, Landing, Footer & metadata
 - [ ] T13f QA + verify (S)
 
 > Detail: [plan-brand-overhaul.md](./plan-brand-overhaul.md) · prompts logo: [../branding/logo-prompts.md](../branding/logo-prompts.md)
