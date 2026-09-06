@@ -12,8 +12,6 @@ import {
   BuildingLibraryIcon,
   CheckBadgeIcon,
   CheckIcon,
-  CommandLineIcon,
-  ExclamationTriangleIcon,
   GlobeAltIcon,
   LockClosedIcon,
   ScaleIcon,
@@ -628,7 +626,9 @@ const Home: NextPage = () => {
                     <BuildingLibraryIcon className="w-3.5 h-3.5" />
                     Issuer Authority
                   </span>
-                  <span className="text-[10px] font-mono text-kupon-ink/50">Task 7</span>
+                  <span className="text-[10px] font-mono text-kupon-gold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Issuer Portal
+                  </span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink mb-2">Debt Management Office</h3>
                 <p className="text-xs sm:text-sm font-sans text-kupon-ink/80 leading-relaxed mb-4">
@@ -640,7 +640,7 @@ const Home: NextPage = () => {
                 href="/registrar"
                 className="text-xs font-mono font-semibold text-kupon-emerald hover:text-kupon-gold inline-flex items-center gap-1 self-start"
               >
-                <span>Inspect Registrar Portal (T7)</span>
+                <span>Open Registrar Portal</span>
                 <ArrowRightIcon className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -653,7 +653,9 @@ const Home: NextPage = () => {
                     <ShieldCheckIcon className="w-3.5 h-3.5" />
                     Oversight &amp; Audit
                   </span>
-                  <span className="text-[10px] font-mono text-kupon-ink/50">Task 8</span>
+                  <span className="text-[10px] font-mono text-kupon-emerald bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    Supervisory Terminal
+                  </span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink mb-2">
                   Regulator Terminal (OJK)
@@ -667,66 +669,41 @@ const Home: NextPage = () => {
                 href="/regulator"
                 className="text-xs font-mono font-semibold text-kupon-emerald hover:text-kupon-gold inline-flex items-center gap-1 self-start"
               >
-                <span>Inspect Regulator Terminal (T8)</span>
+                <span>Open Regulator Terminal</span>
                 <ArrowRightIcon className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>
         </div>
       </section>
-
       {/* ========================================================================= */}
-      {/* 6. TECHNICAL BRIDGE: FOR DEVELOPERS & JUDGES */}
+      {/* 6. REGULATORY & STATUTORY FRAMEWORK BRIEF */}
       {/* ========================================================================= */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
+      <section className="pb-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
         <div className="bg-base-100 p-8 sm:p-10 rounded certificate-border shadow-certificate flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-kupon-emerald/10 text-[10px] font-mono uppercase tracking-widest text-kupon-emerald font-bold mb-2">
-              <CommandLineIcon className="w-4 h-4" />
-              For Smart Contract Auditors &amp; Judges
+              <CheckBadgeIcon className="w-4 h-4" />
+              Regulatory &amp; Statutory Architecture
             </div>
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-kupon-ink mb-2">
-              Want to see the actual smart contracts?
+              Grounded in Indonesian Law &amp; OJK Sandbox
             </h2>
             <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
-              Inspect decoded rule errors (<code className="font-mono text-xs">Kupon__RuleViolated</code>), test read
-              and write methods on verified contracts, and explore block events in our Protocol Debugger.
+              Kupon is engineered in accordance with <strong>UU No. 4/2023 (UU P2SK)</strong> and the OJK Digital
+              Financial Assets Regulatory Sandbox (<strong>POJK No. 3/2024</strong>). Read our institutional brief, KSEI
+              SID mapping, and sovereign debt thesis.
             </p>
           </div>
 
           <div className="shrink-0 w-full md:w-auto">
             <Link
-              href="/debugger"
+              href="/framework"
               className="btn btn-primary text-kupon-ivory certificate-border-emerald font-sans tracking-wide w-full md:w-auto flex items-center justify-center gap-2"
             >
-              <span>Explore Protocol Debugger</span>
+              <span>Read Legal Framework</span>
               <ArrowTopRightOnSquareIcon className="w-4 h-4" />
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 7. REGULATORY SANDBOX & DEMO DISCLAIMER */}
-      {/* ========================================================================= */}
-      <section className="pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
-        <div className="p-6 sm:p-8 rounded bg-[#F4EEDC] border border-kupon-gold/40 text-xs font-sans text-kupon-ink/85 leading-relaxed flex flex-col gap-4">
-          <div className="flex items-center gap-2 font-serif font-bold text-sm text-kupon-emerald">
-            <CheckBadgeIcon className="w-4 h-4 text-kupon-emerald" />
-            <span>Indonesian Financial Innovation Sandbox Framework</span>
-          </div>
-          <p className="m-0">
-            Designed to fit <strong>UU No. 4/2023 (UU P2SK)</strong>, which places digital financial assets under
-            Otoritas Jasa Keuangan (OJK), and <strong>POJK No. 3/2024</strong> on regulatory sandboxes for financial
-            technology innovation.
-          </p>
-          <div className="p-3.5 rounded bg-amber-500/10 border border-amber-600/30 text-amber-900 text-[11px] flex items-start gap-2.5">
-            <ExclamationTriangleIcon className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-            <div>
-              <strong>Demonstration Disclaimer:</strong> Kupon is an educational technical project built for the{" "}
-              <strong>ETHGlobal ETHOnline 2026</strong> hackathon. It models an Indonesian government retail bond (SBN
-              Ritel 2027) and is not an actual government debt offering.
-            </div>
           </div>
         </div>
       </section>

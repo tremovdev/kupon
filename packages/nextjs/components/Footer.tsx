@@ -93,6 +93,12 @@ export const Footer = () => {
                   <span>SE-2 Block Explorer</span>
                 </Link>
                 <Link
+                  href="/framework"
+                  className="inline-flex items-center gap-1 text-kupon-ink/80 hover:text-kupon-emerald"
+                >
+                  <span>Regulatory Framework &amp; Sandbox</span>
+                </Link>
+                <Link
                   href="/debugger"
                   className="inline-flex items-center gap-1 text-kupon-ink/80 hover:text-kupon-emerald"
                 >
