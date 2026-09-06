@@ -20,9 +20,8 @@ artifacts
 artifacts-zk
 cache-zk
 
-# local deployments
-deployments/default
-deployments/localhost
+# deployment artifacts (addresses live in generated deployedContracts.ts)
+deployments/*
 
 # typescript
 *.tsbuildinfo
