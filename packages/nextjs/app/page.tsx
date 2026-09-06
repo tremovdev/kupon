@@ -218,7 +218,7 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. THE CONTINUOUS TREASURY LEDGER STRIP (No generic metric boxes) */}
+      {/* 2. THE CONTINUOUS TREASURY LEDGER STRIP */}
       {/* ========================================================================= */}
       <section className="border-b border-kupon-gold/30 bg-[#F4EEDC] py-6 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 divide-y md:divide-y-0 md:divide-x divide-kupon-gold/30">
@@ -257,7 +257,7 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. THE MARKET THESIS: EDITORIAL SPLIT (Not identical cards) */}
+      {/* 3. THE MARKET THESIS: EDITORIAL SPLIT */}
       {/* ========================================================================= */}
       <section id="thesis" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         <div className="max-w-3xl mb-16">
@@ -404,7 +404,7 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. THE THREE AUTONOMOUS GUARDRAILS (Fluid, Interactive Showcase) */}
+      {/* 4. THE THREE AUTONOMOUS GUARDRAILS */}
       {/* ========================================================================= */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#F6F0E0] border-t border-b border-kupon-gold/30">
         <div className="max-w-6xl mx-auto">
@@ -547,89 +547,130 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 5. THE 3-PORTAL ECOSYSTEM (Stepped Workflow, Not Identical Cards) */}
+      {/* 5. MULTI-STAKEHOLDER OPERATIONAL SYSTEM (Impeccable Asymmetric Bento) */}
       {/* ========================================================================= */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <div className="max-w-3xl mb-16 text-left">
           <h2 className="text-3xl sm:text-5xl font-serif font-bold text-kupon-ink tracking-tight mb-4">
-            Built for real-world governance.
+            Three portals. One unified bond lifecycle.
           </h2>
           <p className="text-base sm:text-lg text-kupon-ink/80 font-sans leading-relaxed">
-            Three dedicated interfaces designed for the complete sovereign bond lifecycle.
+            Sovereign debt doesn&apos;t live in isolation. Kupon connects everyday citizens, government debt issuers,
+            and regulatory watchdogs into a seamless onchain ecosystem.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Step 1: Citizens */}
-          <div className="bg-base-100 p-8 rounded certificate-border shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="w-10 h-10 rounded bg-kupon-emerald/10 text-kupon-emerald flex items-center justify-center mb-6">
-                <UserGroupIcon className="w-6 h-6" />
-              </div>
-              <span className="text-xs font-mono uppercase tracking-wider text-kupon-emerald font-bold block mb-1">
-                Citizen Portal
-              </span>
-              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-3">Investor Experience</h3>
-              <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-6">
-                Check holdings, send tokens, and receive coupon payments with pre-flight compliance feedback before
-                spending any gas fees.
-              </p>
+        {/* Asymmetric Bento Architecture */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          {/* Primary Anchor: Citizen Investor Portal (The Live Interactive App) */}
+          <div className="lg:col-span-7 bg-base-100 p-8 sm:p-10 rounded certificate-border shadow-certificate flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute -right-16 -top-16 pointer-events-none opacity-[0.06]">
+              <GuillochePattern variant="seal" width={320} height={320} color="emerald" />
             </div>
+
+            <div>
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-kupon-emerald/10 text-xs font-mono font-bold text-kupon-emerald uppercase tracking-wider">
+                  <UserGroupIcon className="w-4 h-4" />
+                  Citizen Portal · Live App
+                </span>
+                <span className="text-[11px] font-mono text-kupon-emerald bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
+                  Ready to Test
+                </span>
+              </div>
+
+              <h3 className="text-2xl sm:text-4xl font-serif font-bold text-kupon-ink mb-3">For Everyday Investors</h3>
+              <p className="text-sm sm:text-base font-sans text-kupon-ink/80 leading-relaxed mb-6 max-w-xl">
+                Hold government bonds directly in your crypto wallet, earn steady ~6.5% annual returns paid monthly, and
+                trade peer-to-peer 24/7. Built-in pre-flight checks tell you if an address is eligible before you waste
+                any gas.
+              </p>
+
+              {/* Simulated Live Investor Wallet Specimen */}
+              <div className="p-5 rounded bg-[#F6F0E0] border border-kupon-gold/40 flex flex-col gap-3.5 mb-6">
+                <div className="flex justify-between items-center text-xs font-mono text-kupon-ink/70 pb-2 border-b border-kupon-gold/25">
+                  <span>Simulated Citizen Portfolio</span>
+                  <span className="text-kupon-emerald font-bold">● Verified Citizen (WNI)</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="text-[10px] uppercase font-mono text-kupon-ink/50">Holding Balance</div>
+                    <div className="text-2xl font-mono font-bold text-kupon-emerald">1,500 KPON</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] uppercase font-mono text-kupon-ink/50">Annual Coupon (6.5%)</div>
+                    <div className="text-base font-mono font-bold text-kupon-ink">Rp 97,500 / yr</div>
+                  </div>
+                </div>
+                <div className="text-[11px] font-sans text-kupon-ink/75 bg-base-100 p-2.5 rounded border border-base-300 flex items-center justify-between">
+                  <span>Pre-Flight Safety Verdict:</span>
+                  <span className="font-mono font-semibold text-emerald-800">✓ Transfer Allowed (Within Cap)</span>
+                </div>
+              </div>
+            </div>
+
             <Link
               href="/app"
-              className="btn btn-primary btn-sm text-kupon-ivory certificate-border-emerald font-sans w-full flex items-center justify-center gap-1.5"
+              className="btn btn-primary btn-md text-kupon-ivory certificate-border-emerald font-sans tracking-wide self-start flex items-center gap-2"
             >
-              <span>Launch App</span>
+              <span>Open Investor Portal</span>
               <ArrowRightIcon className="w-4 h-4" />
             </Link>
           </div>
 
-          {/* Step 2: Government */}
-          <div className="bg-base-100 p-8 rounded certificate-border shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="w-10 h-10 rounded bg-kupon-gold/15 text-kupon-gold flex items-center justify-center mb-6">
-                <BuildingLibraryIcon className="w-6 h-6" />
+          {/* Secondary Stack: Ministry of Finance & OJK Regulator Terminals */}
+          <div className="lg:col-span-5 flex flex-col gap-8 justify-between">
+            {/* Portal 2: Ministry of Finance (Debt Office) */}
+            <div className="bg-base-100 p-7 sm:p-8 rounded certificate-border shadow-sm flex flex-col justify-between flex-1">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-kupon-gold/15 text-[10px] font-mono font-bold text-kupon-gold uppercase tracking-wider">
+                    <BuildingLibraryIcon className="w-3.5 h-3.5" />
+                    Issuer Authority
+                  </span>
+                  <span className="text-[10px] font-mono text-kupon-ink/50">Task 7</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink mb-2">Debt Management Office</h3>
+                <p className="text-xs sm:text-sm font-sans text-kupon-ink/80 leading-relaxed mb-4">
+                  For the Ministry of Finance: verify citizen identity claims, authorize new bond tranches under the
+                  statutory series cap, and synchronize national registries without manual banking delays.
+                </p>
               </div>
-              <span className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold block mb-1">
-                Issuer Authority
-              </span>
-              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-3">Debt Management Office</h3>
-              <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-6">
-                Verify citizen identity claims, issue new bond batches under the official series cap, and manage the
-                national registry.
-              </p>
+              <Link
+                href="/registrar"
+                className="text-xs font-mono font-semibold text-kupon-emerald hover:text-kupon-gold inline-flex items-center gap-1 self-start"
+              >
+                <span>Inspect Registrar Portal (T7)</span>
+                <ArrowRightIcon className="w-3.5 h-3.5" />
+              </Link>
             </div>
-            <Link
-              href="/registrar"
-              className="btn btn-outline btn-sm border-kupon-gold text-kupon-ink hover:bg-kupon-gold/15 font-sans w-full flex items-center justify-center gap-1.5"
-            >
-              <span>Registrar Portal (T7)</span>
-              <ArrowRightIcon className="w-4 h-4" />
-            </Link>
-          </div>
 
-          {/* Step 3: Regulator */}
-          <div className="bg-base-100 p-8 rounded certificate-border shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="w-10 h-10 rounded bg-kupon-emerald/10 text-kupon-emerald flex items-center justify-center mb-6">
-                <ShieldCheckIcon className="w-6 h-6" />
+            {/* Portal 3: Financial Watchdog (OJK Regulator) */}
+            <div className="bg-base-100 p-7 sm:p-8 rounded certificate-border shadow-sm flex flex-col justify-between flex-1">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-kupon-emerald/10 text-[10px] font-mono font-bold text-kupon-emerald uppercase tracking-wider">
+                    <ShieldCheckIcon className="w-3.5 h-3.5" />
+                    Oversight &amp; Audit
+                  </span>
+                  <span className="text-[10px] font-mono text-kupon-ink/50">Task 8</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink mb-2">
+                  Regulator Terminal (OJK)
+                </h3>
+                <p className="text-xs sm:text-sm font-sans text-kupon-ink/80 leading-relaxed mb-4">
+                  For market supervisors: monitor holding distributions in real time, verify anti-whale caps, and test
+                  live transfer simulations across four sequential compliance scenarios with zero blind spots.
+                </p>
               </div>
-              <span className="text-xs font-mono uppercase tracking-wider text-kupon-emerald font-bold block mb-1">
-                Market Oversight
-              </span>
-              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-3">Regulator Terminal</h3>
-              <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-6">
-                Monitor bondholder distributions in real time, verify anti-whale caps, and simulate compliance checks
-                with zero blind spots.
-              </p>
+              <Link
+                href="/regulator"
+                className="text-xs font-mono font-semibold text-kupon-emerald hover:text-kupon-gold inline-flex items-center gap-1 self-start"
+              >
+                <span>Inspect Regulator Terminal (T8)</span>
+                <ArrowRightIcon className="w-3.5 h-3.5" />
+              </Link>
             </div>
-            <Link
-              href="/regulator"
-              className="btn btn-outline btn-sm border-kupon-emerald text-kupon-emerald hover:bg-kupon-emerald/10 font-sans w-full flex items-center justify-center gap-1.5"
-            >
-              <span>Regulator View (T8)</span>
-              <ArrowRightIcon className="w-4 h-4" />
-            </Link>
           </div>
         </div>
       </section>
