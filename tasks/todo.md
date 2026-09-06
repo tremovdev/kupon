@@ -32,6 +32,18 @@
 - [ ] Task 11: Threat model + diagram + README build-log + FEEDBACK.md (M)
 - [ ] Task 12: Demo rehearsal + video + submission (S)
 
+## Phase B — Brand overhaul (T13, fresh session)
+
+- [ ] T13a Theme foundation + YourContract cleanup (S)
+- [ ] T13b Layout shell + navigation (/app, /debugger) (S)
+- [ ] T13c Landing page — narasi + stats live (M)
+- [ ] T13d Debugger page merge (S)
+- [ ] T13e Logo & asset integration (S) *— menunggu aset Harry*
+- [ ] T13f QA + verify (S)
+
+> Detail: [plan-brand-overhaul.md](./plan-brand-overhaul.md) · prompts logo: [../branding/logo-prompts.md](../branding/logo-prompts.md)
+
+
 **Checkpoint C:** SPEC success criteria checked or consciously descoped (freeze Thu night).
 
 *Deferred by default (pull-forward rule): Privy (S), Uniswap v4 hook (M) — only after core locked + Gate 1 passed, with explicit sign-off.*
