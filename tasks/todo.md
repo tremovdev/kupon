@@ -36,7 +36,7 @@
 
 - [x] T13a Theme foundation + YourContract cleanup (S)
 - [x] T13b Layout shell + navigation (/app, /debugger) (S)
-- [ ] T13c Landing page — narasi + stats live (M)
+- [x] T13c Landing page — narasi + stats live (M)
 - [ ] T13d Debugger page merge (S)
 - [ ] T13e Logo & asset integration (S) *— menunggu aset Harry*
 - [ ] T13f QA + verify (S)
