@@ -96,13 +96,13 @@ export const Header = () => {
         </details>
 
         {/* Brand Logo & Wordmark Lockup */}
-        <Link href="/" passHref className="flex items-center gap-3 ml-1 mr-6 shrink-0 group">
-          <div className="relative w-9 h-9 flex items-center justify-center rounded-full overflow-hidden shrink-0 certificate-seal-ring bg-[#0c5242]">
+        <Link href="/" passHref className="flex items-center gap-2.5 ml-1 mr-6 shrink-0 group">
+          <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
             <Image
               src="/kupon-logo.svg"
               alt="Kupon Seal Mark"
-              width={36}
-              height={36}
+              width={40}
+              height={40}
               className="w-full h-full object-contain"
               priority
             />

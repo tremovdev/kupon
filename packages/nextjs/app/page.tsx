@@ -124,12 +124,12 @@ const Home: NextPage = () => {
 
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-kupon-gold/30 gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-kupon-gold/50 shadow-sm bg-[#0c5242]">
+                <div className="w-11 h-11 shrink-0 flex items-center justify-center">
                   <Image
                     src="/kupon-logo.svg"
                     alt="Kupon Seal Mark"
-                    width={40}
-                    height={40}
+                    width={44}
+                    height={44}
                     className="w-full h-full object-contain"
                   />
                 </div>
