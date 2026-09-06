@@ -108,6 +108,19 @@
 [data-theme] {
   background: #faf6ec;
   color: #14201c;
+
+  /* Override @scaffold-ui default blue tokens to Sovereign Certificate theme */
+  --color-sui-primary: #0e5e4a;
+  --color-sui-primary-subtle: rgba(201, 162, 39, 0.35);
+  --color-sui-primary-neutral: #f8f3e5;
+  --color-sui-primary-content: #14201c;
+  --color-sui-accent: rgba(20, 32, 28, 0.4);
+  --color-sui-base-content: #14201c;
+  --color-sui-input-border: rgba(201, 162, 39, 0.35);
+  --color-sui-input-background: #f8f3e5;
+  --color-sui-input-text: #14201c;
+  --color-sui-input-border-disabled: rgba(201, 162, 39, 0.2);
+  --color-sui-input-border-error: #b93829;
 }
 
 .btn {
@@ -120,6 +133,34 @@
 
 .link:hover {
   opacity: 85%;
+}
+
+/* Refine @scaffold-ui inputs to match Sovereign Certificate aesthetic */
+.sui-input-background {
+  background-color: #f8f3e5 !important;
+  border-radius: 0.5rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.sui-input-border {
+  border-color: rgba(201, 162, 39, 0.35) !important;
+  border-width: 1px !important;
+}
+
+div:focus-within.sui-input-border {
+  border-color: #0e5e4a !important;
+  box-shadow: 0 0 0 1px #0e5e4a !important;
+}
+
+.sui-input-text input::placeholder {
+  color: rgba(20, 32, 28, 0.4) !important;
+}
+
+.sui-input-text input {
+  color: #14201c !important;
+  font-family: var(--font-mono) !important;
 }
 
 /* Sovereign Certificate utilities */
