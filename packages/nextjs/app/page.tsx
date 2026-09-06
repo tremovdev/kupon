@@ -10,16 +10,12 @@ import {
   ArrowRightIcon,
   ArrowTopRightOnSquareIcon,
   BuildingLibraryIcon,
-  CheckBadgeIcon,
-  ClockIcon,
+  CheckIcon,
   CommandLineIcon,
-  CpuChipIcon,
   ExclamationTriangleIcon,
-  GlobeAltIcon,
-  LockClosedIcon,
-  ScaleIcon,
   ShieldCheckIcon,
   UserGroupIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { GuillochePattern } from "~~/components/GuillochePattern";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
@@ -70,104 +66,147 @@ const Home: NextPage = () => {
   const totalClaimsCount = claimLogs?.length ? claimLogs.length.toString() : "1";
 
   return (
-    <div className="flex flex-col w-full min-h-screen bg-kupon-ivory text-kupon-ink selection:bg-kupon-gold/30">
+    <div className="flex flex-col w-full min-h-screen bg-[#FAF6EC] text-[#14201C] selection:bg-kupon-gold/30">
       {/* ========================================================================= */}
-      {/* 1. HERO SECTION */}
+      {/* 1. ASYMMETRIC HERO SECTION */}
       {/* ========================================================================= */}
-      <section className="relative overflow-hidden pt-14 pb-20 md:pt-24 md:pb-28 px-4 sm:px-6 border-b border-kupon-gold/30 bg-gradient-to-b from-[#FAF6EC] via-[#F5EFE0] to-[#FAF6EC]">
-        {/* Subtle Guilloche Watermark */}
-        <div className="absolute -right-28 -top-28 pointer-events-none opacity-[0.06]">
-          <GuillochePattern variant="seal" width={680} height={680} color="emerald" />
+      <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28 px-4 sm:px-6 lg:px-8 border-b border-kupon-gold/30">
+        {/* Subtle Watermark Flourish */}
+        <div className="absolute -right-20 -top-20 pointer-events-none opacity-[0.05]">
+          <GuillochePattern variant="seal" width={700} height={700} color="emerald" />
         </div>
-        <div className="absolute -left-36 top-1/4 pointer-events-none opacity-[0.05]">
-          <GuillochePattern variant="rosette" width={600} height={600} color="gold" />
-        </div>
-        <div className="absolute bottom-0 inset-x-0 pointer-events-none opacity-25">
-          <GuillochePattern variant="waves" height={70} color="gold" />
+        <div className="absolute left-1/4 -bottom-10 pointer-events-none opacity-[0.04]">
+          <GuillochePattern variant="rosette" width={500} height={500} color="gold" />
         </div>
 
-        <div className="max-w-5xl mx-auto relative z-10 flex flex-col items-center text-center">
-          {/* Institutional Badge */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 mb-6 rounded bg-base-100/95 border border-kupon-gold shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-kupon-emerald animate-pulse" />
-            <span className="text-xs font-mono tracking-widest text-kupon-emerald uppercase font-semibold">
-              Indonesian Retail Bond on the Blockchain · SBN Ritel 2027
-            </span>
+        <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          {/* Left Column: Authoritative Editorial Voice */}
+          <div className="lg:col-span-7 flex flex-col items-start text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#F4EEDC] border border-kupon-gold/60 text-xs font-mono text-kupon-emerald mb-6">
+              <span className="w-2 h-2 rounded-full bg-kupon-emerald animate-pulse" />
+              SBN Ritel 2027 Onchain · Base Sepolia
+            </div>
+
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold text-kupon-ink tracking-tight leading-[1.08] mb-6">
+              The retail bond that enforces its own rules.
+            </h1>
+
+            <p className="text-lg sm:text-xl text-kupon-ink/80 font-sans leading-relaxed max-w-2xl mb-8">
+              Buying government bonds today means waiting days for bank approvals, dealing with slow paperwork, and
+              battling sold-out quotas. Kupon turns national debt into smart digital tokens: trade 24/7 in seconds, earn
+              reliable ~6.5% government-backed yield, and let the code handle all safety rules automatically.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-stretch sm:items-center">
+              <Link
+                href="/app"
+                className="btn btn-primary btn-lg px-8 font-sans font-medium text-kupon-ivory certificate-border-emerald tracking-wide shadow-sm hover:scale-[1.01] transition-transform flex items-center justify-center gap-2"
+              >
+                <span>Launch Investor App</span>
+                <ArrowRightIcon className="w-5 h-5" />
+              </Link>
+              <a
+                href="#thesis"
+                className="btn btn-outline btn-lg border-kupon-gold/80 text-kupon-ink hover:bg-kupon-gold/15 font-sans tracking-wide flex items-center justify-center"
+              >
+                How It Works ↓
+              </a>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-base-300/80 flex items-center gap-6 text-xs text-kupon-ink/65 font-sans">
+              <div className="flex items-center gap-1.5">
+                <CheckIcon className="w-4 h-4 text-kupon-emerald" />
+                <span>Zero Custody Overhead</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <CheckIcon className="w-4 h-4 text-kupon-emerald" />
+                <span>Sub-Second Settlement</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <CheckIcon className="w-4 h-4 text-kupon-emerald" />
+                <span>OJK POJK 3/2024 Sandbox</span>
+              </div>
+            </div>
           </div>
 
-          {/* Value Proposition Headline */}
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-serif font-bold text-kupon-ink tracking-tight max-w-4xl leading-[1.1] mb-6">
-            The retail bond that enforces its own rules.
-          </h1>
+          {/* Right Column: Physical-Digital Bond Certificate Specimen */}
+          <div className="lg:col-span-5 w-full">
+            <div className="bg-base-100 p-7 sm:p-8 rounded certificate-border shadow-certificate relative overflow-hidden">
+              {/* Corner Watermark */}
+              <div className="absolute -bottom-8 -right-8 pointer-events-none opacity-10">
+                <GuillochePattern variant="seal" width={160} height={160} color="emerald" />
+              </div>
 
-          {/* Simple, Human Subheadline */}
-          <p className="text-lg sm:text-xl md:text-2xl text-kupon-ink/85 max-w-3xl font-sans leading-relaxed mb-10">
-            Buying government bonds today means waiting days for bank approvals, dealing with slow paperwork, and
-            battling sold-out quotas. Kupon turns national bonds into smart digital tokens: trade in seconds 24/7, earn
-            reliable ~6.5% government-backed yield, and let the code handle all safety rules automatically.
-          </p>
-
-          {/* Action-Oriented CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto">
-            <Link
-              href="/app"
-              className="btn btn-primary btn-lg px-8 font-sans font-medium text-kupon-ivory certificate-border-emerald tracking-wide shadow-md hover:scale-[1.01] transition-transform w-full sm:w-auto flex items-center justify-center gap-2"
-            >
-              <span>Launch Investor App</span>
-              <ArrowRightIcon className="w-5 h-5" />
-            </Link>
-            <a
-              href="#market-paradox"
-              className="btn btn-outline btn-lg border-kupon-gold/80 text-kupon-ink hover:bg-kupon-gold/15 font-sans tracking-wide w-full sm:w-auto"
-            >
-              How It Works ↓
-            </a>
-          </div>
-
-          {/* Sovereign Certificate Specimen Preview */}
-          <div className="mt-14 w-full max-w-3xl bg-base-100 p-6 sm:p-7 rounded certificate-border shadow-certificate text-left relative overflow-hidden">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-5 border-b border-kupon-gold/30 gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 shrink-0 flex items-center justify-center">
-                  <Image
-                    src="/kupon-logo.svg"
-                    alt="Kupon Seal Mark"
-                    width={48}
-                    height={48}
-                    className="w-full h-full object-contain"
-                  />
+              {/* Certificate Header */}
+              <div className="flex items-center justify-between pb-5 border-b border-kupon-gold/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+                    <Image
+                      src="/kupon-logo.svg"
+                      alt="Kupon Seal Mark"
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-kupon-gold font-bold">
+                      Sovereign Debt Specimen
+                    </div>
+                    <div className="font-serif font-bold text-base text-kupon-emerald leading-tight">
+                      REPUBLIK INDONESIA
+                    </div>
+                  </div>
                 </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-mono text-kupon-ink/50 uppercase">Series Code</div>
+                  <div className="text-xs font-mono font-bold text-kupon-emerald">KPON-2027-WNI</div>
+                </div>
+              </div>
+
+              {/* Specimen Yield & Security Callout */}
+              <div className="my-6 p-4 rounded bg-[#F5EFE0] border border-kupon-gold/30 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-kupon-gold font-bold">
-                    Official Digital Bond Specimen
-                  </span>
-                  <div className="font-serif font-bold text-lg text-kupon-emerald leading-tight">
-                    REPUBLIK INDONESIA · SBN RITEL 2027
+                  <div className="text-[11px] font-sans text-kupon-ink/70">Fixed Sovereign Return</div>
+                  <div className="text-3xl font-serif font-bold text-kupon-ink">6.50% p.a.</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[11px] font-sans text-kupon-ink/70">Risk Profile</div>
+                  <div className="text-xs font-mono font-bold text-kupon-emerald uppercase tracking-wider">
+                    UU APBN Guaranteed
                   </div>
                 </div>
               </div>
-              <div className="text-left sm:text-right font-mono text-xs text-kupon-ink/70">
-                <div>SERIES CODE:</div>
-                <div className="text-kupon-emerald font-bold">KPON-2027-WNI</div>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 text-xs font-sans">
-              <div>
-                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Issuer Model</div>
-                <div className="font-semibold text-kupon-ink mt-0.5">Ministry of Finance (DJPPR)</div>
-              </div>
-              <div>
-                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Identity Check</div>
-                <div className="font-semibold text-kupon-ink mt-0.5">Verified Indonesian Citizens</div>
-              </div>
-              <div>
-                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Speed</div>
-                <div className="font-semibold text-kupon-emerald mt-0.5">Sub-Second on Base L2</div>
-              </div>
-              <div>
-                <div className="text-[10px] text-kupon-ink/60 uppercase font-mono">Sandbox Track</div>
-                <div className="font-semibold text-kupon-ink mt-0.5">OJK POJK 3/2024</div>
+              {/* Specimen Key-Value Ledger */}
+              <dl className="space-y-3 text-xs font-sans border-b border-base-300 pb-5">
+                <div className="flex justify-between items-center">
+                  <dt className="text-kupon-ink/65">Underlying Instrument</dt>
+                  <dd className="font-medium text-kupon-ink">SBN Ritel (Tradable ORI Model)</dd>
+                </div>
+                <div className="flex justify-between items-center">
+                  <dt className="text-kupon-ink/65">Citizen Identification</dt>
+                  <dd className="font-medium text-kupon-emerald">Verified Indonesian NIK / SID</dd>
+                </div>
+                <div className="flex justify-between items-center">
+                  <dt className="text-kupon-ink/65">Per-Wallet Holding Limit</dt>
+                  <dd className="font-mono font-medium text-kupon-ink">5,000 KPON Max</dd>
+                </div>
+                <div className="flex justify-between items-center">
+                  <dt className="text-kupon-ink/65">Settlement Layer</dt>
+                  <dd className="font-mono font-medium text-kupon-ink">Base Sepolia (L2)</dd>
+                </div>
+              </dl>
+
+              {/* Action Ribbon inside Certificate */}
+              <div className="pt-4 flex items-center justify-between text-[11px] text-kupon-ink/70">
+                <div className="flex items-center gap-1.5 font-mono">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                  <span>On-Chain Verified</span>
+                </div>
+                <Link href="/app" className="text-kupon-emerald hover:text-kupon-gold font-medium">
+                  Inspect Live Balance →
+                </Link>
               </div>
             </div>
           </div>
@@ -175,224 +214,253 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. THE MARKET THESIS (Simple, Eye-Opening Facts) */}
+      {/* 2. THE CONTINUOUS TREASURY LEDGER STRIP (No generic metric boxes) */}
       {/* ========================================================================= */}
-      <section id="market-paradox" className="py-20 px-4 sm:px-6 max-w-6xl mx-auto w-full">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="text-xs font-mono uppercase tracking-widest text-kupon-gold font-bold mb-2">
-            Why This Matters
+      <section className="border-b border-kupon-gold/30 bg-[#F4EEDC] py-6 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 divide-y md:divide-y-0 md:divide-x divide-kupon-gold/30">
+          <div className="flex-1 md:pr-6 flex flex-col">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60">Circulation</span>
+            <span className="text-2xl font-mono font-bold text-kupon-emerald tabular-nums">
+              {isLoadingSupply ? "..." : formattedSupply} KPON
+            </span>
+            <span className="text-[11px] text-kupon-ink/60 font-sans">Active bond tranches</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-kupon-ink mb-4">
+
+          <div className="flex-1 md:px-6 pt-4 md:pt-0 flex flex-col">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60">Total Series Cap</span>
+            <span className="text-2xl font-mono font-bold text-kupon-ink tabular-nums">
+              {isLoadingSeriesCap ? "..." : formattedSeriesCap} KPON
+            </span>
+            <span className="text-[11px] text-kupon-ink/60 font-sans">Statutory ceiling</span>
+          </div>
+
+          <div className="flex-1 md:px-6 pt-4 md:pt-0 flex flex-col">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60">
+              Retail Allocation Limit
+            </span>
+            <span className="text-2xl font-mono font-bold text-kupon-gold tabular-nums">
+              {isLoadingRetailCap ? "..." : formattedRetailCap} KPON
+            </span>
+            <span className="text-[11px] text-kupon-ink/60 font-sans">Enforced per wallet</span>
+          </div>
+
+          <div className="flex-1 md:pl-6 pt-4 md:pt-0 flex flex-col">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60">Verified Citizens</span>
+            <span className="text-2xl font-mono font-bold text-kupon-emerald tabular-nums">{totalClaimsCount}</span>
+            <span className="text-[11px] text-kupon-ink/60 font-sans">Onchain registry records</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 3. THE MARKET THESIS: EDITORIAL SPLIT (Not identical cards) */}
+      {/* ========================================================================= */}
+      <section id="thesis" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="max-w-3xl mb-16">
+          <h2 className="text-3xl sm:text-5xl font-serif font-bold text-kupon-ink tracking-tight mb-4">
             Why tokenized bonds make sense in Indonesia.
           </h2>
-          <p className="text-base sm:text-lg text-kupon-ink/80 font-sans leading-relaxed">
-            Over 21 million Indonesians already use crypto wallets, but only 1.1 million own government bonds. Kupon
-            bridges this gap: making safe, high-yield national bonds as easy to hold as digital cash.
+          <p className="text-lg text-kupon-ink/80 font-sans leading-relaxed">
+            Indonesia is one of the fastest-growing digital asset economies in the world. Yet traditional sovereign
+            wealth distribution remains trapped in manual paperwork.
           </p>
         </div>
 
-        {/* 3 High-Impact Fact Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-base-100 p-6 rounded certificate-border shadow-certificate flex flex-col justify-between">
+        {/* Editorial Data Comparison */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-20">
+          {/* Main Callout: The Adoption Paradox */}
+          <div className="lg:col-span-7 bg-base-100 p-8 sm:p-10 rounded certificate-border shadow-certificate flex flex-col justify-between">
             <div>
-              <div className="text-3xl sm:text-4xl font-mono font-bold text-kupon-emerald mb-2">21M+ vs 1.1M</div>
-              <div className="font-serif font-bold text-lg text-kupon-ink mb-2">Huge Digital Audience</div>
-              <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
-                Over 21 million Indonesians own crypto accounts, but fewer than 1.1 million own government bonds. Young
-                people want digital assets; Kupon gives them a safe one backed by the nation.
+              <div className="text-xs font-mono uppercase tracking-widest text-kupon-gold font-bold mb-3">
+                The 20x Adoption Gap
+              </div>
+              <div className="text-4xl sm:text-6xl font-mono font-bold text-kupon-emerald mb-4">21M+ vs 1.1M</div>
+              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-4">
+                Millions of crypto users. Only a handful of bondholders.
+              </h3>
+              <p className="text-base text-kupon-ink/80 font-sans leading-relaxed">
+                According to official Bappebti statistics, over 21 million Indonesians trade crypto assets. Meanwhile,
+                KSEI records show fewer than 1.1 million citizens hold retail sovereign bonds (SBN Ritel). The younger
+                generation already has digital wallets, but national debt has never met them where their wealth lives.
               </p>
             </div>
-            <div className="mt-6 pt-3 border-t border-base-300 text-[11px] font-mono text-kupon-ink/60">
-              Source: Bappebti &amp; KSEI Data
+            <div className="mt-8 pt-4 border-t border-base-300 text-xs font-mono text-kupon-ink/60 flex items-center justify-between">
+              <span>Source: Bappebti &amp; KSEI Official Data</span>
+              <span>Top 7 Global Adoption Index</span>
             </div>
           </div>
 
-          <div className="bg-base-100 p-6 rounded certificate-border shadow-certificate flex flex-col justify-between">
-            <div>
-              <div className="text-3xl sm:text-4xl font-mono font-bold text-kupon-gold mb-2">6.25% - 6.8%</div>
-              <div className="font-serif font-bold text-lg text-kupon-ink mb-2">Government-Backed Yield</div>
-              <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
-                Unlike risky meme tokens, Indonesian government bonds pay a predictable ~6.5% annual return guaranteed
-                by the national state budget. Kupon brings that reliable income straight onchain.
-              </p>
+          {/* Side Stack: Yield & Regulation */}
+          <div className="lg:col-span-5 flex flex-col gap-6">
+            <div className="bg-base-100 p-6 sm:p-7 rounded certificate-border shadow-sm flex-1 flex flex-col justify-between">
+              <div>
+                <div className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold mb-1">
+                  Guaranteed Wealth
+                </div>
+                <h4 className="text-xl font-serif font-bold text-kupon-ink mb-2">~6.5% Government-Backed Yield</h4>
+                <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed">
+                  Unlike volatile meme tokens or 4% USD RWAs, Indonesian government bonds pay an attractive, state
+                  budget-backed fixed return guaranteed by national law (UU APBN). Kupon brings this secure yield
+                  straight to digital wallets.
+                </p>
+              </div>
             </div>
-            <div className="mt-6 pt-3 border-t border-base-300 text-[11px] font-mono text-kupon-ink/60">
-              Guaranteed by Indonesian Law (UU APBN)
-            </div>
-          </div>
 
-          <div className="bg-base-100 p-6 rounded certificate-border shadow-certificate flex flex-col justify-between">
-            <div>
-              <div className="text-3xl sm:text-4xl font-mono font-bold text-kupon-emerald mb-2">Legal Sandbox</div>
-              <div className="font-serif font-bold text-lg text-kupon-ink mb-2">Clear Regulatory Support</div>
-              <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
-                Indonesia&apos;s financial authority (OJK) has an active regulatory sandbox for real-world asset
-                tokenization under the new Financial Law (UU P2SK). This is built to fit official guidelines.
-              </p>
-            </div>
-            <div className="mt-6 pt-3 border-t border-base-300 text-[11px] font-mono text-kupon-ink/60">
-              Framework: OJK POJK 3/2024
+            <div className="bg-base-100 p-6 sm:p-7 rounded certificate-border shadow-sm flex-1 flex flex-col justify-between">
+              <div>
+                <div className="text-xs font-mono uppercase tracking-wider text-kupon-emerald font-bold mb-1">
+                  Legal Grounding
+                </div>
+                <h4 className="text-xl font-serif font-bold text-kupon-ink mb-2">Active Regulatory Sandbox</h4>
+                <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed">
+                  Indonesia is not building in a legal vacuum. Under the Financial Sector Omnibus Law (UU P2SK) and OJK
+                  POJK 3/2024, the financial regulator actively supports real-world asset tokenization testbeds.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* The Practical Comparison */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16 pt-12 border-t border-base-300">
-          {/* Legacy Pain Points */}
-          <div className="bg-[#EFE8D6] p-8 rounded border border-base-300 flex flex-col justify-between">
-            <div>
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-kupon-ink/10 text-xs font-mono uppercase tracking-wider text-kupon-ink font-semibold mb-4">
-                <ClockIcon className="w-4 h-4 text-kupon-ink/70" />
-                Traditional Government Bonds
+        {/* The Side-by-Side Ledger: Old Way vs Kupon */}
+        <div className="rounded certificate-border overflow-hidden bg-base-100 shadow-certificate">
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-kupon-gold/30">
+            {/* The Old Way */}
+            <div className="p-8 sm:p-10 bg-[#FAF4E6]">
+              <div className="flex items-center gap-2 mb-6">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-700" />
+                <h3 className="font-serif font-bold text-xl text-kupon-ink m-0">How Government Bonds Work Today</h3>
               </div>
-              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-4">How It Works Today</h3>
-              <ul className="space-y-4 text-sm font-sans text-kupon-ink/80 list-none p-0">
-                <li className="flex items-start gap-3">
-                  <span className="text-red-700 font-bold mt-0.5">✕</span>
-                  <div>
-                    <strong>Hard to Sell Early:</strong> If you need your money before the bond matures in 3 years,
-                    selling back to the bank is slow, expensive, and limited to bank hours.
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-red-700 font-bold mt-0.5">✕</span>
-                  <div>
-                    <strong>Days to Settle (T+2):</strong> Traditional interbank clearing takes up to two full business
-                    days for cash to arrive in your account.
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-red-700 font-bold mt-0.5">✕</span>
-                  <div>
-                    <strong>Sold Out in Minutes:</strong> Bonds are only sold a few times a year. Quotas on apps like
-                    Bibit or Bareksa vanish quickly, leaving many everyday investors empty-handed.
-                  </div>
-                </li>
-              </ul>
-            </div>
-            <div className="mt-8 pt-4 border-t border-kupon-ink/15 text-xs font-mono text-kupon-ink/60">
-              Old Model: Slow, paper-heavy, limited trading hours
-            </div>
-          </div>
 
-          {/* Kupon Solution */}
-          <div className="bg-base-100 p-8 rounded certificate-border shadow-certificate flex flex-col justify-between">
-            <div>
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-kupon-emerald/10 text-xs font-mono uppercase tracking-wider text-kupon-emerald font-semibold mb-4 border border-kupon-emerald/30">
-                <CpuChipIcon className="w-4 h-4 text-kupon-emerald" />
-                The Kupon Experience
-              </div>
-              <h3 className="text-2xl font-serif font-bold text-kupon-emerald mb-4">How It Works With Kupon</h3>
-              <ul className="space-y-4 text-sm font-sans text-kupon-ink/85 list-none p-0">
-                <li className="flex items-start gap-3">
-                  <span className="text-kupon-emerald font-bold mt-0.5">✓</span>
+              <ul className="space-y-6 text-sm font-sans text-kupon-ink/85 list-none p-0 m-0">
+                <li className="flex items-start gap-3.5">
+                  <XMarkIcon className="w-5 h-5 text-red-700 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Instant 24/7 Liquidity:</strong> Buy, sell, or transfer your bonds in seconds, day or night,
-                    on a fast Layer 2 network without waiting for banks to open.
+                    <strong className="block text-kupon-ink font-semibold mb-1">Hard to Sell Before Maturity:</strong>
+                    If you need your money before the 3-year term ends, you must sell back through distributing banks
+                    during banking hours, often accepting wide dealer spreads.
                   </div>
                 </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-kupon-emerald font-bold mt-0.5">✓</span>
+                <li className="flex items-start gap-3.5">
+                  <XMarkIcon className="w-5 h-5 text-red-700 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Automatic Rule Checks:</strong> The smart contract automatically checks citizen status and
-                    fair limits, stopping mistakes before you spend any gas fee.
+                    <strong className="block text-kupon-ink font-semibold mb-1">Days of Waiting for Cash (T+2):</strong>
+                    Traditional clearing systems take up to two full business days for settlement funds to reach your
+                    account.
                   </div>
                 </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-kupon-emerald font-bold mt-0.5">✓</span>
+                <li className="flex items-start gap-3.5">
+                  <XMarkIcon className="w-5 h-5 text-red-700 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Targeted Safety Freezes:</strong> If a wallet is compromised or sanctioned, officials can
-                    freeze just that one account without stopping trading for the rest of the market.
+                    <strong className="block text-kupon-ink font-semibold mb-1">Sold Out in Minutes:</strong>
+                    New bonds only issue a few times a year. Quotas on apps like Bibit or Bareksa vanish within minutes,
+                    leaving retail investors empty-handed.
                   </div>
                 </li>
               </ul>
             </div>
-            <div className="mt-8 pt-4 border-t border-kupon-gold/30 text-xs font-mono text-kupon-emerald font-semibold">
-              Kupon Model: Instant settlement, automated protection
+
+            {/* The Kupon Way */}
+            <div className="p-8 sm:p-10 bg-base-100">
+              <div className="flex items-center gap-2 mb-6">
+                <span className="w-2.5 h-2.5 rounded-full bg-kupon-emerald" />
+                <h3 className="font-serif font-bold text-xl text-kupon-emerald m-0">How It Works With Kupon</h3>
+              </div>
+
+              <ul className="space-y-6 text-sm font-sans text-kupon-ink/90 list-none p-0 m-0">
+                <li className="flex items-start gap-3.5">
+                  <CheckIcon className="w-5 h-5 text-kupon-emerald shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-kupon-emerald font-semibold mb-1">Instant 24/7 Liquidity:</strong>
+                    Trade or transfer your bonds peer-to-peer in seconds, day or night, on Base L2 without waiting for
+                    banks to open.
+                  </div>
+                </li>
+                <li className="flex items-start gap-3.5">
+                  <CheckIcon className="w-5 h-5 text-kupon-emerald shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-kupon-emerald font-semibold mb-1">Automatic Rule Enforcing:</strong>
+                    The smart contract autonomously checks citizen eligibility and quota limits before spending any gas
+                    fees.
+                  </div>
+                </li>
+                <li className="flex items-start gap-3.5">
+                  <CheckIcon className="w-5 h-5 text-kupon-emerald shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-kupon-emerald font-semibold mb-1">
+                      Targeted Account Protection:
+                    </strong>
+                    If an account is flagged for court sanctions or theft, authorities can freeze just that one wallet
+                    without stopping the market for honest citizens.
+                  </div>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. THE THREE SIMPLE RULES */}
+      {/* 4. THE SOVEREIGN CHARTER (Articles of Law, Not Floating Cards) */}
       {/* ========================================================================= */}
-      <section className="py-20 px-4 sm:px-6 bg-[#F6F0E0] border-t border-b border-kupon-gold/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="text-xs font-mono uppercase tracking-widest text-kupon-emerald font-bold mb-2">
-              Three Simple Rules
-            </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-kupon-ink mb-4">
-              Designed to protect everyday citizens.
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#F6F0E0] border-t border-b border-kupon-gold/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-5xl font-serif font-bold text-kupon-ink tracking-tight mb-4">
+              Three rules that protect national wealth.
             </h2>
             <p className="text-base sm:text-lg text-kupon-ink/80 font-sans leading-relaxed">
-              Indonesian retail bond regulations exist to make sure national wealth is shared fairly. Kupon turns these
-              legal protections into simple, unskippable rules in code.
+              Indonesian retail bond regulations exist to make sure national wealth is shared fairly among citizens.
+              Kupon translates these statutory protections into immutable smart contract guarantees.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Pillar 1 */}
-            <div className="bg-base-100 rounded certificate-border p-7 flex flex-col justify-between shadow-certificate hover:shadow-certificate-lg transition-shadow">
-              <div>
-                <div className="w-12 h-12 rounded bg-kupon-emerald/10 border border-kupon-emerald/30 flex items-center justify-center text-kupon-emerald mb-5">
-                  <GlobeAltIcon className="w-6 h-6" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold mb-1">
-                  Rule 1 · Citizens First
-                </div>
-                <h3 className="text-xl font-serif font-bold text-kupon-ink mb-3">Indonesian Residents Only</h3>
-                <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-4">
-                  National bond profits belong to citizens. Only wallets verified as Indonesian residents can hold or
-                  receive tokens, keeping national wealth in the country.
-                </p>
+          {/* Unified Sovereign Charter Container */}
+          <div className="bg-base-100 rounded certificate-border shadow-certificate divide-y divide-kupon-gold/30">
+            {/* Provision I */}
+            <div className="p-8 sm:p-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+              <div className="md:col-span-4 flex flex-col">
+                <span className="font-mono text-xs font-bold text-kupon-gold uppercase tracking-wider mb-1">
+                  Article I · Sovereignty
+                </span>
+                <h3 className="font-serif font-bold text-2xl text-kupon-ink">Indonesian Residents Only</h3>
+                <span className="text-xs font-mono text-kupon-emerald mt-2">Code: R1-RESIDENCY</span>
               </div>
-              <div className="pt-4 border-t border-base-300 text-xs font-mono text-kupon-emerald font-medium flex items-center justify-between">
-                <span>Code Rule: R1-RESIDENCY</span>
-                <span className="text-[10px] text-kupon-ink/50 font-sans">KTP/SID Verification</span>
+              <div className="md:col-span-8 text-sm font-sans text-kupon-ink/85 leading-relaxed">
+                National bond profits belong to citizens. Only wallets possessing an authorized identity claim
+                (mirroring the KSEI Single Investor Identification / e-KTP registry) can receive or hold tokens,
+                preventing unauthorized overseas capital from draining citizen quotas.
               </div>
             </div>
 
-            {/* Pillar 2 */}
-            <div className="bg-base-100 rounded certificate-border p-7 flex flex-col justify-between shadow-certificate hover:shadow-certificate-lg transition-shadow">
-              <div>
-                <div className="w-12 h-12 rounded bg-kupon-gold/15 border border-kupon-gold/40 flex items-center justify-center text-kupon-gold mb-5">
-                  <ScaleIcon className="w-6 h-6" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold mb-1">
-                  Rule 2 · Fair Shares
-                </div>
-                <h3 className="text-xl font-serif font-bold text-kupon-ink mb-3">No Giant Whales</h3>
-                <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-4">
-                  Retail bonds are meant for ordinary families, not giant hedge funds. Every regular wallet has a strict
-                  5,000 token limit so rich whales can&apos;t hoard all the supply.
-                </p>
+            {/* Provision II */}
+            <div className="p-8 sm:p-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+              <div className="md:col-span-4 flex flex-col">
+                <span className="font-mono text-xs font-bold text-kupon-gold uppercase tracking-wider mb-1">
+                  Article II · Fairness
+                </span>
+                <h3 className="font-serif font-bold text-2xl text-kupon-ink">No Giant Whales</h3>
+                <span className="text-xs font-mono text-kupon-gold mt-2">Code: R2-CAP (5,000 Max)</span>
               </div>
-              <div className="pt-4 border-t border-base-300 text-xs font-mono text-kupon-gold font-medium flex items-center justify-between">
-                <span>Code Rule: R2-CAP</span>
-                <span className="text-[10px] text-kupon-ink/50 font-sans">5,000 Token Max</span>
+              <div className="md:col-span-8 text-sm font-sans text-kupon-ink/85 leading-relaxed">
+                Retail bonds are meant for everyday families, not giant hedge funds. Every regular citizen wallet has a
+                strict 5,000 token ceiling. If an account attempts to acquire more than its share, the smart contract
+                reverts instantly, ensuring fair distribution across society.
               </div>
             </div>
 
-            {/* Pillar 3 */}
-            <div className="bg-base-100 rounded certificate-border p-7 flex flex-col justify-between shadow-certificate hover:shadow-certificate-lg transition-shadow">
-              <div>
-                <div className="w-12 h-12 rounded bg-red-800/10 border border-red-800/30 flex items-center justify-center text-red-800 mb-5">
-                  <LockClosedIcon className="w-6 h-6" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold mb-1">
-                  Rule 3 · Rapid Safety
-                </div>
-                <h3 className="text-xl font-serif font-bold text-kupon-ink mb-3">Instant Suspicious Freezes</h3>
-                <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-4">
-                  If a wallet is stolen, compromised, or sanctioned, authorities can freeze that specific wallet in
-                  seconds without shutting down trading for honest users.
-                </p>
+            {/* Provision III */}
+            <div className="p-8 sm:p-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+              <div className="md:col-span-4 flex flex-col">
+                <span className="font-mono text-xs font-bold text-kupon-gold uppercase tracking-wider mb-1">
+                  Article III · State Control
+                </span>
+                <h3 className="font-serif font-bold text-2xl text-kupon-ink">Targeted Safety Freezes</h3>
+                <span className="text-xs font-mono text-red-800 mt-2">Code: R3-FROZEN</span>
               </div>
-              <div className="pt-4 border-t border-base-300 text-xs font-mono text-red-800 font-medium flex items-center justify-between">
-                <span>Code Rule: R3-FROZEN</span>
-                <span className="text-[10px] text-kupon-ink/50 font-sans">Surgical Freeze</span>
+              <div className="md:col-span-8 text-sm font-sans text-kupon-ink/85 leading-relaxed">
+                If an account is stolen, compromised, or placed under legal sanctions by authorities, compliance
+                officers can revoke its identity claim in seconds. Outgoing transfers from that specific wallet are
+                immediately frozen without pausing secondary trading for the rest of the nation.
               </div>
             </div>
           </div>
@@ -400,83 +468,80 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. THE 3-PORTAL ECOSYSTEM */}
+      {/* 5. THE 3-PORTAL ECOSYSTEM (Stepped Workflow, Not Identical Cards) */}
       {/* ========================================================================= */}
-      <section className="py-20 px-4 sm:px-6 max-w-6xl mx-auto w-full">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="text-xs font-mono uppercase tracking-widest text-kupon-gold font-bold mb-2">
-            Built for Real Use
-          </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-kupon-ink mb-4">
-            Simple portals for citizens, issuers, and watchdogs.
+      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h2 className="text-3xl sm:text-5xl font-serif font-bold text-kupon-ink tracking-tight mb-4">
+            Built for real-world governance.
           </h2>
           <p className="text-base sm:text-lg text-kupon-ink/80 font-sans leading-relaxed">
-            See how different people interact with the Kupon system.
+            Three dedicated interfaces designed for the complete sovereign bond lifecycle.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Persona 1: Investor */}
-          <div className="bg-base-100 rounded certificate-border p-7 flex flex-col justify-between shadow-certificate">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Step 1: Citizens */}
+          <div className="bg-base-100 p-8 rounded certificate-border shadow-sm flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <UserGroupIcon className="w-5 h-5 text-kupon-emerald" />
-                <span className="text-xs font-mono uppercase tracking-wider text-kupon-emerald font-bold">
-                  For Citizens
-                </span>
+              <div className="w-10 h-10 rounded bg-kupon-emerald/10 text-kupon-emerald flex items-center justify-center mb-6">
+                <UserGroupIcon className="w-6 h-6" />
               </div>
-              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-2">Investor Portal</h3>
+              <span className="text-xs font-mono uppercase tracking-wider text-kupon-emerald font-bold block mb-1">
+                Citizen Portal
+              </span>
+              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-3">Investor Experience</h3>
               <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-6">
-                Check your bond balance and send tokens easily. If you enter an address that isn&apos;t allowed to
-                receive bonds, the app explains why before you waste any gas fees.
+                Check holdings, send tokens, and receive coupon payments with pre-flight compliance feedback before
+                spending any gas fees.
               </p>
             </div>
             <Link
               href="/app"
               className="btn btn-primary btn-sm text-kupon-ivory certificate-border-emerald font-sans w-full flex items-center justify-center gap-1.5"
             >
-              <span>Launch Investor App</span>
+              <span>Launch App</span>
               <ArrowRightIcon className="w-4 h-4" />
             </Link>
           </div>
 
-          {/* Persona 2: Registrar */}
-          <div className="bg-base-100 rounded certificate-border p-7 flex flex-col justify-between shadow-certificate">
+          {/* Step 2: Government */}
+          <div className="bg-base-100 p-8 rounded certificate-border shadow-sm flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <BuildingLibraryIcon className="w-5 h-5 text-kupon-gold" />
-                <span className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold">
-                  For the Government
-                </span>
+              <div className="w-10 h-10 rounded bg-kupon-gold/15 text-kupon-gold flex items-center justify-center mb-6">
+                <BuildingLibraryIcon className="w-6 h-6" />
               </div>
-              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-2">Debt Management Office</h3>
+              <span className="text-xs font-mono uppercase tracking-wider text-kupon-gold font-bold block mb-1">
+                Issuer Authority
+              </span>
+              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-3">Debt Management Office</h3>
               <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-6">
-                Authorize citizen identities, issue new bond batches within the legal limit, and manage the national
-                registry without manual spreadsheets.
+                Verify citizen identity claims, issue new bond batches under the official series cap, and manage the
+                national registry.
               </p>
             </div>
             <Link
               href="/registrar"
-              className="btn btn-outline btn-sm border-kupon-gold text-kupon-ink hover:bg-kupon-gold/10 font-sans w-full flex items-center justify-center gap-1.5"
+              className="btn btn-outline btn-sm border-kupon-gold text-kupon-ink hover:bg-kupon-gold/15 font-sans w-full flex items-center justify-center gap-1.5"
             >
               <span>Registrar Portal (T7)</span>
               <ArrowRightIcon className="w-4 h-4" />
             </Link>
           </div>
 
-          {/* Persona 3: Regulator */}
-          <div className="bg-base-100 rounded certificate-border p-7 flex flex-col justify-between shadow-certificate">
+          {/* Step 3: Regulator */}
+          <div className="bg-base-100 p-8 rounded certificate-border shadow-sm flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <ShieldCheckIcon className="w-5 h-5 text-kupon-emerald" />
-                <span className="text-xs font-mono uppercase tracking-wider text-kupon-emerald font-bold">
-                  For Watchdogs
-                </span>
+              <div className="w-10 h-10 rounded bg-kupon-emerald/10 text-kupon-emerald flex items-center justify-center mb-6">
+                <ShieldCheckIcon className="w-6 h-6" />
               </div>
-              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-2">Regulator Terminal</h3>
+              <span className="text-xs font-mono uppercase tracking-wider text-kupon-emerald font-bold block mb-1">
+                Market Oversight
+              </span>
+              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-3">Regulator Terminal</h3>
               <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed mb-6">
-                Watch transactions live, check that no one is hoarding extra tokens, and test safety scenarios with
-                complete transparency and zero blind spots.
+                Monitor bondholder distributions in real time, verify anti-whale caps, and simulate compliance checks
+                with zero blind spots.
               </p>
             </div>
             <Link
@@ -491,78 +556,9 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 5. LIVE STATS TELEMETRY STRIP */}
+      {/* 6. TECHNICAL BRIDGE: FOR DEVELOPERS & JUDGES */}
       {/* ========================================================================= */}
-      <section className="bg-gradient-to-r from-[#FAF6EC] via-[#F4EEDC] to-[#FAF6EC] border-t border-b border-kupon-gold/30 py-10 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 pb-2 border-b border-base-300">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
-              <h2 className="text-xs font-mono uppercase tracking-widest text-kupon-ink font-bold m-0">
-                Live Onchain Verification (Base Sepolia · Chain 84532)
-              </h2>
-            </div>
-            <div className="text-[11px] font-mono text-kupon-ink/60 mt-1 sm:mt-0">
-              Live data direct from verified smart contracts
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-base-100 p-5 rounded border border-kupon-gold/40 shadow-sm">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60 mb-1">
-                Bonds in Circulation
-              </div>
-              <div className="text-2xl sm:text-3xl font-mono font-bold text-kupon-emerald tabular-nums">
-                {isLoadingSupply ? <span className="text-base text-kupon-ink/40">Polling...</span> : formattedSupply}
-              </div>
-              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">KPON issued so far</div>
-            </div>
-
-            <div className="bg-base-100 p-5 rounded border border-kupon-gold/40 shadow-sm">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60 mb-1">
-                Max Series Limit
-              </div>
-              <div className="text-2xl sm:text-3xl font-mono font-bold text-kupon-ink tabular-nums">
-                {isLoadingSeriesCap ? (
-                  <span className="text-base text-kupon-ink/40">Polling...</span>
-                ) : (
-                  formattedSeriesCap
-                )}
-              </div>
-              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">Total bond issuance cap</div>
-            </div>
-
-            <div className="bg-base-100 p-5 rounded border border-kupon-gold/40 shadow-sm">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60 mb-1">
-                Max Limit Per Person
-              </div>
-              <div className="text-2xl sm:text-3xl font-mono font-bold text-kupon-gold tabular-nums">
-                {isLoadingRetailCap ? (
-                  <span className="text-base text-kupon-ink/40">Polling...</span>
-                ) : (
-                  formattedRetailCap
-                )}
-              </div>
-              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">Stops hoarding by whales</div>
-            </div>
-
-            <div className="bg-base-100 p-5 rounded border border-kupon-gold/40 shadow-sm">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-kupon-ink/60 mb-1">
-                Verified Citizens
-              </div>
-              <div className="text-2xl sm:text-3xl font-mono font-bold text-kupon-emerald tabular-nums">
-                {totalClaimsCount}
-              </div>
-              <div className="text-[10px] font-sans text-kupon-ink/60 mt-1">Identity checks onchain</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 6. TECHNICAL AUDIT BRIDGE (For Developers and Judges) */}
-      {/* ========================================================================= */}
-      <section className="py-16 px-4 sm:px-6 max-w-5xl mx-auto w-full">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
         <div className="bg-base-100 p-8 sm:p-10 rounded certificate-border shadow-certificate flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-kupon-emerald/10 text-[10px] font-mono uppercase tracking-widest text-kupon-emerald font-bold mb-2">
@@ -573,8 +569,8 @@ const Home: NextPage = () => {
               Want to see the actual smart contracts?
             </h2>
             <p className="text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
-              Inspect decoded rule errors (<code className="font-mono text-xs">Kupon__RuleViolated</code>), interact
-              directly with verified contracts on Base Sepolia, and test contract functions in our Protocol Debugger.
+              Inspect decoded rule errors (<code className="font-mono text-xs">Kupon__RuleViolated</code>), test read
+              and write methods on verified contracts, and explore block events in our Protocol Debugger.
             </p>
           </div>
 
@@ -593,10 +589,10 @@ const Home: NextPage = () => {
       {/* ========================================================================= */}
       {/* 7. REGULATORY SANDBOX & DEMO DISCLAIMER */}
       {/* ========================================================================= */}
-      <section className="pb-16 px-4 sm:px-6 max-w-5xl mx-auto w-full">
+      <section className="pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
         <div className="p-6 sm:p-8 rounded bg-[#F4EEDC] border border-kupon-gold/40 text-xs font-sans text-kupon-ink/85 leading-relaxed flex flex-col gap-4">
           <div className="flex items-center gap-2 font-serif font-bold text-sm text-kupon-emerald">
-            <CheckBadgeIcon className="w-4 h-4 text-kupon-emerald" />
+            <CheckIcon className="w-4 h-4 text-kupon-emerald" />
             <span>Indonesian Financial Innovation Sandbox Framework</span>
           </div>
           <p className="m-0">
