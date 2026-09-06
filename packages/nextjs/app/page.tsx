@@ -401,10 +401,10 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. THE THREE AUTONOMOUS GUARDRAILS */}
+      {/* 4. THE THREE AUTONOMOUS GUARDRAILS (Open Editorial Layout, Zero Boxes) */}
       {/* ========================================================================= */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#F6F0E0] border-t border-b border-kupon-gold/30">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#FAF6EC] via-[#F5EFE0] to-[#FAF6EC] border-t border-b border-kupon-gold/30">
+        <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="max-w-3xl mb-16 text-left">
             <h2 className="text-3xl sm:text-5xl font-serif font-bold text-kupon-ink tracking-tight mb-4">
@@ -416,126 +416,88 @@ const Home: NextPage = () => {
             </p>
           </div>
 
-          {/* Dynamic 3-Guardrail Layout */}
-          <div className="space-y-8">
-            {/* Guardrail 1: Verified Citizens First */}
-            <div className="bg-base-100 rounded certificate-border shadow-certificate p-8 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-7">
-                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-kupon-emerald/10 text-kupon-emerald font-mono text-xs font-semibold mb-3">
-                  <GlobeAltIcon className="w-4 h-4" />
-                  Identity Gate · R1-RESIDENCY
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-kupon-ink mb-3">
-                  Verified Indonesian Residents Only
-                </h3>
-                <p className="text-sm sm:text-base font-sans text-kupon-ink/80 leading-relaxed max-w-xl mb-4">
-                  Sovereign debt yields belong to citizens. Only wallets possessing an authorized identity claim
-                  (mirroring the national KSEI SID / e-KTP registry) can receive or hold tokens, preventing unauthorized
-                  overseas capital from draining citizen quotas.
-                </p>
-                <div className="text-xs font-mono text-kupon-ink/50">
-                  Statutory Basis: Peraturan Menteri Keuangan (PMK) SBN Ritel
-                </div>
+          {/* Open Broadsheet Layout (Zero Boxes, Pure Whitespace & Subtle Dividers) */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-0 lg:divide-x divide-kupon-gold/35 items-start">
+            {/* Rule 1 */}
+            <div className="flex flex-col lg:pr-10">
+              <div className="text-4xl sm:text-5xl font-serif font-bold text-kupon-emerald mb-4 select-none">01</div>
+              <div className="flex items-center gap-2 text-xs font-mono text-kupon-emerald font-semibold uppercase tracking-wider mb-2">
+                <GlobeAltIcon className="w-4 h-4" />
+                <span>R1-RESIDENCY</span>
               </div>
+              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-3 leading-snug">
+                Indonesian Residents Only
+              </h3>
+              <p className="text-sm sm:text-base font-sans text-kupon-ink/80 leading-relaxed mb-6">
+                National bond profits belong to citizens. Only wallets possessing an authorized identity claim (matching
+                the national KSEI SID and e-KTP registry) can receive or hold tokens, preventing unauthorized overseas
+                funds from draining domestic quotas.
+              </p>
 
-              {/* Visual Simulation Pill */}
-              <div className="lg:col-span-5 bg-[#F5EFE0] p-5 sm:p-6 rounded border border-kupon-gold/40 flex flex-col gap-3">
-                <div className="text-[11px] font-mono text-kupon-ink/60 uppercase tracking-wider">
-                  Transfer Gate Evaluation
+              <div className="mt-auto pt-4 border-t border-base-300 flex flex-col gap-2 text-xs font-sans">
+                <div className="flex items-center gap-2 text-kupon-emerald font-medium">
+                  <CheckIcon className="w-4 h-4 shrink-0" />
+                  <span>Verified Citizens Settle Instantly</span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded bg-base-100 border border-base-300 text-xs font-mono">
-                  <span className="flex items-center gap-2 text-kupon-ink/75">
-                    <span className="w-2 h-2 rounded-full bg-red-600" />
-                    Unverified Wallet
-                  </span>
-                  <span className="text-red-700 font-bold">Transfer Blocked</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded bg-base-100 border border-kupon-emerald/40 text-xs font-mono">
-                  <span className="flex items-center gap-2 text-kupon-emerald font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                    Verified Citizen (WNI)
-                  </span>
-                  <span className="text-kupon-emerald font-bold">Settles Instantly</span>
+                <div className="flex items-center gap-2 text-red-700/85 font-medium">
+                  <XMarkIcon className="w-4 h-4 shrink-0" />
+                  <span>Unregistered Wallets Blocked</span>
                 </div>
               </div>
             </div>
 
-            {/* Guardrail 2: Anti-Whale Limit */}
-            <div className="bg-base-100 rounded certificate-border shadow-certificate p-8 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-7">
-                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-kupon-gold/15 text-kupon-gold font-mono text-xs font-semibold mb-3">
-                  <ScaleIcon className="w-4 h-4" />
-                  Fair Distribution · R2-CAP
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-kupon-ink mb-3">
-                  Strict 5,000 Token Anti-Whale Ceiling
-                </h3>
-                <p className="text-sm sm:text-base font-sans text-kupon-ink/80 leading-relaxed max-w-xl mb-4">
-                  Retail bonds exist for ordinary households, not institutional hedge funds. Every regular citizen
-                  wallet has a strict 5,000 token limit. If an account attempts to acquire more than its fair share, the
-                  contract reverts instantly at the transfer level.
-                </p>
-                <div className="text-xs font-mono text-kupon-ink/50">
-                  Statutory Basis: Retail Allocation Quota &amp; Maximum Order Limits
-                </div>
+            {/* Rule 2 */}
+            <div className="flex flex-col lg:px-10">
+              <div className="text-4xl sm:text-5xl font-serif font-bold text-kupon-gold mb-4 select-none">02</div>
+              <div className="flex items-center gap-2 text-xs font-mono text-kupon-gold font-semibold uppercase tracking-wider mb-2">
+                <ScaleIcon className="w-4 h-4" />
+                <span>R2-CAP (5,000 Max)</span>
               </div>
+              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-3 leading-snug">
+                Strict 5,000 Token Ceiling
+              </h3>
+              <p className="text-sm sm:text-base font-sans text-kupon-ink/80 leading-relaxed mb-6">
+                Retail bonds exist for everyday families, not giant institutional hedge funds. Every regular wallet has
+                a strict 5,000 token limit. If an account attempts to acquire more than its share, the smart contract
+                reverts instantly to prevent whale hoarding.
+              </p>
 
-              {/* Visual Quota Ceiling Indicator */}
-              <div className="lg:col-span-5 bg-[#F5EFE0] p-5 sm:p-6 rounded border border-kupon-gold/40 flex flex-col gap-3">
-                <div className="flex justify-between items-center text-[11px] font-mono text-kupon-ink/70">
-                  <span>Per-Wallet Retail Allocation</span>
-                  <span className="font-bold text-kupon-gold">5,000 KPON Cap</span>
+              <div className="mt-auto pt-4 border-t border-base-300 flex flex-col gap-2 text-xs font-sans">
+                <div className="flex items-center gap-2 text-kupon-emerald font-medium">
+                  <CheckIcon className="w-4 h-4 shrink-0" />
+                  <span>Guaranteed Household Access</span>
                 </div>
-                {/* Visual Progress Meter */}
-                <div className="w-full bg-base-100 h-3 rounded-full overflow-hidden border border-base-300 p-0.5 flex">
-                  <div className="bg-kupon-emerald h-full rounded-full w-4/5" />
-                  <div className="bg-red-700/80 h-full rounded-r-full w-1/5 opacity-50" />
-                </div>
-                <div className="flex justify-between text-[10px] font-mono text-kupon-ink/60 pt-1">
-                  <span className="text-kupon-emerald font-medium">✓ Protected Household Tier</span>
-                  <span className="text-red-700 font-medium">✕ Whale Wall Block</span>
+                <div className="flex items-center gap-2 text-red-700/85 font-medium">
+                  <XMarkIcon className="w-4 h-4 shrink-0" />
+                  <span>Whale Accumulation Blocked</span>
                 </div>
               </div>
             </div>
 
-            {/* Guardrail 3: Targeted Safety Freeze */}
-            <div className="bg-base-100 rounded certificate-border shadow-certificate p-8 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-7">
-                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-red-800/10 text-red-800 font-mono text-xs font-semibold mb-3">
-                  <LockClosedIcon className="w-4 h-4" />
-                  Targeted Enforcement · R3-FROZEN
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-kupon-ink mb-3">
-                  Surgical Freeze Without Market Shutdown
-                </h3>
-                <p className="text-sm sm:text-base font-sans text-kupon-ink/80 leading-relaxed max-w-xl mb-4">
-                  If an account is stolen, compromised, or placed under judicial sanctions, compliance authorities can
-                  revoke its verified status in seconds. Outgoing transfers from that specific wallet are frozen
-                  instantly without halting trading for the rest of the nation.
-                </p>
-                <div className="text-xs font-mono text-kupon-ink/50">
-                  Statutory Basis: Anti-Money Laundering (AML) &amp; CFT Compliance
-                </div>
+            {/* Rule 3 */}
+            <div className="flex flex-col lg:pl-10">
+              <div className="text-4xl sm:text-5xl font-serif font-bold text-red-800/80 mb-4 select-none">03</div>
+              <div className="flex items-center gap-2 text-xs font-mono text-red-800 font-semibold uppercase tracking-wider mb-2">
+                <LockClosedIcon className="w-4 h-4" />
+                <span>R3-FROZEN</span>
               </div>
+              <h3 className="text-2xl font-serif font-bold text-kupon-ink mb-3 leading-snug">
+                Surgical Safety Freezes
+              </h3>
+              <p className="text-sm sm:text-base font-sans text-kupon-ink/80 leading-relaxed mb-6">
+                If an account is stolen, compromised, or placed under legal sanctions, compliance officers can revoke
+                its verified claim in seconds. Outgoing transfers from that specific wallet are frozen without stopping
+                secondary trading for the rest of the nation.
+              </p>
 
-              {/* Visual Isolation Comparison */}
-              <div className="lg:col-span-5 bg-[#F5EFE0] p-5 sm:p-6 rounded border border-kupon-gold/40 flex flex-col gap-3">
-                <div className="text-[11px] font-mono text-kupon-ink/60 uppercase tracking-wider">
-                  Enforcement Comparison
+              <div className="mt-auto pt-4 border-t border-base-300 flex flex-col gap-2 text-xs font-sans">
+                <div className="flex items-center gap-2 text-kupon-emerald font-medium">
+                  <CheckIcon className="w-4 h-4 shrink-0" />
+                  <span>Secondary Market Stays 24/7</span>
                 </div>
-                <div className="p-3 rounded bg-base-100 border border-base-300 text-xs font-sans">
-                  <div className="text-red-800 font-bold text-[11px] font-mono mb-0.5">✕ Traditional Exchange</div>
-                  <div className="text-kupon-ink/70 text-[11px]">
-                    Halts trading for the entire market, trapping innocent investors.
-                  </div>
-                </div>
-                <div className="p-3 rounded bg-base-100 border border-kupon-emerald/40 text-xs font-sans">
-                  <div className="text-kupon-emerald font-bold text-[11px] font-mono mb-0.5">
-                    ✓ Kupon Autonomous Asset
-                  </div>
-                  <div className="text-kupon-ink/80 text-[11px]">
-                    Freezes only the flagged address; secondary market continues 24/7.
-                  </div>
+                <div className="flex items-center gap-2 text-red-700/85 font-medium">
+                  <XMarkIcon className="w-4 h-4 shrink-0" />
+                  <span>No Market-Wide Trading Shutdown</span>
                 </div>
               </div>
             </div>
@@ -544,7 +506,7 @@ const Home: NextPage = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 5. MULTI-STAKEHOLDER OPERATIONAL SYSTEM (Impeccable Asymmetric Bento) */}
+      {/* 5. MULTI-STAKEHOLDER OPERATIONAL SYSTEM */}
       {/* ========================================================================= */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         <div className="max-w-3xl mb-16 text-left">
@@ -559,7 +521,7 @@ const Home: NextPage = () => {
 
         {/* Asymmetric Bento Architecture */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Primary Anchor: Citizen Investor Portal (The Live Interactive App) */}
+          {/* Primary Anchor: Citizen Investor Portal */}
           <div className="lg:col-span-7 bg-base-100 p-8 sm:p-10 rounded certificate-border shadow-certificate flex flex-col justify-between relative overflow-hidden">
             <div className="absolute -right-16 -top-16 pointer-events-none opacity-[0.06]">
               <GuillochePattern variant="seal" width={320} height={320} color="emerald" />
@@ -675,7 +637,7 @@ const Home: NextPage = () => {
           </div>
         </div>
       </section>
-      {/* ========================================================================= */}
+
       {/* ========================================================================= */}
       {/* 6. REGULATORY & STATUTORY FRAMEWORK BRIEF */}
       {/* ========================================================================= */}
