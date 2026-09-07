@@ -33,9 +33,9 @@ export const useSafePrivy = () => {
 };
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-// Only activate official Privy SDK if a real app ID is provided (Privy app IDs start with "cl" and are 25+ chars)
+// Activate official Privy SDK when a real app ID is provided (supports both legacy 'cl...' and modern 'cm...' formats)
 const IS_PRIVY_CONFIGURED = Boolean(
-  PRIVY_APP_ID && PRIVY_APP_ID !== "placeholder" && PRIVY_APP_ID.startsWith("cl") && PRIVY_APP_ID.length > 15,
+  PRIVY_APP_ID && PRIVY_APP_ID.trim() !== "" && !PRIVY_APP_ID.includes("placeholder") && PRIVY_APP_ID.length > 10,
 );
 
 // Bridge when Privy is configured
