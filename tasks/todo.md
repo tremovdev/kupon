@@ -20,8 +20,8 @@
 
 - [x] Task 5: Deploy script + SE2 contract wiring (S)
 - [x] Task 6: Investor page — minimal = Gate 1 skeleton (M)
-- [ ] Task 7: Registrar page (M)
-- [ ] Task 8: Regulator view (M)
+- [x] Task 7: Registrar page (M)
+- [x] Task 8: Regulator view (M)
 
 **Checkpoint B:** 4-act demo passes locally.
 

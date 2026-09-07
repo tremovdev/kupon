@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Address, AddressInput } from "@scaffold-ui/components";
 import { useQuery } from "@tanstack/react-query";
@@ -9,11 +9,12 @@ import { formatEther, isAddress, keccak256, parseEther, toHex } from "viem";
 import { useAccount, usePublicClient } from "wagmi";
 import {
   ArrowPathIcon,
+  ArrowTopRightOnSquareIcon,
   BoltIcon,
   CheckCircleIcon,
+  ClipboardDocumentListIcon,
   DocumentMagnifyingGlassIcon,
   EyeIcon,
-  InformationCircleIcon,
   PlayIcon,
   ScaleIcon,
   ShieldCheckIcon,
@@ -30,49 +31,105 @@ const RESIDENCY_ID = keccak256(toHex("RESIDENCY_ID"));
 const ACCREDITED = keccak256(toHex("ACCREDITED"));
 
 const RULE_KEYS = {
-  R1: keccak256(toHex("R1-RESIDENCY")),
-  R2: keccak256(toHex("R2-CAP")),
-  R3: keccak256(toHex("R3-FROZEN")),
+  R1: keccak256(toHex("R1-RESIDENCY")).toLowerCase(),
+  R2: keccak256(toHex("R2-CAP")).toLowerCase(),
+  R3: keccak256(toHex("R3-FROZEN")).toLowerCase(),
 } as const;
 
 // Standard demo EOA addresses for the 4-act scenario
 const DEMO_ACCOUNTS = {
   authority: "0x2b97bea17da0ff83fd95a73dc60881d5b27a2b9b",
-  alice: "0x1111111111111111111111111111111111111111",
-  bob: "0x2222222222222222222222222222222222222222",
+  alice: "0x1111111111111111111111111111111111111111", // Verified WNI Retail Investor (holds RESIDENCY_ID)
+  bob: "0x2222222222222222222222222222222222222222", // Unregistered Foreign Investor (zero claims)
 } as const;
 
 type ViemErrorLike = {
-  data?: { errorName?: string; args?: readonly unknown[] };
+  data?: unknown;
   cause?: unknown;
   error?: unknown;
+  args?: readonly unknown[];
+  errorName?: string;
   walk?: () => unknown;
 };
 
-function asErrorLike(value: unknown): ViemErrorLike | null {
-  if (value && typeof value === "object" && ("data" in value || "cause" in value || "walk" in value)) {
-    return value as ViemErrorLike;
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (value && typeof value === "object") {
+    return value as Record<string, unknown>;
   }
   return null;
 }
 
+/**
+ * Robust extraction of the Kupon__RuleViolated bytes32 rule identifier across viem error formats.
+ */
 function extractRuleViolatedId(error: unknown): string | null {
+  if (!error) return null;
+
   let current: unknown = error;
-  for (let depth = 0; depth < 6; depth++) {
-    const node = asErrorLike(current);
-    if (node?.data && node.data.errorName === "Kupon__RuleViolated") {
-      const arg = Array.isArray(node.data.args) ? node.data.args[0] : node.data.args;
-      if (typeof arg === "string" && /^0x[0-9a-fA-F]{64}$/.test(arg)) return arg;
-    }
+  for (let depth = 0; depth < 8; depth++) {
+    const node = asRecord(current) as ViemErrorLike | null;
     if (!node) break;
+
+    // Check direct errorName
+    if (node.errorName === "Kupon__RuleViolated" && Array.isArray(node.args) && typeof node.args[0] === "string") {
+      return node.args[0].toLowerCase();
+    }
+
+    // Check node.data
+    const dataObj = asRecord(node.data);
+    if (
+      dataObj &&
+      dataObj.errorName === "Kupon__RuleViolated" &&
+      Array.isArray(dataObj.args) &&
+      typeof dataObj.args[0] === "string"
+    ) {
+      return dataObj.args[0].toLowerCase();
+    }
+
+    // Check node.cause
+    const causeObj = asRecord(node.cause);
+    if (causeObj) {
+      if (
+        causeObj.errorName === "Kupon__RuleViolated" &&
+        Array.isArray(causeObj.args) &&
+        typeof causeObj.args[0] === "string"
+      ) {
+        return causeObj.args[0].toLowerCase();
+      }
+      const causeDataObj = asRecord(causeObj.data);
+      if (
+        causeDataObj &&
+        causeDataObj.errorName === "Kupon__RuleViolated" &&
+        Array.isArray(causeDataObj.args) &&
+        typeof causeDataObj.args[0] === "string"
+      ) {
+        return causeDataObj.args[0].toLowerCase();
+      }
+    }
+
+    // Check raw error selector hex (0x6363af99 = Kupon__RuleViolated(bytes32))
+    const hexCandidate =
+      typeof node.data === "string" ? node.data : typeof causeObj?.data === "string" ? (causeObj.data as string) : null;
+    if (hexCandidate && hexCandidate.startsWith("0x6363af99") && hexCandidate.length >= 74) {
+      return `0x${hexCandidate.slice(10, 74)}`.toLowerCase();
+    }
+
     const next = node.cause ?? node.error ?? (typeof node.walk === "function" ? node.walk() : undefined);
     if (next === undefined || next === current) break;
     current = next;
   }
-  const text = typeof error === "string" ? error : getParsedError(error);
-  const match = text.match(/Kupon__RuleViolated\(0x([0-9a-fA-F]{64})\)/);
-  return match ? `0x${match[1]}` : null;
+
+  // Fallback regex over stringified representations
+  const errorText = typeof error === "string" ? error : getParsedError(error);
+  const match = errorText.match(/Kupon__RuleViolated\(0x([0-9a-fA-F]{64})\)/i);
+  if (match) return `0x${match[1]}`.toLowerCase();
+
+  const hexMatch = errorText.match(/0x6363af99([0-9a-fA-F]{64})/i);
+  if (hexMatch) return `0x${hexMatch[1]}`.toLowerCase();
+
+  return null;
 }
+
 type ClaimEventArgs = {
   account: string;
   claim: string;
@@ -199,121 +256,127 @@ const RegulatorPage: NextPage = () => {
   // 2. SIMULATION CONTROLLER (eth_call view invocation)
   // ---------------------------------------------------------------------------
   const [simSender, setSimSender] = useState<string>(DEMO_ACCOUNTS.authority);
-  const [simRecipient, setSimRecipient] = useState<string>(DEMO_ACCOUNTS.alice);
-  const [simAmount, setSimAmount] = useState<string>("1000");
+  const [simRecipient, setSimRecipient] = useState<string>(DEMO_ACCOUNTS.bob);
+  const [simAmount, setSimAmount] = useState<string>("500");
   const [simulating, setSimulating] = useState<boolean>(false);
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
 
   const simSenderValid = isAddress(simSender);
   const simRecipientValid = isAddress(simRecipient);
 
-  const runTransferSimulation = async (sender: string, recipient: string, amountStr: string) => {
-    if (!publicClient || !complianceInfo?.address || !complianceInfo?.abi || !registryInfo?.abi || !tokenInfo?.abi) {
-      notification.error("Contract interfaces loading. Please retry in a moment.");
-      return;
-    }
-
-    if (!isAddress(sender) || !isAddress(recipient)) {
-      notification.error("Provide valid sender and recipient addresses.");
-      return;
-    }
-
-    let parsedVal: bigint;
-    try {
-      parsedVal = parseEther(amountStr);
-    } catch {
-      notification.error("Invalid amount input. Enter decimal value.");
-      return;
-    }
-
-    setSimulating(true);
-
-    try {
-      // 1. Fetch current on-chain states for context
-      const [senderResidency, senderAccredited, recResidency, recAccredited, recBalance] = await Promise.all([
-        publicClient.readContract({
-          address: registryInfo.address,
-          abi: registryInfo.abi,
-          functionName: "hasClaim",
-          args: [sender, RESIDENCY_ID],
-        }) as Promise<boolean>,
-        publicClient.readContract({
-          address: registryInfo.address,
-          abi: registryInfo.abi,
-          functionName: "hasClaim",
-          args: [sender, ACCREDITED],
-        }) as Promise<boolean>,
-        publicClient.readContract({
-          address: registryInfo.address,
-          abi: registryInfo.abi,
-          functionName: "hasClaim",
-          args: [recipient, RESIDENCY_ID],
-        }) as Promise<boolean>,
-        publicClient.readContract({
-          address: registryInfo.address,
-          abi: registryInfo.abi,
-          functionName: "hasClaim",
-          args: [recipient, ACCREDITED],
-        }) as Promise<boolean>,
-        publicClient.readContract({
-          address: tokenInfo.address,
-          abi: tokenInfo.abi,
-          functionName: "balanceOf",
-          args: [recipient],
-        }) as Promise<bigint>,
-      ]);
-
-      // 2. Perform live eth_call into enforceTransfer
-      let isCompliant = true;
-      let violatedRule: "R1-RESIDENCY" | "R2-CAP" | "R3-FROZEN" | null = null;
-      let policyExplanation =
-        "Compliant: Transfer satisfies residency credentialing, per-wallet retail cap, and non-frozen sender criteria.";
-
-      try {
-        await publicClient.readContract({
-          address: complianceInfo.address,
-          abi: complianceInfo.abi,
-          functionName: "enforceTransfer",
-          args: [sender, recipient, parsedVal, recBalance],
-        });
-      } catch (callErr) {
-        isCompliant = false;
-        const ruleId = extractRuleViolatedId(callErr);
-
-        if (ruleId === RULE_KEYS.R1 || (!recResidency && !recAccredited)) {
-          violatedRule = "R1-RESIDENCY";
-          policyExplanation =
-            "Blocked by Rule R1-RESIDENCY: Recipient holds no verified Indonesian residency claim (WNI) nor institutional accreditation on KuponClaimRegistry.";
-        } else if (ruleId === RULE_KEYS.R3 || (sender !== ZERO_ADDRESS && !senderResidency && !senderAccredited)) {
-          violatedRule = "R3-FROZEN";
-          policyExplanation =
-            "Blocked by Rule R3-FROZEN: Sender holds zero active identity claims. The account is frozen and barred from transmitting bond holdings.";
-        } else if (ruleId === RULE_KEYS.R2 || (recResidency && !recAccredited)) {
-          violatedRule = "R2-CAP";
-          policyExplanation =
-            "Blocked by Rule R2-CAP: Recipient is a retail investor and the proposed transfer would cause total holdings to exceed the statutory 5,000 KPON cap.";
-        } else {
-          policyExplanation = `Transfer reverted onchain: ${getParsedError(callErr)}`;
-        }
+  const runTransferSimulation = useCallback(
+    async (sender: string, recipient: string, amountStr: string) => {
+      if (!publicClient || !complianceInfo?.address || !complianceInfo?.abi || !registryInfo?.abi || !tokenInfo?.abi) {
+        notification.error("Contract interfaces loading. Please retry in a moment.");
+        return;
       }
 
-      setSimulationResult({
-        evaluated: true,
-        compliant: isCompliant,
-        violatedRule,
-        policyExplanation,
-        senderClaims: { residency: senderResidency, accredited: senderAccredited },
-        recipientClaims: { residency: recResidency, accredited: recAccredited },
-        recipientBalance: recBalance,
-        projectedBalance: recBalance + parsedVal,
-      });
-    } catch (err) {
-      console.error("Simulation failure:", err);
-      notification.error("Failed to query onchain contract simulation.");
-    } finally {
-      setSimulating(false);
-    }
-  };
+      if (!isAddress(sender) || !isAddress(recipient)) {
+        notification.error("Please provide valid sender and recipient addresses.");
+        return;
+      }
+
+      let parsedVal: bigint;
+      try {
+        parsedVal = parseEther(amountStr);
+      } catch {
+        notification.error("Invalid amount input. Enter a valid decimal value.");
+        return;
+      }
+
+      setSimulating(true);
+
+      try {
+        // 1. Fetch current onchain states for context
+        const [senderResidency, senderAccredited, recResidency, recAccredited, recBalance] = await Promise.all([
+          publicClient.readContract({
+            address: registryInfo.address,
+            abi: registryInfo.abi,
+            functionName: "hasClaim",
+            args: [sender, RESIDENCY_ID],
+          }) as Promise<boolean>,
+          publicClient.readContract({
+            address: registryInfo.address,
+            abi: registryInfo.abi,
+            functionName: "hasClaim",
+            args: [sender, ACCREDITED],
+          }) as Promise<boolean>,
+          publicClient.readContract({
+            address: registryInfo.address,
+            abi: registryInfo.abi,
+            functionName: "hasClaim",
+            args: [recipient, RESIDENCY_ID],
+          }) as Promise<boolean>,
+          publicClient.readContract({
+            address: registryInfo.address,
+            abi: registryInfo.abi,
+            functionName: "hasClaim",
+            args: [recipient, ACCREDITED],
+          }) as Promise<boolean>,
+          publicClient.readContract({
+            address: tokenInfo.address,
+            abi: tokenInfo.abi,
+            functionName: "balanceOf",
+            args: [recipient],
+          }) as Promise<bigint>,
+        ]);
+
+        // 2. Perform live eth_call into enforceTransfer
+        let isCompliant = true;
+        let violatedRule: "R1-RESIDENCY" | "R2-CAP" | "R3-FROZEN" | null = null;
+        let policyExplanation =
+          "Compliant: Transfer satisfies residency credentialing, per-wallet retail holding cap, and non-frozen sender criteria.";
+
+        try {
+          await publicClient.readContract({
+            address: complianceInfo.address,
+            abi: complianceInfo.abi,
+            functionName: "enforceTransfer",
+            args: [sender, recipient, parsedVal, recBalance],
+          });
+        } catch (callErr) {
+          isCompliant = false;
+          const ruleId = extractRuleViolatedId(callErr);
+
+          if (ruleId === RULE_KEYS.R1 || (!recResidency && !recAccredited)) {
+            violatedRule = "R1-RESIDENCY";
+            policyExplanation =
+              "Blocked by Rule R1-RESIDENCY: Recipient holds no verified Indonesian residency claim (WNI) nor institutional accreditation on KuponClaimRegistry.";
+          } else if (ruleId === RULE_KEYS.R3 || (sender !== ZERO_ADDRESS && !senderResidency && !senderAccredited)) {
+            violatedRule = "R3-FROZEN";
+            policyExplanation =
+              "Blocked by Rule R3-FROZEN: Sender holds zero active identity claims. Under the sovereign circuit breaker invariant, the account is frozen from transmitting bond holdings.";
+          } else if (
+            ruleId === RULE_KEYS.R2 ||
+            (recResidency && !recAccredited && recBalance + parsedVal > (retailCap ?? 5000n * 10n ** 18n))
+          ) {
+            violatedRule = "R2-CAP";
+            policyExplanation =
+              "Blocked by Rule R2-CAP: Recipient is a retail investor and the proposed transfer causes total holdings to exceed the statutory 5,000 KPON (Rp5 Billion) cap.";
+          } else {
+            policyExplanation = `Transfer reverted onchain: ${getParsedError(callErr)}`;
+          }
+        }
+
+        setSimulationResult({
+          evaluated: true,
+          compliant: isCompliant,
+          violatedRule,
+          policyExplanation,
+          senderClaims: { residency: senderResidency, accredited: senderAccredited },
+          recipientClaims: { residency: recResidency, accredited: recAccredited },
+          recipientBalance: recBalance,
+          projectedBalance: recBalance + parsedVal,
+        });
+      } catch (err) {
+        console.error("Simulation failure:", err);
+        notification.error("Failed to query onchain contract simulation.");
+      } finally {
+        setSimulating(false);
+      }
+    },
+    [complianceInfo, registryInfo, tokenInfo, publicClient, retailCap],
+  );
 
   // ---------------------------------------------------------------------------
   // 3. INTERACTIVE 4-ACT DEMO CONTROLLER
@@ -324,48 +387,60 @@ const RegulatorPage: NextPage = () => {
   const actDetails = useMemo(
     () => ({
       1: {
-        title: "Act I · Non-WNI Transfer Blocked",
+        title: "Act I · Non-WNI Foreign Transfer Blocked",
         rule: "R1-RESIDENCY",
+        badgeText: "REVERT (R1)",
         narrative:
-          "An unregistered foreign or uncertified account attempts to receive KPON bonds. The transaction reverts deterministically under UU P2SK residency mandate.",
+          "An uncertified foreign account (Bob) attempts to receive 500 KPON sovereign bonds. Because Bob holds no verified Indonesian residency claim (KSEI SID) on KuponClaimRegistry, the transaction reverts deterministically under UU P2SK residency mandate.",
         sender: DEMO_ACCOUNTS.authority,
-        recipient: DEMO_ACCOUNTS.alice,
+        senderLabel: "Deployer Treasury (Verified)",
+        recipient: DEMO_ACCOUNTS.bob,
+        recipientLabel: "Bob (Foreign / Unregistered)",
         amount: "500",
         expected: "REVERT (R1-RESIDENCY)",
-        regulatoryBasis: "UU P2SK Art. 34 & KSEI SID Requirement (WNI Retail Gate)",
+        regulatoryBasis: "UU P2SK Art. 34 & KSEI SID Mandate (WNI Retail Gate)",
       },
       2: {
-        title: "Act II · Registrar Issues Residency Claim",
+        title: "Act II · Verified Retail Citizen DvP Transfer",
         rule: "R1 SATISFIED",
+        badgeText: "SETTLED (DvP)",
         narrative:
-          "The Registrar authenticates Alice's National Identity (NIK) and grants RESIDENCY_ID. The exact same 500 KPON transfer now settles instantly.",
+          "The Registrar authenticates Alice's National Identity (NIK) and grants RESIDENCY_ID. The exact same 500 KPON transfer now settles instantly under POJK 3/2024 Delivery-versus-Payment (DvP) standards.",
         sender: DEMO_ACCOUNTS.authority,
+        senderLabel: "Deployer Treasury (Verified)",
         recipient: DEMO_ACCOUNTS.alice,
+        recipientLabel: "Alice (Verified WNI Retail)",
         amount: "500",
         expected: "SETTLED (DvP Compliant)",
         regulatoryBasis: "POJK 3/2024 Sandbox Settlement & Instant Onchain DvP",
       },
       3: {
-        title: "Act III · Statutory Retail Cap Enforced",
+        title: "Act III · Statutory Retail Holding Cap Enforced",
         rule: "R2-CAP",
+        badgeText: "REVERT (R2)",
         narrative:
-          "Alice attempts to purchase 5,001 KPON (Rp5.001 Miliar). Because she is classified as Retail WNI (non-accredited), compliance blocks the tranche automatically.",
+          "Alice attempts to acquire an additional 5,000 KPON (Rp5 Billion), which pushes her aggregate holdings to 5,230 KPON. Because Alice is classified as Retail WNI (non-accredited), compliance halts the transfer automatically to enforce the statutory retail investor ceiling.",
         sender: DEMO_ACCOUNTS.authority,
+        senderLabel: "Deployer Treasury (Verified)",
         recipient: DEMO_ACCOUNTS.alice,
-        amount: "5001",
+        recipientLabel: "Alice (Verified WNI Retail)",
+        amount: "5000",
         expected: "REVERT (R2-CAP)",
-        regulatoryBasis: "DJPPR Retail Investor Quota (Max Rp5 Miliar / Investor)",
+        regulatoryBasis: "DJPPR Retail Investor Quota (Max Rp5 Billion / 5,000 KPON)",
       },
       4: {
         title: "Act IV · Emergency Freeze via Revocation",
         rule: "R3-FROZEN",
+        badgeText: "REVERT (R3)",
         narrative:
-          "Regulatory authorities revoke Alice's claim due to legal sanctions. Her balance remains intact in custody, but all outward transfers are frozen onchain.",
-        sender: DEMO_ACCOUNTS.alice,
-        recipient: DEMO_ACCOUNTS.bob,
+          "An account with zero active identity claims attempts to transmit bond holdings. Under the sovereign circuit breaker invariant (R3-FROZEN), any wallet lacking active certification is instantly barred from sending bonds, enforcing PPATK sanctions without freeze transaction overhead.",
+        sender: DEMO_ACCOUNTS.bob,
+        senderLabel: "Bob (Sanctioned / Zero-Claim)",
+        recipient: DEMO_ACCOUNTS.alice,
+        recipientLabel: "Alice (Target Wallet)",
         amount: "100",
         expected: "REVERT (R3-FROZEN)",
-        regulatoryBasis: "PPATK Sanction Order & Instant Sovereign Circuit Breaker",
+        regulatoryBasis: "PPATK Sanctions & Sovereign Circuit Breaker (Zero-Claim)",
       },
     }),
     [],
@@ -382,38 +457,57 @@ const RegulatorPage: NextPage = () => {
     runTransferSimulation(act.sender, act.recipient, act.amount);
   };
 
+  // Run initial simulation on load once contracts are connected
+  const hasRunInitialSim = useRef(false);
+  useEffect(() => {
+    if (
+      publicClient &&
+      complianceInfo?.address &&
+      registryInfo?.address &&
+      tokenInfo?.address &&
+      !hasRunInitialSim.current
+    ) {
+      hasRunInitialSim.current = true;
+      const act = actDetails[1];
+      runTransferSimulation(act.sender, act.recipient, act.amount);
+    }
+  }, [
+    publicClient,
+    complianceInfo?.address,
+    registryInfo?.address,
+    tokenInfo?.address,
+    actDetails,
+    runTransferSimulation,
+  ]);
+
   // Quick authority actions to modify testnet state for the scenario
   const handleExecuteActOnchain = async () => {
     setIsExecutingLiveAct(true);
     try {
       if (activeAct === 1) {
-        // Ensure Alice has NO claim
         await writeClaimRegistry({
           functionName: "revokeClaim",
           args: [DEMO_ACCOUNTS.alice, RESIDENCY_ID],
         });
-        notification.success("Alice claim revoked onchain. Ready to simulate Act 1!");
+        notification.success("Alice residency claim revoked onchain. Ready to demonstrate Act I!");
       } else if (activeAct === 2) {
-        // Grant Alice Residency claim
         await writeClaimRegistry({
           functionName: "grantClaim",
           args: [DEMO_ACCOUNTS.alice, RESIDENCY_ID],
         });
-        notification.success("Alice granted RESIDENCY_ID onchain. Ready to simulate Act 2!");
+        notification.success("Alice granted RESIDENCY_ID onchain. Ready to demonstrate Act II!");
       } else if (activeAct === 3) {
-        // Ensure Alice has Residency (Retail)
         await writeClaimRegistry({
           functionName: "grantClaim",
           args: [DEMO_ACCOUNTS.alice, RESIDENCY_ID],
         });
-        notification.success("Alice verified as Retail. Ready to simulate Act 3 cap!");
+        notification.success("Alice confirmed as Retail WNI. Ready to demonstrate Act III!");
       } else if (activeAct === 4) {
-        // Revoke Alice Residency to trigger Freeze
         await writeClaimRegistry({
           functionName: "revokeClaim",
           args: [DEMO_ACCOUNTS.alice, RESIDENCY_ID],
         });
-        notification.success("Alice claim revoked onchain (Frozen). Ready to simulate Act 4!");
+        notification.success("Alice claim revoked onchain (Frozen). Ready to demonstrate Act IV!");
       }
       await refetchEvents();
       await runTransferSimulation(currentAct.sender, currentAct.recipient, currentAct.amount);
@@ -438,121 +532,180 @@ const RegulatorPage: NextPage = () => {
 
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-20 relative z-10 flex flex-col gap-8">
         {/* ===================================================================== */}
-        {/* HEADER: SOVEREIGN REGULATOR TERMINAL */}
+        {/* HEADER: REGULATOR & COMPLIANCE OVERSIGHT TERMINAL */}
         {/* ===================================================================== */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-kupon-gold/40 pb-6 gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#F4EEDC] border border-kupon-gold/60 text-xs font-mono text-kupon-emerald mb-3">
-              <ScaleIcon className="w-4 h-4 text-kupon-emerald" />
-              <span>Oversight & Compliance Terminal</span>
-              <span className="text-kupon-ink/40">·</span>
-              <span className="font-semibold">OJK / DJPPR / KSEI</span>
+        <header className="flex flex-col gap-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-kupon-gold/30 pb-6">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-serif font-bold text-kupon-ink tracking-tight">
+                Regulator & Compliance Oversight Terminal
+              </h1>
+              <p className="text-sm text-kupon-ink/75 font-sans mt-1 max-w-3xl leading-relaxed">
+                Supervise real-time sovereign debt compliance telemetry, simulate transfer validity via deterministic{" "}
+                <code className="font-mono text-xs bg-[#F4EEDC] px-1.5 py-0.5 rounded border border-kupon-gold/30">
+                  eth_call
+                </code>{" "}
+                evaluations, and audit the 4-Act sovereign rule narrative under OJK & DJPPR frameworks.
+              </p>
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-kupon-ink tracking-tight">
-              Regulator Terminal
-            </h1>
-            <p className="text-sm sm:text-base text-kupon-ink/75 font-sans mt-2 max-w-2xl leading-relaxed">
-              Supervise real-time bond compliance telemetry, simulate transfer validity via deterministic{" "}
-              <code className="font-mono text-xs bg-base-200 px-1 py-0.5 rounded">eth_call</code> evaluations, and audit
-              the 4-Act sovereign rule narrative.
-            </p>
-          </div>
 
-          <div className="flex items-center gap-2 bg-[#F3EEDB] px-4 py-3 rounded certificate-border-subtle text-xs font-mono">
-            <span className="w-2.5 h-2.5 rounded-full bg-kupon-emerald animate-pulse" />
-            <span className="text-kupon-ink font-semibold">Live Audit Node</span>
-            <span className="text-kupon-ink/40">|</span>
-            <span className="text-kupon-ink/70">Zero Gas Telemetry</span>
-          </div>
-        </div>
-
-        {/* ===================================================================== */}
-        {/* TOP TELEMETRY STRIP */}
-        {/* ===================================================================== */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-[#F8F3E5] p-4 rounded certificate-border-subtle">
-            <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/65">R1 · Identity Gate</span>
-            <div className="mt-1 text-lg font-serif font-bold text-kupon-emerald">RESIDENCY_ID</div>
-            <p className="text-[11px] font-sans text-kupon-ink/65 mt-1 m-0">WNI Retail or Accredited required</p>
-          </div>
-
-          <div className="bg-[#F8F3E5] p-4 rounded certificate-border-subtle">
-            <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/65">
-              R2 · Retail Holding Cap
-            </span>
-            <div className="mt-1 text-lg font-serif font-bold text-kupon-ink">{formattedRetailCap} KPON</div>
-            <p className="text-[11px] font-sans text-kupon-ink/65 mt-1 m-0">Statutory limit (Rp5 Miliar per wallet)</p>
-          </div>
-
-          <div className="bg-[#F8F3E5] p-4 rounded certificate-border-subtle">
-            <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/65">R3 · Freeze Mechanism</span>
-            <div className="mt-1 text-lg font-serif font-bold text-kupon-gold">Live Zero-Claim</div>
-            <p className="text-[11px] font-sans text-kupon-ink/65 mt-1 m-0">
-              Revocation instantly freezes outgoing transfers
-            </p>
-          </div>
-
-          <div className="bg-[#F8F3E5] p-4 rounded certificate-border-subtle">
-            <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/65">
-              Series Quota Utilization
-            </span>
-            <div className="mt-1 text-lg font-serif font-bold text-kupon-emerald">
-              {formattedSupply} / {formattedSeriesCap}
+            <div className="flex items-center gap-3 self-start lg:self-auto">
+              <div className="inline-flex items-center gap-2.5 bg-[#F4EEDC] px-4 py-2 rounded-full text-xs font-mono border border-kupon-gold/30">
+                <span className="w-2.5 h-2.5 rounded-full bg-kupon-emerald animate-pulse" />
+                <span className="text-kupon-ink font-semibold">Live Audit Node</span>
+                <span className="text-kupon-ink/30">|</span>
+                <span className="text-kupon-ink/70 font-sans">0-Gas Telemetry</span>
+              </div>
             </div>
-            <p className="text-[11px] font-sans text-kupon-ink/65 mt-1 m-0">KPON Sovereign SBN Ritel 2027</p>
           </div>
-        </div>
+
+          {/* ===================================================================== */}
+          {/* TOP SUPERVISORY METRICS STRIP (SINGLE CLEAN TIER) */}
+          {/* ===================================================================== */}
+          <div className="bg-[#F8F3E5] p-6 rounded-xl border border-kupon-gold/30 flex flex-col gap-4 shadow-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* 1. Identity Credential Gate */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
+                    R1 · Identity Credential Gate
+                  </span>
+                  <span className="text-[10px] font-mono font-semibold text-kupon-emerald bg-kupon-emerald/10 px-1.5 py-0.5 rounded">
+                    UU P2SK Art. 34
+                  </span>
+                </div>
+                <div className="text-xl sm:text-2xl font-serif font-bold text-kupon-emerald tracking-tight">
+                  RESIDENCY_ID
+                </div>
+                <p className="text-xs text-kupon-ink/65 font-sans m-0">
+                  Verified KSEI SID or institutional accreditation required
+                </p>
+              </div>
+
+              {/* 2. Statutory Retail Holding Cap */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
+                    R2 · Retail Holding Cap
+                  </span>
+                  <span className="text-[10px] font-mono font-semibold text-kupon-gold bg-kupon-gold/15 px-1.5 py-0.5 rounded">
+                    DJPPR Rule
+                  </span>
+                </div>
+                <div className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink tracking-tight">
+                  {formattedRetailCap} KPON
+                </div>
+                <p className="text-xs text-kupon-ink/65 font-sans m-0">
+                  Rp5.000.000.000 statutory limit per retail investor
+                </p>
+              </div>
+
+              {/* 3. Sovereign Freeze Mechanism */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
+                    R3 · Sovereign Freeze
+                  </span>
+                  <span className="text-[10px] font-mono font-semibold text-kupon-emerald bg-kupon-emerald/10 px-1.5 py-0.5 rounded">
+                    PPATK Sanctions
+                  </span>
+                </div>
+                <div className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink tracking-tight">
+                  Zero-Claim Invariant
+                </div>
+                <p className="text-xs text-kupon-ink/65 font-sans m-0">
+                  Revocation immediately freezes outgoing bond transfers
+                </p>
+              </div>
+
+              {/* 4. Total Sovereign Issuance */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
+                    Series Issuance Telemetry
+                  </span>
+                  <span className="text-[10px] font-mono font-semibold text-kupon-ink/70 bg-[#EFE8D3] px-1.5 py-0.5 rounded">
+                    Base Sepolia
+                  </span>
+                </div>
+                <div className="text-xl sm:text-2xl font-serif font-bold text-kupon-emerald tracking-tight">
+                  {formattedSupply} / {formattedSeriesCap}
+                </div>
+                <p className="text-xs text-kupon-ink/65 font-sans m-0">
+                  KPON active debt · ORI026-T3 Benchmark (Par Rp1M/unit)
+                </p>
+              </div>
+            </div>
+
+            {/* Quiet Footnote: Policy Engine Proof */}
+            <div className="pt-3 border-t border-kupon-gold/20 flex flex-wrap items-center justify-between text-xs text-kupon-ink/70 font-sans gap-2">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheckIcon className="w-4 h-4 text-kupon-emerald shrink-0" />
+                <span>
+                  <strong>Deterministic Policy Engine:</strong>{" "}
+                  <code className="font-mono text-xs text-kupon-ink">KuponComplianceModule.sol</code> validates all
+                  three regulatory invariants atomically prior to ERC-20 transfer execution.
+                </span>
+              </div>
+              <span className="font-mono text-[11px] text-kupon-emerald bg-kupon-emerald/10 px-2 py-0.5 rounded">
+                ERC-3643 Modular Compliance
+              </span>
+            </div>
+          </div>
+        </header>
 
         {/* ===================================================================== */}
         {/* SECTION 1: INTERACTIVE 4-ACT DEMO CONTROLLER */}
         {/* ===================================================================== */}
-        <div className="bg-[#FAF6EC] p-6 sm:p-8 rounded certificate-border flex flex-col gap-6 shadow-sm">
+        <section className="bg-[#F8F3E5] p-6 sm:p-8 rounded-xl border border-kupon-gold/30 flex flex-col gap-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-kupon-gold/30 pb-4 gap-2">
             <div className="flex items-center gap-2.5">
-              <BoltIcon className="w-6 h-6 text-kupon-gold" />
-              <h2 className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink m-0">
-                Interactive 4-Act Compliance Narrative
-              </h2>
+              <BoltIcon className="w-6 h-6 text-kupon-gold shrink-0" />
+              <div>
+                <h2 className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink m-0">
+                  Interactive 4-Act Compliance Narrative
+                </h2>
+                <p className="text-xs text-kupon-ink/70 font-sans m-0 mt-0.5">
+                  Follow the statutory lifecycle of Indonesian sovereign retail debt onchain. Click any act to evaluate
+                  its deterministic transfer verdict with zero gas.
+                </p>
+              </div>
             </div>
-            <span className="text-xs font-mono text-kupon-emerald uppercase tracking-wider">
-              Hackathon Demonstration Suite
+            <span className="text-[11px] font-mono text-kupon-emerald uppercase tracking-wider bg-kupon-emerald/10 px-2.5 py-1 rounded border border-kupon-emerald/20 self-start sm:self-auto">
+              Statutory Lifecycle
             </span>
           </div>
 
-          <p className="text-xs sm:text-sm text-kupon-ink/80 font-sans leading-relaxed m-0">
-            Follow the complete institutional lifecycle of sovereign retail debt onchain. Each act isolates and
-            exercises an explicit regulatory invariant without offchain dependencies.
-          </p>
-
-          {/* Stepper Tabs */}
+          {/* Stepper Tabs (Grid of 4) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[1, 2, 3, 4].map(actNum => {
               const act = actDetails[actNum as 1 | 2 | 3 | 4];
               const isSelected = activeAct === actNum;
+              const isRevert = act.badgeText.includes("REVERT");
               return (
                 <button
                   key={actNum}
                   type="button"
                   onClick={() => handleApplyActPreset(actNum as 1 | 2 | 3 | 4)}
-                  className={`p-3.5 rounded text-left border transition-all cursor-pointer flex flex-col justify-between ${
+                  className={`p-4 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
                     isSelected
-                      ? "bg-[#F3EEDB] border-kupon-emerald shadow-sm ring-1 ring-kupon-emerald"
-                      : "bg-[#FAF6EC] border-kupon-gold/30 hover:border-kupon-gold/60"
+                      ? "bg-[#FAF6EC] border-kupon-emerald ring-1 ring-kupon-emerald shadow-xs"
+                      : "bg-[#FAF6EC]/60 border-kupon-gold/25 hover:border-kupon-gold/50 hover:bg-[#FAF6EC]"
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-bold text-kupon-gold">ACT {actNum}</span>
                     <span
-                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                        act.rule.includes("BLOCKED") || act.rule.includes("CAP") || act.rule.includes("FROZEN")
-                          ? "bg-error/15 text-error"
-                          : "bg-kupon-emerald/15 text-kupon-emerald"
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                        isRevert
+                          ? "bg-error/10 text-error border-error/20"
+                          : "bg-kupon-emerald/10 text-kupon-emerald border-kupon-emerald/20"
                       }`}
                     >
-                      {act.rule}
+                      {act.badgeText}
                     </span>
                   </div>
-                  <span className="font-serif font-semibold text-xs sm:text-sm text-kupon-ink line-clamp-2">
+                  <span className="font-serif font-semibold text-xs sm:text-sm text-kupon-ink leading-snug">
                     {act.title.split("·")[1]?.trim() ?? act.title}
                   </span>
                 </button>
@@ -561,17 +714,25 @@ const RegulatorPage: NextPage = () => {
           </div>
 
           {/* Active Act Focus Card */}
-          <div className="bg-[#F8F3E5] p-6 rounded certificate-border-subtle flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-kupon-gold/30 pb-3">
+          <div className="bg-[#FAF6EC] p-6 rounded-xl border border-kupon-gold/30 flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-kupon-gold/20 pb-3">
               <div>
-                <span className="text-xs font-mono text-kupon-gold uppercase tracking-wider">Active Scenario</span>
+                <span className="text-[11px] font-mono text-kupon-gold uppercase tracking-wider">
+                  Active Scenario Invariant
+                </span>
                 <h3 className="text-lg sm:text-xl font-serif font-bold text-kupon-ink m-0 mt-0.5">
                   {currentAct.title}
                 </h3>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-kupon-ink/65">Expected Result:</span>
-                <span className="font-mono font-bold text-xs bg-[#FAF6EC] px-2.5 py-1 rounded border border-kupon-gold/50 text-kupon-ink">
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <span className="text-xs font-mono text-kupon-ink/65">Expected Verdict:</span>
+                <span
+                  className={`font-mono font-bold text-xs px-2.5 py-1 rounded border ${
+                    currentAct.expected.includes("REVERT")
+                      ? "bg-error/10 text-error border-error/25"
+                      : "bg-kupon-emerald/10 text-kupon-emerald border-kupon-emerald/25"
+                  }`}
+                >
                   {currentAct.expected}
                 </span>
               </div>
@@ -579,29 +740,40 @@ const RegulatorPage: NextPage = () => {
 
             <p className="text-xs sm:text-sm text-kupon-ink/80 font-sans leading-relaxed m-0">{currentAct.narrative}</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono bg-[#FAF6EC] p-3.5 rounded border border-kupon-gold/30">
+            {/* Parameter Strip */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-mono bg-[#F8F3E5] p-4 rounded-lg border border-kupon-gold/25">
               <div>
-                <span className="text-kupon-ink/60">Sender:</span>
-                <div className="font-semibold text-kupon-ink truncate">
-                  {currentAct.sender === DEMO_ACCOUNTS.authority ? "Deployer Authority" : "Alice (Retail)"}
+                <span className="text-kupon-ink/50 block text-[11px]">Sender (From):</span>
+                <div className="font-semibold text-kupon-ink truncate mt-0.5" title={currentAct.sender}>
+                  {currentAct.senderLabel}
                 </div>
               </div>
               <div>
-                <span className="text-kupon-ink/60">Recipient:</span>
-                <div className="font-semibold text-kupon-ink truncate">
-                  {currentAct.recipient === DEMO_ACCOUNTS.alice ? "Alice (Target)" : "Bob (External)"}
+                <span className="text-kupon-ink/50 block text-[11px]">Recipient (To):</span>
+                <div className="font-semibold text-kupon-ink truncate mt-0.5" title={currentAct.recipient}>
+                  {currentAct.recipientLabel}
                 </div>
               </div>
               <div>
-                <span className="text-kupon-ink/60">Proposed Value:</span>
-                <div className="font-semibold text-kupon-emerald">{currentAct.amount} KPON</div>
+                <span className="text-kupon-ink/50 block text-[11px]">Proposed Value:</span>
+                <div className="font-semibold text-kupon-emerald mt-0.5">
+                  {Number(currentAct.amount).toLocaleString("en-US")} KPON (Rp
+                  {(Number(currentAct.amount) * 1_000_000).toLocaleString("id-ID")})
+                </div>
+              </div>
+              <div>
+                <span className="text-kupon-ink/50 block text-[11px]">Rule Identifier:</span>
+                <div className="font-semibold text-kupon-gold mt-0.5">{currentAct.rule}</div>
               </div>
             </div>
 
+            {/* Action Footer */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
-              <div className="text-[11px] font-sans text-kupon-ink/65 flex items-center gap-1.5">
-                <InformationCircleIcon className="w-4 h-4 text-kupon-gold shrink-0" />
-                <span>Regulatory Grounding: {currentAct.regulatoryBasis}</span>
+              <div className="text-xs font-sans text-kupon-ink/65 flex items-center gap-1.5">
+                <ScaleIcon className="w-4 h-4 text-kupon-gold shrink-0" />
+                <span>
+                  <strong>Legal Grounding:</strong> {currentAct.regulatoryBasis}
+                </span>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -610,7 +782,7 @@ const RegulatorPage: NextPage = () => {
                     type="button"
                     onClick={handleExecuteActOnchain}
                     disabled={isExecutingLiveAct}
-                    className="btn btn-xs btn-outline border-kupon-gold text-kupon-ink hover:bg-kupon-gold/20 font-sans"
+                    className="btn btn-sm btn-outline border-kupon-gold/60 text-kupon-ink hover:bg-kupon-gold/15 font-sans"
                   >
                     {isExecutingLiveAct ? (
                       <span className="loading loading-spinner loading-xs" />
@@ -631,57 +803,114 @@ const RegulatorPage: NextPage = () => {
                   ) : (
                     <PlayIcon className="w-4 h-4" />
                   )}
-                  <span>Evaluate Act Simulation</span>
+                  <span>Evaluate Act Simulation (0 Gas)</span>
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* ===================================================================== */}
         {/* SECTION 2: SIMULATION CONTROLLER (eth_call ENGINE) */}
         {/* ===================================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Simulation Inputs */}
-          <div className="lg:col-span-6 bg-[#FAF6EC] p-6 rounded certificate-border flex flex-col gap-5 shadow-sm">
-            <div className="flex items-center justify-between border-b border-kupon-gold/30 pb-3">
+          <div className="lg:col-span-6 bg-[#F8F3E5] p-6 sm:p-7 rounded-xl border border-kupon-gold/30 flex flex-col gap-5 shadow-xs">
+            <div className="flex items-center justify-between border-b border-kupon-gold/25 pb-3">
               <div className="flex items-center gap-2">
-                <DocumentMagnifyingGlassIcon className="w-5 h-5 text-kupon-emerald" />
+                <DocumentMagnifyingGlassIcon className="w-5 h-5 text-kupon-emerald shrink-0" />
                 <h3 className="text-lg font-serif font-bold text-kupon-ink m-0">Transfer Simulation Engine</h3>
               </div>
-              <span className="text-xs font-mono text-kupon-gold uppercase">eth_call Sandbox</span>
+              <span className="text-[11px] font-mono text-kupon-gold uppercase bg-kupon-gold/10 px-2 py-0.5 rounded border border-kupon-gold/20">
+                0-Gas eth_call Sandbox
+              </span>
             </div>
 
             <p className="text-xs text-kupon-ink/75 font-sans leading-relaxed m-0">
-              Directly query <code className="font-mono text-xs">KuponComplianceModule.enforceTransfer()</code> against
-              live onchain state. Test arbitrary wallet pairs without gas expenditure or state mutations.
+              Query{" "}
+              <code className="font-mono text-xs bg-[#FAF6EC] px-1 py-0.5 rounded border border-kupon-gold/25">
+                KuponComplianceModule.enforceTransfer()
+              </code>{" "}
+              against live Base Sepolia state. Test arbitrary sender-recipient pairs without gas or blockchain
+              mutations.
             </p>
 
-            <div className="flex flex-col gap-3">
+            {/* Quick Fill Address Chips */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-mono text-kupon-ink/50 uppercase tracking-wider">
+                Quick Fill Account Presets
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSimSender(DEMO_ACCOUNTS.authority)}
+                  className="btn btn-xs btn-outline border-kupon-gold/40 text-kupon-ink/80 hover:bg-kupon-gold/15 font-mono text-[11px]"
+                >
+                  Sender: Authority
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSimRecipient(DEMO_ACCOUNTS.alice)}
+                  className="btn btn-xs btn-outline border-kupon-gold/40 text-kupon-ink/80 hover:bg-kupon-gold/15 font-mono text-[11px]"
+                >
+                  Recipient: Alice (WNI)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSimRecipient(DEMO_ACCOUNTS.bob)}
+                  className="btn btn-xs btn-outline border-kupon-gold/40 text-kupon-ink/80 hover:bg-kupon-gold/15 font-mono text-[11px]"
+                >
+                  Recipient: Bob (Foreign)
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3.5">
               <div>
                 <label className="text-xs font-mono font-medium text-kupon-ink mb-1 block">Sender Address (From)</label>
-                <AddressInput value={simSender} onChange={setSimSender} placeholder="0x... Sender" />
+                <AddressInput value={simSender} onChange={setSimSender} placeholder="0x... Sender Address" />
               </div>
 
               <div>
                 <label className="text-xs font-mono font-medium text-kupon-ink mb-1 block">
                   Recipient Address (To)
                 </label>
-                <AddressInput value={simRecipient} onChange={setSimRecipient} placeholder="0x... Recipient" />
+                <AddressInput value={simRecipient} onChange={setSimRecipient} placeholder="0x... Recipient Address" />
               </div>
 
               <div>
-                <label className="text-xs font-mono font-medium text-kupon-ink mb-1 block">
-                  Transfer Amount (KPON)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-mono font-medium text-kupon-ink block">Transfer Amount (KPON)</label>
+                  <span className="text-[11px] font-sans text-kupon-ink/50">
+                    Par Value: Rp{(Number(simAmount || 0) * 1_000_000).toLocaleString("id-ID")}
+                  </span>
+                </div>
                 <input
                   type="text"
                   inputMode="decimal"
                   value={simAmount}
                   onChange={e => setSimAmount(e.target.value)}
-                  placeholder="e.g. 1000"
-                  className="input input-bordered w-full font-mono text-sm bg-[#F8F3E5] border-kupon-gold/40 text-kupon-ink focus:border-kupon-emerald focus:outline-none"
+                  placeholder="e.g. 500"
+                  className="input input-bordered w-full font-mono text-sm bg-[#FAF6EC] border-kupon-gold/40 text-kupon-ink focus:border-kupon-emerald focus:outline-none"
                 />
+                {/* Preset Amount Chips */}
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="text-[10px] font-mono text-kupon-ink/50">Presets:</span>
+                  {["500", "1000", "5000", "5001"].map(amt => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setSimAmount(amt)}
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors ${
+                        simAmount === amt
+                          ? "bg-kupon-emerald/15 border-kupon-emerald text-kupon-emerald font-bold"
+                          : "bg-[#FAF6EC] border-kupon-gold/30 text-kupon-ink/70 hover:border-kupon-gold"
+                      }`}
+                    >
+                      {amt === "5001" ? "5,001 (Cap Breach)" : `${amt} KPON`}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -689,7 +918,7 @@ const RegulatorPage: NextPage = () => {
               type="button"
               onClick={() => runTransferSimulation(simSender, simRecipient, simAmount)}
               disabled={simulating || !simSenderValid || !simRecipientValid}
-              className="btn btn-primary font-sans font-medium text-kupon-ivory flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
+              className="btn btn-primary font-sans font-medium text-kupon-ivory flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1"
             >
               {simulating ? <span className="loading loading-spinner loading-xs" /> : <EyeIcon className="w-4 h-4" />}
               <span>Simulate Onchain Transfer (0 Gas)</span>
@@ -697,23 +926,25 @@ const RegulatorPage: NextPage = () => {
           </div>
 
           {/* Right Column: Simulation Telemetry Verdict */}
-          <div className="lg:col-span-6 bg-[#FAF6EC] p-6 rounded certificate-border flex flex-col gap-5 shadow-sm">
-            <div className="flex items-center justify-between border-b border-kupon-gold/30 pb-3">
+          <div className="lg:col-span-6 bg-[#F8F3E5] p-6 sm:p-7 rounded-xl border border-kupon-gold/30 flex flex-col gap-5 shadow-xs">
+            <div className="flex items-center justify-between border-b border-kupon-gold/25 pb-3">
               <div className="flex items-center gap-2">
-                <ShieldCheckIcon className="w-5 h-5 text-kupon-gold" />
-                <h3 className="text-lg font-serif font-bold text-kupon-ink m-0">Deterministic Verdict</h3>
+                <ShieldCheckIcon className="w-5 h-5 text-kupon-gold shrink-0" />
+                <h3 className="text-lg font-serif font-bold text-kupon-ink m-0">Deterministic Policy Verdict</h3>
               </div>
-              <span className="text-xs font-mono text-kupon-emerald uppercase">Live Audit Result</span>
+              <span className="text-[11px] font-mono text-kupon-emerald uppercase bg-kupon-emerald/10 px-2 py-0.5 rounded border border-kupon-emerald/20">
+                Live Compliance Proof
+              </span>
             </div>
 
             {simulationResult ? (
               <div className="flex flex-col gap-4">
-                {/* Status Banner */}
+                {/* Hero Status Banner */}
                 <div
-                  className={`p-4 rounded border flex items-start gap-3 ${
+                  className={`p-4 rounded-xl border flex items-start gap-3.5 ${
                     simulationResult.compliant
-                      ? "bg-[#EEF7F2] border-kupon-emerald text-kupon-emerald"
-                      : "bg-[#FDF2F1] border-error text-error"
+                      ? "bg-[#EEF7F2] border-kupon-emerald/40 text-kupon-emerald"
+                      : "bg-[#FDF2F1] border-error/40 text-error"
                   }`}
                 >
                   {simulationResult.compliant ? (
@@ -722,8 +953,10 @@ const RegulatorPage: NextPage = () => {
                     <XCircleIcon className="w-6 h-6 text-error shrink-0 mt-0.5" />
                   )}
                   <div className="space-y-1">
-                    <div className="font-serif font-bold text-base">
-                      {simulationResult.compliant ? "TRANSFER PERMITTED (DvP CLEAR)" : "TRANSFER BLOCKED ONCHAIN"}
+                    <div className="font-serif font-bold text-base tracking-tight">
+                      {simulationResult.compliant
+                        ? "TRANSFER PERMITTED · DVP CLEAR"
+                        : `TRANSFER BLOCKED ONCHAIN · ${simulationResult.violatedRule ?? "REVERTED"}`}
                     </div>
                     <p className="text-xs font-sans leading-relaxed m-0 text-kupon-ink/80">
                       {simulationResult.policyExplanation}
@@ -731,17 +964,23 @@ const RegulatorPage: NextPage = () => {
                   </div>
                 </div>
 
-                {/* Identity & Rule Matrix */}
-                <div className="bg-[#F8F3E5] p-4 rounded certificate-border-subtle flex flex-col gap-2.5 text-xs font-mono">
-                  <div className="flex items-center justify-between text-kupon-ink/65 border-b border-kupon-gold/20 pb-1.5">
+                {/* Invariant Audit Matrix */}
+                <div className="bg-[#FAF6EC] p-4 rounded-xl border border-kupon-gold/30 flex flex-col gap-3 text-xs font-mono">
+                  <div className="flex items-center justify-between text-kupon-ink/50 border-b border-kupon-gold/20 pb-2 text-[11px] uppercase tracking-wider">
                     <span>Audit Invariant</span>
                     <span>Evaluation Result</span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-kupon-ink/80">R1 · Recipient KYC / SID</span>
+                  {/* R1 Check */}
+                  <div className="flex items-center justify-between py-0.5">
+                    <div>
+                      <span className="text-kupon-ink font-semibold block">R1 · Recipient KYC / KSEI SID Gate</span>
+                      <span className="text-[11px] font-sans text-kupon-ink/60">
+                        Indonesian residency or institutional accreditation
+                      </span>
+                    </div>
                     <span
-                      className={`badge badge-sm font-mono ${
+                      className={`badge badge-sm font-mono font-semibold ${
                         simulationResult.recipientClaims.residency || simulationResult.recipientClaims.accredited
                           ? "bg-kupon-emerald text-kupon-ivory"
                           : "bg-error text-white"
@@ -749,87 +988,111 @@ const RegulatorPage: NextPage = () => {
                     >
                       {simulationResult.recipientClaims.residency || simulationResult.recipientClaims.accredited
                         ? "VERIFIED (PASS)"
-                        : "NO CLAIM (REVERT)"}
+                        : "NO CLAIM (REVERT R1)"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-kupon-ink/80">R2 · Retail 5,000 KPON Cap</span>
+                  {/* R2 Check */}
+                  <div className="flex items-center justify-between py-0.5 border-t border-kupon-gold/15 pt-2">
+                    <div>
+                      <span className="text-kupon-ink font-semibold block">R2 · Retail 5,000 KPON Holding Cap</span>
+                      <span className="text-[11px] font-sans text-kupon-ink/60">
+                        Max Rp5 Billion for retail; exempt for institutions
+                      </span>
+                    </div>
                     <span
-                      className={`badge badge-sm font-mono ${
+                      className={`badge badge-sm font-mono font-semibold ${
                         simulationResult.violatedRule === "R2-CAP"
                           ? "bg-error text-white"
                           : "bg-kupon-emerald text-kupon-ivory"
                       }`}
                     >
-                      {simulationResult.violatedRule === "R2-CAP" ? "CAP BREACHED (REVERT)" : "WITHIN CAP (PASS)"}
+                      {simulationResult.violatedRule === "R2-CAP" ? "CAP BREACHED (REVERT R2)" : "WITHIN CAP (PASS)"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-kupon-ink/80">R3 · Sender Non-Frozen</span>
+                  {/* R3 Check */}
+                  <div className="flex items-center justify-between py-0.5 border-t border-kupon-gold/15 pt-2">
+                    <div>
+                      <span className="text-kupon-ink font-semibold block">R3 · Sender Non-Frozen Status</span>
+                      <span className="text-[11px] font-sans text-kupon-ink/60">
+                        Sender must hold at least one active identity claim
+                      </span>
+                    </div>
                     <span
-                      className={`badge badge-sm font-mono ${
+                      className={`badge badge-sm font-mono font-semibold ${
                         simulationResult.violatedRule === "R3-FROZEN"
                           ? "bg-error text-white"
                           : "bg-kupon-emerald text-kupon-ivory"
                       }`}
                     >
-                      {simulationResult.violatedRule === "R3-FROZEN" ? "FROZEN (REVERT)" : "ACTIVE (PASS)"}
+                      {simulationResult.violatedRule === "R3-FROZEN" ? "FROZEN (REVERT R3)" : "ACTIVE (PASS)"}
                     </span>
                   </div>
 
-                  <div className="pt-2 border-t border-kupon-gold/20 flex items-center justify-between text-[11px]">
+                  {/* Post-Transfer Holdings & Headroom */}
+                  <div className="pt-2.5 border-t border-kupon-gold/20 flex items-center justify-between text-[11px]">
                     <span className="text-kupon-ink/60">Recipient Holdings (Post-Transfer):</span>
                     <span className="font-semibold text-kupon-ink">
-                      {formatEther(simulationResult.projectedBalance)} KPON
+                      {formatEther(simulationResult.projectedBalance)} KPON{" "}
+                      <span className="text-kupon-ink/50 font-normal">
+                        (Rp
+                        {(Number(formatEther(simulationResult.projectedBalance)) * 1_000_000).toLocaleString("id-ID")})
+                      </span>
                     </span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="p-12 rounded bg-[#F8F3E5] border border-dashed border-kupon-gold/40 text-center text-xs font-sans text-kupon-ink/65 flex flex-col items-center justify-center gap-2">
+              <div className="p-10 rounded-xl bg-[#FAF6EC] border border-dashed border-kupon-gold/40 text-center text-xs font-sans text-kupon-ink/65 flex flex-col items-center justify-center gap-2">
                 <DocumentMagnifyingGlassIcon className="w-8 h-8 text-kupon-gold/60" />
-                <p className="m-0">Run a simulation from the left panel or click any 4-Act scenario above.</p>
+                <p className="m-0 font-medium text-kupon-ink/80">Awaiting Simulation Query</p>
+                <p className="m-0 text-kupon-ink/60">
+                  Run a custom transfer query from the left form or select any 4-Act compliance narrative above.
+                </p>
               </div>
             )}
           </div>
-        </div>
+        </section>
 
         {/* ===================================================================== */}
         {/* SECTION 3: LIVE AUDIT FEED (CLAIM EVENTS ONCHAIN) */}
         {/* ===================================================================== */}
-        <div className="bg-[#FAF6EC] p-6 sm:p-8 rounded certificate-border flex flex-col gap-5 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-kupon-gold/30 pb-4 gap-2">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink m-0">
-                Live Registry Event Stream
-              </h2>
-              <p className="text-xs sm:text-sm text-kupon-ink/75 font-sans m-0 mt-1">
-                Real-time onchain log of identity certifications and emergency revocations from KuponClaimRegistry.
-              </p>
+        <section className="bg-[#F8F3E5] p-6 sm:p-8 rounded-xl border border-kupon-gold/30 flex flex-col gap-5 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-kupon-gold/25 pb-4 gap-2">
+            <div className="flex items-center gap-2.5">
+              <ClipboardDocumentListIcon className="w-6 h-6 text-kupon-emerald shrink-0" />
+              <div>
+                <h2 className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink m-0">
+                  Live Regulatory Audit Trail
+                </h2>
+                <p className="text-xs sm:text-sm text-kupon-ink/75 font-sans m-0 mt-0.5">
+                  Real-time onchain log of investor identity certifications and emergency revocations emitted by
+                  KuponClaimRegistry.sol.
+                </p>
+              </div>
             </div>
             <button
               type="button"
               onClick={() => refetchEvents()}
-              className="btn btn-xs btn-outline border-kupon-gold text-kupon-ink hover:bg-kupon-gold/20 font-sans self-start sm:self-auto"
+              className="btn btn-xs btn-outline border-kupon-gold/60 text-kupon-ink hover:bg-kupon-gold/15 font-sans self-start sm:self-auto flex items-center gap-1.5"
             >
               <ArrowPathIcon className="w-3.5 h-3.5" />
-              <span>Refresh Feed</span>
+              <span>Refresh Trail</span>
             </button>
           </div>
 
           {isLoadingEvents ? (
             <div className="p-8 text-center text-xs font-mono text-kupon-ink/60 flex items-center justify-center gap-2">
               <span className="loading loading-spinner loading-xs" />
-              <span>Indexing onchain registry events...</span>
+              <span>Indexing onchain registry events from Base Sepolia...</span>
             </div>
           ) : auditEvents && auditEvents.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="table table-sm w-full font-sans text-xs">
                 <thead>
-                  <tr className="border-b border-kupon-gold/30 text-kupon-ink/65 font-mono text-[11px] uppercase tracking-wider">
-                    <th className="bg-transparent">Event</th>
+                  <tr className="border-b border-kupon-gold/25 text-kupon-ink/65 font-mono text-[11px] uppercase tracking-wider">
+                    <th className="bg-transparent">Event Action</th>
                     <th className="bg-transparent">Investor Account</th>
                     <th className="bg-transparent">Claim Identity</th>
                     <th className="bg-transparent">Block</th>
@@ -840,21 +1103,23 @@ const RegulatorPage: NextPage = () => {
                   {auditEvents.slice(0, 10).map((log, idx) => {
                     const isGrant = log.type === "GRANTED";
                     const claimName =
-                      log.claim === RESIDENCY_ID
-                        ? "RESIDENCY_ID (WNI)"
-                        : log.claim === ACCREDITED
+                      log.claim.toLowerCase() === RESIDENCY_ID.toLowerCase()
+                        ? "RESIDENCY_ID (Indonesian Citizen)"
+                        : log.claim.toLowerCase() === ACCREDITED.toLowerCase()
                           ? "ACCREDITED (Institutional)"
                           : "UNKNOWN_CLAIM";
 
                     return (
                       <tr
                         key={`${log.transactionHash}-${log.logIndex}-${idx}`}
-                        className="border-b border-kupon-gold/15 hover:bg-base-200/50"
+                        className="border-b border-kupon-gold/15 hover:bg-[#FAF6EC]/80 transition-colors"
                       >
                         <td>
                           <span
-                            className={`badge badge-sm font-mono ${
-                              isGrant ? "bg-kupon-emerald text-kupon-ivory" : "bg-error text-white"
+                            className={`badge badge-sm font-mono font-semibold ${
+                              isGrant
+                                ? "bg-kupon-emerald/15 text-kupon-emerald border border-kupon-emerald/30"
+                                : "bg-error/15 text-error border border-error/30"
                             }`}
                           >
                             {isGrant ? "CLAIM_GRANTED" : "CLAIM_REVOKED"}
@@ -865,14 +1130,17 @@ const RegulatorPage: NextPage = () => {
                         </td>
                         <td className="font-mono text-[11px] font-medium text-kupon-ink">{claimName}</td>
                         <td className="font-mono text-kupon-ink/70">#{log.blockNumber.toString()}</td>
-                        <td className="font-mono text-kupon-emerald truncate max-w-[120px]">
+                        <td className="font-mono text-kupon-emerald truncate max-w-[130px]">
                           <a
                             href={`https://sepolia.basescan.org/tx/${log.transactionHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:underline"
+                            className="inline-flex items-center gap-1 hover:underline text-kupon-emerald"
                           >
-                            {log.transactionHash.slice(0, 8)}…{log.transactionHash.slice(-6)}
+                            <span>
+                              {log.transactionHash.slice(0, 8)}…{log.transactionHash.slice(-6)}
+                            </span>
+                            <ArrowTopRightOnSquareIcon className="w-3 h-3 shrink-0" />
                           </a>
                         </td>
                       </tr>
@@ -882,34 +1150,34 @@ const RegulatorPage: NextPage = () => {
               </table>
             </div>
           ) : (
-            <div className="p-8 rounded bg-[#F8F3E5] border border-dashed border-kupon-gold/40 text-center text-xs font-sans text-kupon-ink/60">
-              No claim modification events detected on this network yet. Use the Registrar Portal to issue the first
-              investor claim.
+            <div className="p-8 rounded-xl bg-[#FAF6EC] border border-dashed border-kupon-gold/40 text-center text-xs font-sans text-kupon-ink/60">
+              No claim modification events detected on this network yet. Use the Registrar Certification Portal to issue
+              the first investor credentials.
             </div>
           )}
-        </div>
+        </section>
 
         {/* ===================================================================== */}
-        {/* FOOTER & LINKS */}
+        {/* FOOTER & FRAMEWORK NAVIGATION */}
         {/* ===================================================================== */}
-        <div className="flex flex-wrap items-center justify-between border-t border-kupon-gold/30 pt-6 text-xs text-kupon-ink/70 font-sans gap-4">
-          <div className="flex items-center gap-4">
+        <footer className="flex flex-wrap items-center justify-between border-t border-kupon-gold/30 pt-6 text-xs text-kupon-ink/70 font-sans gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Link href="/app" className="text-kupon-emerald hover:underline font-medium">
-              ← Investor Application
+              ← Investor Application Desk
             </Link>
-            <span>·</span>
+            <span className="text-kupon-ink/30">·</span>
             <Link href="/registrar" className="text-kupon-gold hover:underline font-medium">
               Registrar Certification Portal →
             </Link>
-            <span>·</span>
+            <span className="text-kupon-ink/30">·</span>
             <Link href="/framework" className="text-kupon-ink hover:underline font-medium">
-              Regulatory Framework (UU P2SK) →
+              Regulatory Framework (UU P2SK & POJK 3/2024) →
             </Link>
           </div>
           <div className="font-mono text-[11px] text-kupon-ink/60">
-            Compliance Engine: <code className="text-kupon-emerald">KuponComplianceModule.sol</code>
+            Compliance Engine: <code className="text-kupon-emerald font-semibold">KuponComplianceModule.sol</code>
           </div>
-        </div>
+        </footer>
       </div>
     </div>
   );
