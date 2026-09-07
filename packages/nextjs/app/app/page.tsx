@@ -667,7 +667,7 @@ const InvestorPage: NextPage = () => {
                   <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
                     Capital Invested (ORI026-T3)
                   </span>
-                  <div className="text-2xl sm:text-3xl font-serif font-bold text-kupon-ink">
+                  <div className="text-xl sm:text-2xl font-serif font-bold text-kupon-ink tracking-tight">
                     Rp{balanceIDR.toLocaleString("id-ID")}
                   </div>
                   <span className="text-xs text-kupon-ink/65 font-sans">
@@ -686,7 +686,7 @@ const InvestorPage: NextPage = () => {
                       Liquid / Mo
                     </span>
                   </div>
-                  <div className="text-2xl sm:text-3xl font-serif font-bold text-kupon-emerald">
+                  <div className="text-xl sm:text-2xl font-serif font-bold text-kupon-emerald tracking-tight">
                     Rp{Math.round(monthlyIncomeIDR).toLocaleString("id-ID")}
                   </div>
                   <span className="text-xs text-kupon-ink/65 font-sans">Disbursed every 15th · Auto-credited</span>
@@ -702,7 +702,7 @@ const InvestorPage: NextPage = () => {
                       +{totalProfitPercentage}% Total
                     </span>
                   </div>
-                  <div className="text-2xl sm:text-3xl font-serif font-bold text-kupon-gold">
+                  <div className="text-xl sm:text-2xl font-serif font-bold text-kupon-gold tracking-tight">
                     +Rp{Math.round(cumulativeProfitIDR).toLocaleString("id-ID")}
                   </div>
                   <span className="text-xs text-kupon-ink/65 font-sans">
