@@ -9,14 +9,8 @@ interface WorldIDVerificationButtonProps {
   investorAddress?: string;
 }
 
-const CONFIGURED_APP_ID = process.env.NEXT_PUBLIC_WORLD_APP_ID;
-// Only launch live IDKit API if a custom developer portal App ID is configured
-const IS_LIVE_CONFIGURED = Boolean(
-  CONFIGURED_APP_ID &&
-  CONFIGURED_APP_ID.startsWith("app_") &&
-  CONFIGURED_APP_ID !== "app_staging_kupon_rwa" &&
-  CONFIGURED_APP_ID.length > 15,
-);
+const CONFIGURED_APP_ID = process.env.NEXT_PUBLIC_WORLD_APP_ID || "app__2e64ca385789651bf2a35537179caf21";
+const CONFIGURED_RP_ID = process.env.NEXT_PUBLIC_WORLD_RP_ID || "rp__2f78f40167b2d82b";
 
 export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps> = ({
   onVerified,
@@ -29,10 +23,10 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
   const [nullifier, setNullifier] = useState<string | null>(null);
 
   const [rpContext] = useState(() => ({
-    rp_id: "rp_kupon_rwa_2026",
+    rp_id: CONFIGURED_RP_ID,
     nonce: "0x1234567890abcdef",
-    created_at: 1725700000,
-    expires_at: 1725703600,
+    created_at: Math.floor(Date.now() / 1000),
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
     signature: "0x0000000000000000000000000000000000000000000000000000000000000000",
   }));
 
@@ -123,33 +117,24 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
 
         <button
           type="button"
-          onClick={() => {
-            if (IS_LIVE_CONFIGURED) {
-              setIsOpen(true);
-            } else {
-              setIsSimulatorOpen(true);
-            }
-          }}
+          onClick={() => setIsSimulatorOpen(true)}
           className="shrink-0 px-3.5 py-1.5 rounded-lg border border-kupon-emerald/30 bg-kupon-emerald hover:bg-kupon-emerald-dark text-[#FAF6EC] text-xs font-sans font-medium transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
         >
           <span>Verify with World ID</span>
           <span className="text-kupon-gold">→</span>
         </button>
 
-        {IS_LIVE_CONFIGURED && (
-          <IDKitRequestWidget
-            open={isOpen}
-            onOpenChange={setIsOpen}
-            app_id={CONFIGURED_APP_ID as `app_${string}`}
-            action="verify-residency-ksei"
-            rp_context={rpContext}
-            allow_legacy_proofs={true}
-            environment="staging"
-            preset={proofOfHuman()}
-            onSuccess={handleSuccess}
-            handleVerify={handleVerify}
-          />
-        )}
+        <IDKitRequestWidget
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          app_id={CONFIGURED_APP_ID as `app_${string}`}
+          action="verify-residency-ksei"
+          rp_context={rpContext}
+          allow_legacy_proofs={true}
+          preset={proofOfHuman()}
+          onSuccess={handleSuccess}
+          handleVerify={handleVerify}
+        />
       </div>
 
       {/* World ID Proof of Personhood Verification Modal */}
@@ -185,6 +170,12 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
                 </span>
               </div>
               <div className="flex justify-between items-center">
+                <span className="text-kupon-ink/60">App & RP:</span>
+                <span className="font-mono text-[10px] text-kupon-ink/80 truncate max-w-[200px]">
+                  {CONFIGURED_APP_ID.slice(0, 10)}... | {CONFIGURED_RP_ID.slice(0, 8)}...
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
                 <span className="text-kupon-ink/60">Assurance Level:</span>
                 <span className="inline-flex items-center gap-1 font-semibold text-kupon-ink">
                   <span className="w-2 h-2 rounded-full bg-kupon-gold" />
@@ -194,11 +185,11 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
             </div>
 
             <p className="text-xs text-kupon-ink/70 leading-relaxed m-0">
-              This proof confirms the investor is a unique living human being without revealing their biometric identity
-              or real-world name.
+              This cryptographic proof confirms the citizen is a unique living human being without disclosing any
+              biometrics, real name, or national ID number.
             </p>
 
-            <div className="flex flex-col gap-2 pt-2">
+            <div className="flex flex-col gap-2.5 pt-1">
               <button
                 type="button"
                 disabled={isSimulating}
@@ -212,17 +203,22 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
                   </>
                 ) : (
                   <>
-                    <span>Confirm Proof of Personhood</span>
+                    <span>Confirm Proof of Personhood (Instant)</span>
                     <span className="text-kupon-gold">✓</span>
                   </>
                 )}
               </button>
+
               <button
                 type="button"
-                onClick={() => setIsSimulatorOpen(false)}
-                className="w-full py-1.5 text-xs text-kupon-ink/50 hover:text-kupon-ink cursor-pointer font-sans"
+                onClick={() => {
+                  setIsSimulatorOpen(false);
+                  setIsOpen(true);
+                }}
+                className="w-full py-2 px-4 rounded-xl border border-kupon-gold/40 hover:bg-kupon-paper text-kupon-ink font-sans text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
-                Cancel
+                <span>Scan with World App (QR Code)</span>
+                <span>📱</span>
               </button>
             </div>
 
