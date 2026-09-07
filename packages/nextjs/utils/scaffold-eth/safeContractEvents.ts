@@ -15,7 +15,7 @@ interface SafeContractEventsParams {
 // by using the official Coinbase/Base Sepolia RPC and PublicNode (both supporting 10,000 blocks).
 const baseSepoliaLogsClient = createPublicClient({
   chain: baseSepolia,
-  transport: fallback([http("https://sepolia.base.org"), http("https://base-sepolia-rpc.publicnode.com")]),
+  transport: fallback([http("https://base-sepolia-rpc.publicnode.com"), http("https://sepolia.base.org")]),
 });
 
 /**

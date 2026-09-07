@@ -17,7 +17,7 @@ export const wagmiConfig = createConfig({
   connectors: wagmiConnectors(),
   ssr: true,
   client: ({ chain }) => {
-    const mainnetFallbackWithDefaultRPC = [http("https://mainnet.rpc.buidlguidl.com")];
+    const mainnetFallbackWithDefaultRPC = [http("https://cloudflare-eth.com"), http("https://eth.llamarpc.com")];
     let rpcFallbacks = [...(chain.id === mainnet.id ? mainnetFallbackWithDefaultRPC : []), http()];
     const rpcOverrideUrl = (scaffoldConfig.rpcOverrides as ScaffoldConfig["rpcOverrides"])?.[chain.id];
     if (rpcOverrideUrl) {
