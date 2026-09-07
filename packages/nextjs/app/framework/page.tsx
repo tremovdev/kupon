@@ -144,33 +144,95 @@ const FrameworkPage: NextPage = () => {
         {/* SECTION 1: MACRO THESIS (7 : 5 ASYMMETRIC GRID) */}
         {/* ===================================================================== */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          {/* Left Column (7 cols): The Problem & Opportunity */}
-          <div className="lg:col-span-7 bg-[#F8F3E5] p-6 sm:p-8 rounded-xl border border-kupon-gold/30 shadow-xs flex flex-col gap-4">
-            <div className="flex items-center gap-2 border-b border-kupon-gold/20 pb-3">
-              <DocumentTextIcon className="w-5 h-5 text-kupon-emerald shrink-0" />
-              <h2 className="text-xl font-serif font-bold text-kupon-ink m-0">
-                1. Why Sovereign Bonds Need Modern Onchain Infrastructure
-              </h2>
+          {/* Left Column (7 cols): Deconstructed Editorial Blocks */}
+          <div className="lg:col-span-7 bg-[#F8F3E5] p-6 sm:p-8 rounded-xl border border-kupon-gold/30 shadow-xs flex flex-col justify-between gap-5">
+            <div className="flex items-center justify-between border-b border-kupon-gold/20 pb-3">
+              <div className="flex items-center gap-2">
+                <DocumentTextIcon className="w-5 h-5 text-kupon-emerald shrink-0" />
+                <h2 className="text-xl font-serif font-bold text-kupon-ink m-0">
+                  1. Why Sovereign Bonds Need Modern Onchain Infrastructure
+                </h2>
+              </div>
+              <span className="text-[10px] font-mono text-kupon-emerald font-semibold bg-kupon-emerald/10 px-2 py-0.5 rounded border border-kupon-emerald/20 shrink-0">
+                Macro Thesis
+              </span>
             </div>
 
-            <div className="text-xs sm:text-sm font-sans text-kupon-ink/80 leading-relaxed space-y-3">
-              <p className="m-0">
-                Indonesia has over <strong>21 million registered digital asset investors</strong> (Bappebti 2024),
-                making it one of the fastest-growing digital investment markets in the world. Yet fewer than{" "}
-                <strong>1.1 million citizens hold retail government bonds (SBN Ritel)</strong> through the traditional
-                banking and depository system.
-              </p>
-              <p className="m-0">
-                Why this <strong>20x gap</strong>? Not because citizens reject safe, government-backed returns (~6.5%
-                p.a.), but because traditional bonds are hard to reach: banks only open subscription windows 4–6 times a
-                year, require cumbersome paperwork, and lock investor capital behind slow 2-day (T+2) clearing delays
-                with no after-hours trading.
-              </p>
-              <p className="m-0 font-medium text-kupon-ink">
-                Kupon bridges this divide: we put sovereign retail debt onchain so citizens can subscribe and trade 24/7
-                with instant settlement, while ensuring every statutory rule is enforced automatically in smart contract
-                code.
-              </p>
+            <div className="flex flex-col gap-4">
+              {/* Block 1: The Adoption Paradox */}
+              <div className="bg-[#FAF6EC] p-4 sm:p-5 rounded-xl border border-kupon-gold/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-kupon-emerald" />
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-kupon-ink/60">
+                      The Market Opportunity
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm font-sans text-kupon-ink/85 leading-relaxed m-0">
+                    Indonesia is home to over <strong>21 million registered digital asset investors</strong> (Bappebti
+                    2024). Yet fewer than <strong>1.1 million citizens hold retail government bonds (SBN Ritel)</strong>{" "}
+                    through the traditional banking depository system.
+                  </p>
+                </div>
+                <div className="bg-[#F8F3E5] px-4 py-2.5 rounded-lg border border-kupon-gold/30 text-center shrink-0 self-stretch sm:self-auto flex sm:flex-col justify-between sm:justify-center items-center">
+                  <span className="font-serif font-bold text-xl sm:text-2xl text-kupon-ink leading-none">20x</span>
+                  <span className="text-[10px] font-mono text-kupon-ink/55 uppercase tracking-wider mt-0.5">
+                    Adoption Gap
+                  </span>
+                </div>
+              </div>
+
+              {/* Block 2: The Legacy Friction */}
+              <div className="bg-[#FAF6EC] p-4 sm:p-5 rounded-xl border border-kupon-gold/25 flex flex-col gap-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-error" />
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-kupon-ink/60">
+                    Why Does This Gap Exist?
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm font-sans text-kupon-ink/80 leading-relaxed m-0">
+                  Citizens eagerly seek safe sovereign yields (~6.5% p.a.), but traditional debt is trapped behind
+                  legacy friction: banks open subscription windows only 4–6 times per year, require cumbersome
+                  paperwork, and lock investor capital behind slow 2-day (T+2) clearing with zero weekend liquidity.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <span className="text-[10px] font-mono text-error/80 bg-error/10 px-2 py-0.5 rounded border border-error/20">
+                    ✕ 4–6 Windows / Year
+                  </span>
+                  <span className="text-[10px] font-mono text-error/80 bg-error/10 px-2 py-0.5 rounded border border-error/20">
+                    ✕ Cumbersome Paperwork
+                  </span>
+                  <span className="text-[10px] font-mono text-error/80 bg-error/10 px-2 py-0.5 rounded border border-error/20">
+                    ✕ T+2 Settlement Delays
+                  </span>
+                </div>
+              </div>
+
+              {/* Block 3: The Autonomous Solution */}
+              <div className="bg-[#EEF7F2] p-4 sm:p-5 rounded-xl border border-kupon-emerald/30 flex flex-col gap-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-kupon-emerald animate-pulse" />
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-kupon-emerald">
+                    The Autonomous Solution
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm font-sans text-kupon-ink/85 leading-relaxed m-0">
+                  Kupon bridges this divide by tokenizing national retail debt on modern Layer 2 networks. Citizens can
+                  subscribe and trade 24/7 with instant T+0 settlement, while smart contracts automatically enforce
+                  every statutory requirement onchain.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <span className="text-[10px] font-mono text-kupon-emerald bg-kupon-emerald/10 px-2 py-0.5 rounded border border-kupon-emerald/25">
+                    ✓ 24/7 Continuous Access
+                  </span>
+                  <span className="text-[10px] font-mono text-kupon-emerald bg-kupon-emerald/10 px-2 py-0.5 rounded border border-kupon-emerald/25">
+                    ✓ Instant T+0 Atomic Settlement
+                  </span>
+                  <span className="text-[10px] font-mono text-kupon-emerald bg-kupon-emerald/10 px-2 py-0.5 rounded border border-kupon-emerald/25">
+                    ✓ Bytecode Rule Compliance
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -190,32 +252,71 @@ const FrameworkPage: NextPage = () => {
               </h3>
             </div>
 
-            <div className="flex flex-col gap-3 text-xs font-mono">
-              {/* Traditional */}
-              <div className="bg-[#F8F3E5] p-3.5 rounded-lg border border-kupon-gold/20 space-y-1">
-                <span className="text-kupon-ink/50 uppercase text-[10px] block">Traditional Bank SBN</span>
-                <div className="font-semibold text-error">T+2 Settlement Delay · Restricted Windows</div>
-                <p className="font-sans text-[11px] text-kupon-ink/70 m-0 leading-normal">
-                  Limited bank operating hours, manual SID paperwork, quota exhaustion, and illiquid secondary trading.
-                </p>
+            <div className="flex flex-col gap-4 text-xs font-mono">
+              {/* Traditional Bank Model */}
+              <div className="bg-[#F8F3E5] p-4 rounded-xl border border-kupon-gold/25 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-kupon-ink/60 uppercase text-[10px] font-bold">Traditional Bank SBN</span>
+                  <span className="text-[10px] font-mono text-error font-semibold bg-error/10 px-1.5 py-0.2 rounded border border-error/20">
+                    Legacy Model
+                  </span>
+                </div>
+                <div className="space-y-1.5 font-sans text-xs text-kupon-ink/75">
+                  <div className="flex items-start gap-2">
+                    <span className="text-error font-mono font-bold">✕</span>
+                    <span>
+                      <strong>Trading Hours:</strong> Restricted to branch banking hours; closed weekends
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-error font-mono font-bold">✕</span>
+                    <span>
+                      <strong>Clearing Speed:</strong> T+2 multi-day wait with broker counterparty risk
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-error font-mono font-bold">✕</span>
+                    <span>
+                      <strong>Secondary Exit:</strong> Illiquid P2P trading with manual paperwork fees
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              {/* Kupon */}
-              <div className="bg-[#EEF7F2] p-3.5 rounded-lg border border-kupon-emerald/30 space-y-1">
-                <span className="text-kupon-emerald uppercase text-[10px] block font-bold">
-                  Kupon Autonomous Standard
-                </span>
-                <div className="font-semibold text-kupon-emerald">Instant T+0 Settlement · 24/7 Trading</div>
-                <p className="font-sans text-[11px] text-kupon-ink/70 m-0 leading-normal">
-                  Automated citizen identity checks, monthly coupon cashflow deposited directly to wallet, self-custody
-                  backed by state law (UU APBN).
-                </p>
+              {/* Kupon Onchain Model */}
+              <div className="bg-[#EEF7F2] p-4 rounded-xl border border-kupon-emerald/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-kupon-emerald uppercase text-[10px] font-bold">Kupon Autonomous Standard</span>
+                  <span className="text-[10px] font-mono text-kupon-emerald font-semibold bg-kupon-emerald/10 px-1.5 py-0.2 rounded border border-kupon-emerald/20">
+                    Modern Standard
+                  </span>
+                </div>
+                <div className="space-y-1.5 font-sans text-xs text-kupon-ink/85">
+                  <div className="flex items-start gap-2">
+                    <span className="text-kupon-emerald font-mono font-bold">✓</span>
+                    <span>
+                      <strong>Trading Hours:</strong> 24/7/365 continuous open access on Layer 2
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-kupon-emerald font-mono font-bold">✓</span>
+                    <span>
+                      <strong>Clearing Speed:</strong> Instant atomic T+0 Delivery-versus-Payment (&lt; 2s)
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-kupon-emerald font-mono font-bold">✓</span>
+                    <span>
+                      <strong>Cashflow Yields:</strong> Monthly coupons auto-credited directly to wallet
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="pt-2 border-t border-kupon-gold/20 text-[11px] font-mono text-kupon-ink/60 flex items-center justify-between">
-              <span>Settlement Speed:</span>
-              <span className="font-bold text-kupon-emerald">Instant (&lt; 2 Seconds on Base L2)</span>
+            <div className="pt-3 border-t border-kupon-gold/20 text-[11px] font-mono text-kupon-ink/60 flex items-center justify-between">
+              <span>Settlement Finality:</span>
+              <span className="font-bold text-kupon-emerald">&lt; 2 Seconds (Atomic DvP)</span>
             </div>
           </div>
         </section>
