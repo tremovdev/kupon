@@ -3,14 +3,22 @@
 import React, { useState } from "react";
 import { IDKitRequestWidget, type IDKitResult, proofOfHuman } from "@worldcoin/idkit";
 import { keccak256, toHex } from "viem";
+import { notification } from "~~/utils/scaffold-eth";
 
 interface WorldIDVerificationButtonProps {
   onVerified?: (result: IDKitResult) => void;
   investorAddress?: string;
 }
 
-const CONFIGURED_APP_ID = process.env.NEXT_PUBLIC_WORLD_APP_ID || "app__2e64ca385789651bf2a35537179caf21";
-const CONFIGURED_RP_ID = process.env.NEXT_PUBLIC_WORLD_RP_ID || "rp__2f78f40167b2d82b";
+const CONFIGURED_APP_ID =
+  process.env.NEXT_PUBLIC_WORLD_APP_ID && process.env.NEXT_PUBLIC_WORLD_APP_ID.startsWith("app__")
+    ? process.env.NEXT_PUBLIC_WORLD_APP_ID
+    : "app__2e64ca385789651bf2a35537179caf21";
+
+const CONFIGURED_RP_ID =
+  process.env.NEXT_PUBLIC_WORLD_RP_ID && process.env.NEXT_PUBLIC_WORLD_RP_ID.startsWith("rp__")
+    ? process.env.NEXT_PUBLIC_WORLD_RP_ID
+    : "rp__2f78f40167b2d82b";
 
 export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps> = ({
   onVerified,
@@ -23,36 +31,15 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
   const [nullifier, setNullifier] = useState<string | null>(null);
   const [isLoadingQr, setIsLoadingQr] = useState(false);
 
-  const [rpContext, setRpContext] = useState({
-    rp_id: CONFIGURED_RP_ID,
-    nonce: "0x1234567890abcdef",
-    created_at: 1725700000,
-    expires_at: 1725703600,
-    signature: "0x0000000000000000000000000000000000000000000000000000000000000000",
-  });
+  // RP Context loaded dynamically from backend signing service
+  const [rpContext, setRpContext] = useState<{
+    rp_id: string;
+    nonce: string;
+    created_at: number;
+    expires_at: number;
+    signature: string;
+  } | null>(null);
 
-  const handleOpenLiveQr = async () => {
-    setIsLoadingQr(true);
-    try {
-      const res = await fetch(`/api/world-id/rp-signature?action=verify-residency-ksei`);
-      if (res.ok) {
-        const data = await res.json();
-        setRpContext({
-          rp_id: CONFIGURED_RP_ID,
-          nonce: data.nonce,
-          created_at: data.created_at,
-          expires_at: data.expires_at,
-          signature: data.sig,
-        });
-      }
-    } catch (err) {
-      console.warn("Failed to fetch dynamic RP signature:", err);
-    } finally {
-      setIsLoadingQr(false);
-      setIsSimulatorOpen(false);
-      setIsOpen(true);
-    }
-  };
   const handleVerify = async (result: IDKitResult) => {
     console.log("World ID proof verification for:", investorAddress || "generic", result);
   };
@@ -65,6 +52,32 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
     setNullifier(extracted);
     if (onVerified) {
       onVerified(result);
+    }
+  };
+
+  const handleOpenLiveQr = async () => {
+    setIsLoadingQr(true);
+    try {
+      const res = await fetch(`/api/world-id/rp-signature?action=verify-residency-ksei`);
+      if (!res.ok) {
+        throw new Error(`Signature API returned status ${res.status}`);
+      }
+      const data = await res.json();
+      setRpContext({
+        rp_id: CONFIGURED_RP_ID,
+        nonce: data.nonce,
+        created_at: data.created_at,
+        expires_at: data.expires_at,
+        signature: data.sig,
+      });
+      setIsSimulatorOpen(false);
+      setIsOpen(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Network error";
+      console.warn("Failed to fetch dynamic RP signature:", msg);
+      notification.error(`World ID Signing Service: ${msg}`);
+    } finally {
+      setIsLoadingQr(false);
     }
   };
 
@@ -147,7 +160,7 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
           <span className="text-kupon-gold">→</span>
         </button>
 
-        {isOpen && rpContext.signature !== "0x0000000000000000000000000000000000000000000000000000000000000000" && (
+        {isOpen && rpContext && (
           <IDKitRequestWidget
             open={isOpen}
             onOpenChange={setIsOpen}
@@ -158,6 +171,10 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
             preset={proofOfHuman()}
             onSuccess={handleSuccess}
             handleVerify={handleVerify}
+            onError={(errorCode, debugReport) => {
+              console.error("IDKIT_VERIFICATION_ERROR:", errorCode, debugReport);
+              notification.error(`World ID Error: ${errorCode}`);
+            }}
           />
         )}
       </div>
@@ -195,9 +212,15 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-kupon-ink/60">App & RP:</span>
-                <span className="font-mono text-[10px] text-kupon-ink/80 truncate max-w-[200px]">
-                  {CONFIGURED_APP_ID.slice(0, 10)}... | {CONFIGURED_RP_ID.slice(0, 8)}...
+                <span className="text-kupon-ink/60">App ID:</span>
+                <span className="font-mono text-[10px] text-kupon-ink/80 truncate max-w-[220px]">
+                  {CONFIGURED_APP_ID}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-kupon-ink/60">RP ID:</span>
+                <span className="font-mono text-[10px] text-kupon-ink/80 truncate max-w-[220px]">
+                  {CONFIGURED_RP_ID}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -217,33 +240,14 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
             <div className="flex flex-col gap-2.5 pt-1">
               <button
                 type="button"
-                disabled={isSimulating}
-                onClick={runSimulatedVerification}
-                className="w-full py-2.5 px-4 rounded-xl bg-kupon-emerald hover:bg-kupon-emerald-dark text-[#FAF6EC] font-sans font-semibold text-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
-              >
-                {isSimulating ? (
-                  <>
-                    <span className="loading loading-spinner loading-xs" />
-                    <span>Generating Zero-Knowledge Proof...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Confirm Proof of Personhood (Instant)</span>
-                    <span className="text-kupon-gold">✓</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
                 disabled={isLoadingQr}
                 onClick={handleOpenLiveQr}
-                className="w-full py-2 px-4 rounded-xl border border-kupon-gold/40 hover:bg-kupon-paper text-kupon-ink font-sans text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+                className="w-full py-2.5 px-4 rounded-xl bg-kupon-emerald hover:bg-kupon-emerald-dark text-[#FAF6EC] font-sans font-semibold text-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 {isLoadingQr ? (
                   <>
                     <span className="loading loading-spinner loading-xs" />
-                    <span>Signing World ID Request...</span>
+                    <span>Fetching Signature & Opening World ID...</span>
                   </>
                 ) : (
                   <>
@@ -252,11 +256,30 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
                   </>
                 )}
               </button>
+
+              <button
+                type="button"
+                disabled={isSimulating}
+                onClick={runSimulatedVerification}
+                className="w-full py-2 px-4 rounded-xl border border-kupon-gold/40 hover:bg-kupon-paper text-kupon-ink font-sans text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+              >
+                {isSimulating ? (
+                  <>
+                    <span className="loading loading-spinner loading-xs" />
+                    <span>Generating Zero-Knowledge Proof...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Quick Simulator (No Phone Required)</span>
+                    <span className="text-kupon-gold">⚡</span>
+                  </>
+                )}
+              </button>
             </div>
 
             <div className="border-t border-kupon-gold/20 pt-3 flex items-center justify-between text-[10px] text-kupon-ink/40 font-mono">
               <span>World ID Protocol v4</span>
-              <span>ETHOnline 2026 Staging</span>
+              <span>KSEI Sovereign Gateway</span>
             </div>
           </div>
         </div>
