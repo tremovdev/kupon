@@ -17,6 +17,7 @@ import {
   PaperAirplaneIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
 import { GuillochePattern } from "~~/components/GuillochePattern";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
@@ -47,6 +48,7 @@ export type SBNSeries = {
   payoutSchedule: string;
   tradable: boolean;
   isBenchmark: boolean;
+  status: "active" | "scheduled";
   description: string;
 };
 
@@ -66,6 +68,7 @@ export const SBN_SERIES_CATALOG: SBNSeries[] = [
     payoutSchedule: "Monthly (every 15th)",
     tradable: true,
     isBenchmark: true,
+    status: "active",
     description: "Benchmark sovereign retail bond. 24/7 onchain secondary trading enabled via Kupon compliance hook.",
   },
   {
@@ -82,6 +85,7 @@ export const SBN_SERIES_CATALOG: SBNSeries[] = [
     payoutSchedule: "Monthly (every 15th)",
     tradable: true,
     isBenchmark: false,
+    status: "scheduled",
     description: "Extended maturity offering premium sovereign yield. Tradable post minimum holding period.",
   },
   {
@@ -98,6 +102,7 @@ export const SBN_SERIES_CATALOG: SBNSeries[] = [
     payoutSchedule: "Monthly (every 10th)",
     tradable: true,
     isBenchmark: false,
+    status: "scheduled",
     description: "100% Sharia-compliant sovereign debt backed by state asset leases (Ijarah Asset to be Leased).",
   },
   {
@@ -114,6 +119,7 @@ export const SBN_SERIES_CATALOG: SBNSeries[] = [
     payoutSchedule: "Monthly (every 10th)",
     tradable: false,
     isBenchmark: false,
+    status: "scheduled",
     description:
       "Floating coupon linked to BI-Rate with guaranteed 6.50% floor. Non-tradable with 50% early redemption option.",
   },
@@ -131,6 +137,7 @@ export const SBN_SERIES_CATALOG: SBNSeries[] = [
     payoutSchedule: "Monthly (every 10th)",
     tradable: false,
     isBenchmark: false,
+    status: "scheduled",
     description:
       "Funds green infrastructure projects (solar, geothermal, eco-transport) under national APBN Green Framework.",
   },
@@ -201,13 +208,22 @@ type SendVerdict = { ok: boolean; text: string };
 
 function evaluateSend(input: {
   senderHasClaim: boolean | undefined;
+  senderBalance: bigint | undefined;
   recipientHasResidency: boolean | undefined;
   recipientHasAccredited: boolean | undefined;
   recipientBalance: bigint | undefined;
   amount: bigint | undefined;
   cap: bigint;
 }): SendVerdict | null {
-  const { senderHasClaim, recipientHasResidency, recipientHasAccredited, recipientBalance, amount, cap } = input;
+  const {
+    senderHasClaim,
+    senderBalance,
+    recipientHasResidency,
+    recipientHasAccredited,
+    recipientBalance,
+    amount,
+    cap,
+  } = input;
 
   if (senderHasClaim === undefined) return null;
   if (!senderHasClaim)
@@ -215,6 +231,12 @@ function evaluateSend(input: {
       ok: false,
       text: "Blocked by R3-FROZEN: Your wallet holds no active identity claims. Outgoing transfers are frozen.",
     };
+  if (amount !== undefined && senderBalance !== undefined && amount > senderBalance) {
+    return {
+      ok: false,
+      text: `Insufficient balance: Transfer of ${formatEther(amount)} KPON exceeds your current balance of ${formatEther(senderBalance)} KPON.`,
+    };
+  }
 
   if (recipientHasResidency === undefined || recipientHasAccredited === undefined) return null;
   if (!recipientHasResidency && !recipientHasAccredited)
@@ -326,6 +348,12 @@ const InvestorPage: NextPage = () => {
   }, [orderAmount]);
 
   const subscriptionValidation = useMemo(() => {
+    if (selectedBond.status === "scheduled") {
+      return {
+        ok: false,
+        text: `Scheduled National Tranche: ${selectedBond.name} is scheduled for future issuance on the DJPPR 2026/2027 calendar. Live on-chain subscription is currently active for the benchmark tranche ORI026-T3 ($KPON).`,
+      };
+    }
     if (!connectedAddress) {
       return { ok: false, text: "Connect your Web3 wallet to order SBN bonds." };
     }
@@ -362,7 +390,17 @@ const InvestorPage: NextPage = () => {
       ok: true,
       text: "Compliance Approved: You are verified and eligible to receive this sovereign bond allocation.",
     };
-  }, [connectedAddress, parsedOrderAmount, seriesCap, totalSupply, hasResidency, hasAccredited, balance]);
+  }, [
+    connectedAddress,
+    parsedOrderAmount,
+    seriesCap,
+    totalSupply,
+    hasResidency,
+    hasAccredited,
+    balance,
+    selectedBond.name,
+    selectedBond.status,
+  ]);
 
   // Primary Market Financial Projection
   const subscriptionForecast = useMemo(() => {
@@ -421,6 +459,7 @@ const InvestorPage: NextPage = () => {
   const sendVerdict = sendToIsValid
     ? evaluateSend({
         senderHasClaim,
+        senderBalance: balance,
         recipientHasResidency: sendToHasResidency,
         recipientHasAccredited: sendToHasAccredited,
         recipientBalance: sendToBalance,
@@ -428,6 +467,28 @@ const InvestorPage: NextPage = () => {
         cap: CAP,
       })
     : null;
+
+  // Secondary Market Financial Impact Projection
+  const secondaryTransferForecast = useMemo(() => {
+    const rawUnits = Number(sendAmount.trim());
+    if (isNaN(rawUnits) || rawUnits <= 0) return null;
+
+    const principalIDR = rawUnits * 1_000_000;
+    const benchmarkAnnualRate = 0.064; // 6.40% p.a. for ORI026-T3
+    const monthlyCouponTransferredIDR = (principalIDR * benchmarkAnnualRate) / 12;
+
+    const currentUnits = balance !== undefined ? Number(formatEther(balance)) : 0;
+    const remainingUnits = Math.max(0, currentUnits - rawUnits);
+    const remainingMonthlyCouponIDR = (remainingUnits * 1_000_000 * benchmarkAnnualRate) / 12;
+
+    return {
+      rawUnits,
+      principalIDR,
+      monthlyCouponTransferredIDR,
+      remainingUnits,
+      remainingMonthlyCouponIDR,
+    };
+  }, [sendAmount, balance]);
 
   const handleSend = async () => {
     if (!sendTo || !sendAmount) {
@@ -521,14 +582,14 @@ const InvestorPage: NextPage = () => {
               {/* Total Holdings */}
               <div className="space-y-1">
                 <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
-                  Your KPON Portfolio
+                  Your Bond Holdings (ORI026-T3)
                 </span>
                 <div className="text-2xl sm:text-3xl font-serif font-bold text-kupon-ink">
                   {balance !== undefined ? Number(formatEther(balance)).toLocaleString("en-US") : "0"}{" "}
                   <span className="text-sm font-sans font-normal text-kupon-ink/60">KPON</span>
                 </div>
                 <span className="text-xs text-kupon-ink/65 font-sans">
-                  ≈ Rp{balanceIDR.toLocaleString("id-ID")} Par Value
+                  ≈ Rp{balanceIDR.toLocaleString("id-ID")} Par Value · 1 KPON = Rp1M
                 </span>
               </div>
 
@@ -734,9 +795,13 @@ const InvestorPage: NextPage = () => {
                             <div>
                               <div className="font-bold text-xs font-mono text-kupon-ink flex items-center gap-1.5">
                                 <span>{series.code}</span>
-                                {series.isBenchmark && (
-                                  <span className="text-[9px] font-mono uppercase bg-kupon-emerald/15 text-kupon-emerald px-1.5 py-0.2 rounded">
-                                    Benchmark
+                                {series.status === "active" ? (
+                                  <span className="text-[9px] font-mono uppercase bg-kupon-emerald/15 text-kupon-emerald px-1.5 py-0.5 rounded font-bold">
+                                    Live Tranche ($KPON)
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] font-mono uppercase bg-[#EAE2C8] text-kupon-ink/60 px-1.5 py-0.5 rounded">
+                                    Scheduled
                                   </span>
                                 )}
                               </div>
@@ -766,6 +831,30 @@ const InvestorPage: NextPage = () => {
                       );
                     })}
                   </div>
+
+                  {/* Scheduled Tranche Notice Banner */}
+                  {selectedBond.status === "scheduled" && (
+                    <div className="bg-[#FAF6EC] p-4 rounded-xl border border-kupon-gold/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-sans">
+                      <div className="space-y-1">
+                        <div className="font-bold text-kupon-ink flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-kupon-gold" />
+                          <span>DJPPR National Issuance Schedule (2026/2027)</span>
+                        </div>
+                        <p className="m-0 text-kupon-ink/75 leading-relaxed">
+                          {selectedBond.name} is on the calendar for subsequent national offering windows. Live on-chain
+                          subscription and 24/7 compliant secondary transfers are currently active for benchmark series{" "}
+                          <strong className="text-kupon-emerald">ORI026-T3 ($KPON)</strong>.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSeriesId("ori026-t3")}
+                        className="btn btn-sm btn-outline border-kupon-emerald text-kupon-emerald hover:bg-kupon-emerald hover:text-kupon-ivory font-mono text-[11px] shrink-0"
+                      >
+                        Select Active ORI026-T3
+                      </button>
+                    </div>
+                  )}
 
                   {/* Volume Input & Presets */}
                   <div className="space-y-2">
@@ -919,7 +1008,9 @@ const InvestorPage: NextPage = () => {
                       <KeyIcon className="w-4 h-4" />
                     )}
                     <span>
-                      Subscribe to {orderAmount ? `${orderAmount} KPON` : "SBN"} ({selectedBond.code})
+                      {selectedBond.status === "active"
+                        ? `Subscribe to ${orderAmount ? `${orderAmount} KPON` : "SBN"} (${selectedBond.code})`
+                        : `Scheduled Tranche (${selectedBond.code} · Switch to ORI026-T3)`}
                     </span>
                   </button>
                 </div>
@@ -931,11 +1022,29 @@ const InvestorPage: NextPage = () => {
               {activeMarketMode === "secondary" && (
                 <div className="flex flex-col gap-6">
                   <div className="space-y-1">
-                    <h3 className="text-xl font-serif font-bold text-kupon-ink m-0">24/7 Secondary Market Transfer</h3>
+                    <h3 className="text-xl font-serif font-bold text-kupon-ink m-0">
+                      24/7 Secondary Market: ORI026-T3 Bond Transfer
+                    </h3>
                     <p className="text-xs text-kupon-ink/75 font-sans m-0 leading-relaxed">
-                      Transfer bonds directly to any verified Indonesian citizen or institutional account with atomic
-                      on-chain settlement.
+                      Transfer benchmark sovereign bond units (ORI026-T3) directly to any verified Indonesian citizen or
+                      institutional account with atomic on-chain settlement. 1 KPON = 1 Bond Unit (Rp1,000,000 Par
+                      Value).
                     </p>
+                  </div>
+
+                  {/* Benchmark Active Series Reference Badge */}
+                  <div className="bg-[#FAF6EC] px-4 py-3 rounded-xl border border-kupon-gold/30 flex flex-wrap items-center justify-between gap-2 text-xs font-sans">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-kupon-emerald animate-pulse" />
+                      <span className="font-semibold text-kupon-ink">Traded Series: ORI026-T3 ($KPON)</span>
+                      <span className="text-kupon-ink/40">·</span>
+                      <span className="text-kupon-ink/70">6.40% p.a. Fixed</span>
+                      <span className="text-kupon-ink/40">·</span>
+                      <span className="text-kupon-ink/70">Matures 15 Oct 2029</span>
+                    </div>
+                    <span className="text-[11px] font-mono text-kupon-emerald bg-kupon-emerald/10 px-2 py-0.5 rounded">
+                      24/7 On-Chain Compliance Gate
+                    </span>
                   </div>
 
                   {/* Recipient Address */}
@@ -960,6 +1069,74 @@ const InvestorPage: NextPage = () => {
                         </button>
                       ))}
                     </div>
+
+                    {/* Recipient Counterparty Inspection Card */}
+                    {sendToIsValid && (
+                      <div className="bg-[#FAF6EC] p-3.5 rounded-xl border border-kupon-gold/30 mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-sans">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5">
+                            <UserIcon className="w-3.5 h-3.5 text-kupon-emerald" />
+                            <span className="text-[11px] font-mono uppercase text-kupon-ink/50">
+                              Recipient Identity Status:
+                            </span>
+                            <span
+                              className={`font-semibold ${
+                                sendToHasAccredited
+                                  ? "text-kupon-gold"
+                                  : sendToHasResidency
+                                    ? "text-kupon-emerald"
+                                    : "text-error"
+                              }`}
+                            >
+                              {sendToHasAccredited
+                                ? "Accredited Institution (Cap-Exempt)"
+                                : sendToHasResidency
+                                  ? "Indonesian Citizen (WNI Ritel)"
+                                  : "Unverified (No KSEI Claim)"}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-kupon-ink/70">
+                            Target Wallet:{" "}
+                            <span className="font-mono">
+                              {sendTo.slice(0, 6)}…{sendTo.slice(-4)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-right self-end sm:self-auto">
+                          <div>
+                            <span className="text-[10px] uppercase font-mono text-kupon-ink/50 block">
+                              Current Balance
+                            </span>
+                            <span className="font-mono font-semibold text-kupon-ink text-xs">
+                              {sendToBalance !== undefined
+                                ? Number(formatEther(sendToBalance)).toLocaleString("en-US")
+                                : "0"}{" "}
+                              KPON
+                            </span>
+                          </div>
+                          {!sendToHasAccredited && (
+                            <div>
+                              <span className="text-[10px] uppercase font-mono text-kupon-ink/50 block">
+                                Remaining Quota
+                              </span>
+                              <span
+                                className={`font-mono font-semibold text-xs ${
+                                  sendToBalance !== undefined && sendToBalance >= CAP
+                                    ? "text-error"
+                                    : "text-kupon-emerald"
+                                }`}
+                              >
+                                {sendToBalance !== undefined
+                                  ? Math.max(0, 5000 - Number(formatEther(sendToBalance))).toLocaleString("en-US")
+                                  : "5,000"}{" "}
+                                KPON
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Amount Input */}
@@ -985,6 +1162,21 @@ const InvestorPage: NextPage = () => {
                       </span>
                     </div>
 
+                    {/* Par Value Realtime Reference */}
+                    {secondaryTransferForecast && (
+                      <div className="text-xs font-sans text-kupon-ink/70 flex items-center justify-between px-1">
+                        <span>
+                          Nominal Par Value:{" "}
+                          <strong className="text-kupon-ink font-mono">
+                            Rp{secondaryTransferForecast.principalIDR.toLocaleString("id-ID")}
+                          </strong>
+                        </span>
+                        <span className="font-mono text-[11px] text-kupon-emerald">
+                          {secondaryTransferForecast.rawUnits} Units of ORI026-T3
+                        </span>
+                      </div>
+                    )}
+
                     {/* Quick Amount Chips */}
                     <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs font-sans">
                       <span className="text-kupon-ink/50 text-[11px]">Quick amounts:</span>
@@ -1008,6 +1200,58 @@ const InvestorPage: NextPage = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Financial Maturity & Rights Reallocation Card */}
+                  {secondaryTransferForecast && (
+                    <div className="bg-[#FAF6EC] p-4 sm:p-5 rounded-xl border border-kupon-gold/30 flex flex-col gap-3.5">
+                      <div className="flex items-center justify-between pb-3 border-b border-kupon-gold/20">
+                        <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-kupon-emerald">
+                          <BanknotesIcon className="w-4 h-4 text-kupon-gold" />
+                          <span>Bond Cashflow & Yield Reallocation Impact</span>
+                        </div>
+                        <span className="text-[11px] font-sans text-kupon-ink/60">Rights transfer to recipient</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                        <div className="space-y-0.5">
+                          <span className="text-kupon-ink/60 font-sans text-[11px]">Capital Transferred</span>
+                          <div className="font-serif font-bold text-sm text-kupon-ink">
+                            Rp{secondaryTransferForecast.principalIDR.toLocaleString("id-ID")}
+                          </div>
+                          <span className="text-[10px] font-mono text-kupon-ink/50">
+                            {secondaryTransferForecast.rawUnits} KPON
+                          </span>
+                        </div>
+
+                        <div className="space-y-0.5">
+                          <span className="text-kupon-ink/60 font-sans text-[11px]">Coupon Reallocated</span>
+                          <div className="font-serif font-bold text-sm text-error">
+                            -Rp
+                            {Math.round(secondaryTransferForecast.monthlyCouponTransferredIDR).toLocaleString("id-ID")}
+                          </div>
+                          <span className="text-[10px] font-sans text-kupon-ink/50">Cashflow shifted / mo</span>
+                        </div>
+
+                        <div className="space-y-0.5">
+                          <span className="text-kupon-ink/60 font-sans text-[11px]">Your New Holdings</span>
+                          <div className="font-serif font-bold text-sm text-kupon-ink">
+                            {secondaryTransferForecast.remainingUnits.toLocaleString("en-US")} KPON
+                          </div>
+                          <span className="text-[10px] font-sans text-kupon-ink/50">
+                            ≈ Rp{(secondaryTransferForecast.remainingUnits * 1_000_000).toLocaleString("id-ID")}
+                          </span>
+                        </div>
+
+                        <div className="space-y-0.5">
+                          <span className="text-kupon-ink/60 font-sans text-[11px]">Your Adjusted Monthly Yield</span>
+                          <div className="font-serif font-bold text-sm text-kupon-emerald">
+                            Rp{Math.round(secondaryTransferForecast.remainingMonthlyCouponIDR).toLocaleString("id-ID")}
+                          </div>
+                          <span className="text-[10px] font-sans text-kupon-ink/50">Ongoing monthly payout</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Live Pre-Flight Compliance Verdict */}
                   {sendVerdict && (
@@ -1044,9 +1288,11 @@ const InvestorPage: NextPage = () => {
                     ) : (
                       <PaperAirplaneIcon className="w-4 h-4" />
                     )}
-                    <span>Execute Secondary Transfer {sendAmount ? `(${sendAmount} KPON)` : ""}</span>
+                    <span>
+                      Execute Transfer of {sendAmount ? `${sendAmount} KPON` : "ORI026-T3"} (
+                      {sendAmount ? `Rp${(Number(sendAmount) * 1_000_000 || 0).toLocaleString("id-ID")}` : "Par Value"})
+                    </span>
                   </button>
-
                   <p className="text-[11px] text-kupon-ink/60 font-sans m-0 leading-relaxed">
                     Transfers settle onchain with sub-second finality. If the recipient violates residency rules or
                     exceeds the retail cap, the smart contract reverts the transaction deterministically without loss of
