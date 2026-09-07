@@ -7,7 +7,6 @@ import type { NextPage } from "next";
 import { formatEther, isAddress, keccak256, toHex } from "viem";
 import { useAccount } from "wagmi";
 import {
-  ArrowRightIcon,
   CheckCircleIcon,
   InformationCircleIcon,
   MinusCircleIcon,
@@ -115,7 +114,6 @@ const RegistrarPage: NextPage = () => {
     args: [safeTarget],
   });
 
-  const isInvestorVerified = Boolean(hasResidency || hasAccredited);
   const currentClaimActive = selectedClaim === "RESIDENCY_ID" ? Boolean(hasResidency) : Boolean(hasAccredited);
 
   // Actions
@@ -369,14 +367,11 @@ const RegistrarPage: NextPage = () => {
                   )}
                 </div>
 
-                {/* Quick Link to Investor Portal */}
+                {/* Regulatory Framework Reference */}
                 <div className="pt-2 border-t border-kupon-gold/20 flex items-center justify-between text-xs font-sans">
-                  <Link href="/app" className="text-kupon-emerald hover:underline font-medium flex items-center gap-1">
-                    <span>View in Investor Portal</span>
-                    <ArrowRightIcon className="w-3.5 h-3.5" />
-                  </Link>
-                  <Link href="/framework" className="text-kupon-gold hover:underline font-medium">
-                    KSEI SID Rules →
+                  <span className="text-kupon-ink/50 text-[11px]">Regulatory Standard:</span>
+                  <Link href="/framework" className="text-kupon-emerald hover:underline font-medium">
+                    KSEI SID & POJK 3/2024 Rules →
                   </Link>
                 </div>
               </div>
@@ -543,26 +538,6 @@ const RegistrarPage: NextPage = () => {
                 </div>
               )}
             </div>
-
-            {/* Transition Guidance to Investor Portal */}
-            {isInvestorVerified && (
-              <div className="bg-[#EEF7F2] p-4 rounded-lg border border-kupon-emerald/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
-                <div className="flex items-center gap-2 text-xs font-sans text-kupon-emerald">
-                  <CheckCircleIcon className="w-5 h-5 shrink-0" />
-                  <span>
-                    Citizen is verified! Investor can now select ORI026 allocation and order in the Investor Portal.
-                  </span>
-                </div>
-
-                <Link
-                  href="/app"
-                  className="btn btn-sm bg-kupon-emerald hover:bg-kupon-emerald/90 text-kupon-ivory border-none font-sans flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
-                >
-                  <span>Open Investor Portal</span>
-                  <ArrowRightIcon className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            )}
           </div>
         </div>
 
