@@ -10,15 +10,12 @@ interface WorldIDVerificationButtonProps {
   investorAddress?: string;
 }
 
-const CONFIGURED_APP_ID =
-  process.env.NEXT_PUBLIC_WORLD_APP_ID && process.env.NEXT_PUBLIC_WORLD_APP_ID.startsWith("app__")
-    ? process.env.NEXT_PUBLIC_WORLD_APP_ID
-    : "app__2e64ca385789651bf2a35537179caf21";
+const RAW_APP_ID = process.env.NEXT_PUBLIC_WORLD_APP_ID || "app_2e64ca385789651bf2a35537179caf21";
+const RAW_RP_ID = process.env.NEXT_PUBLIC_WORLD_RP_ID || "rp_2f78f40167b2d82b";
 
-const CONFIGURED_RP_ID =
-  process.env.NEXT_PUBLIC_WORLD_RP_ID && process.env.NEXT_PUBLIC_WORLD_RP_ID.startsWith("rp__")
-    ? process.env.NEXT_PUBLIC_WORLD_RP_ID
-    : "rp__2f78f40167b2d82b";
+// Strictly normalize to valid World ID v4 protocol format: 'app_' and 'rp_' followed by hex string
+const CONFIGURED_APP_ID = RAW_APP_ID.replace(/^app_+/, "app_");
+const CONFIGURED_RP_ID = RAW_RP_ID.replace(/^rp_+/, "rp_");
 
 export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps> = ({
   onVerified,
