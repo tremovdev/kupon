@@ -115,6 +115,9 @@
   --color-sui-primary-neutral: #f8f3e5;
   --color-sui-primary-content: #14201c;
   --color-sui-accent: rgba(20, 32, 28, 0.4);
+  --color-sui-base-100: #f8f3e5;
+  --color-sui-base-200: #f3eedb;
+  --color-sui-base-300: #e6ddc4;
   --color-sui-base-content: #14201c;
   --color-sui-input-border: rgba(201, 162, 39, 0.35);
   --color-sui-input-background: #f8f3e5;
