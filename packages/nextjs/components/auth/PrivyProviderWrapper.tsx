@@ -1,14 +1,93 @@
 "use client";
 
-import React from "react";
-import { PrivyProvider } from "@privy-io/react-auth";
+import React, { createContext, useContext } from "react";
+import { PrivyProvider, usePrivy as useOfficialPrivy } from "@privy-io/react-auth";
+import { notification } from "~~/utils/scaffold-eth";
 
-const DEFAULT_PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "cly8v03k703s6v78d2w676p2a";
+export interface SafePrivyUser {
+  email?: { address: string };
+  google?: { email: string };
+  wallet?: { address: string };
+}
+
+export interface SafePrivyContextType {
+  ready: boolean;
+  authenticated: boolean;
+  user: SafePrivyUser | null;
+  login: () => void;
+  logout: () => void;
+  isConfigured: boolean;
+}
+
+const SafePrivyContext = createContext<SafePrivyContextType>({
+  ready: true,
+  authenticated: false,
+  user: null,
+  login: () => {},
+  logout: () => {},
+  isConfigured: false,
+});
+
+export const useSafePrivy = () => {
+  return useContext(SafePrivyContext);
+};
+
+const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+// Only activate official Privy SDK if a real app ID is provided (Privy app IDs start with "cl" and are 25+ chars)
+const IS_PRIVY_CONFIGURED = Boolean(
+  PRIVY_APP_ID && PRIVY_APP_ID !== "placeholder" && PRIVY_APP_ID.startsWith("cl") && PRIVY_APP_ID.length > 15,
+);
+
+// Bridge when Privy is configured
+const ActivePrivyBridge = ({ children }: { children: React.ReactNode }) => {
+  const official = useOfficialPrivy();
+  return (
+    <SafePrivyContext.Provider
+      value={{
+        ready: official.ready,
+        authenticated: official.authenticated,
+        user: official.user as SafePrivyUser | null,
+        login: official.login,
+        logout: official.logout,
+        isConfigured: true,
+      }}
+    >
+      {children}
+    </SafePrivyContext.Provider>
+  );
+};
+
+// Fallback bridge when NEXT_PUBLIC_PRIVY_APP_ID is not configured in local environment
+const MockPrivyBridge = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <SafePrivyContext.Provider
+      value={{
+        ready: true,
+        authenticated: false,
+        user: null,
+        login: () => {
+          notification.info(
+            "Privy Social Auth is active. Set NEXT_PUBLIC_PRIVY_APP_ID in your .env.local or Vercel settings to connect your live Privy console.",
+            { duration: 6000 },
+          );
+        },
+        logout: () => {},
+        isConfigured: false,
+      }}
+    >
+      {children}
+    </SafePrivyContext.Provider>
+  );
+};
 
 export const PrivyProviderWrapper = ({ children }: { children: React.ReactNode }) => {
+  if (!IS_PRIVY_CONFIGURED) {
+    return <MockPrivyBridge>{children}</MockPrivyBridge>;
+  }
+
   return (
     <PrivyProvider
-      appId={DEFAULT_PRIVY_APP_ID}
+      appId={PRIVY_APP_ID as string}
       config={{
         appearance: {
           theme: "light",
@@ -23,7 +102,7 @@ export const PrivyProviderWrapper = ({ children }: { children: React.ReactNode }
         },
       }}
     >
-      {children}
+      <ActivePrivyBridge>{children}</ActivePrivyBridge>
     </PrivyProvider>
   );
 };

@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useSafePrivy } from "./PrivyProviderWrapper";
 
 export const PrivyAuthButton = ({ compact = false }: { compact?: boolean }) => {
-  const { ready, authenticated, user, login, logout } = usePrivy();
+  const { ready, authenticated, user, login, logout } = useSafePrivy();
 
   if (!ready) {
     return (
