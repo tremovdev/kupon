@@ -3,11 +3,15 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Address, AddressInput } from "@scaffold-ui/components";
+import { useQuery } from "@tanstack/react-query";
 import type { NextPage } from "next";
 import { formatEther, isAddress, keccak256, parseEther, toHex } from "viem";
-import { useAccount } from "wagmi";
+import { useAccount, usePublicClient } from "wagmi";
 import {
+  ArrowDownLeftIcon,
+  ArrowPathIcon,
   ArrowRightIcon,
+  ArrowUpRightIcon,
   BanknotesIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -20,7 +24,7 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { GuillochePattern } from "~~/components/GuillochePattern";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
@@ -334,6 +338,80 @@ const InvestorPage: NextPage = () => {
 
   const { writeContractAsync: writeToken } = useScaffoldWriteContract({ contractName: "KuponToken" });
 
+  const publicClient = usePublicClient();
+  const { data: tokenInfo } = useDeployedContractInfo({ contractName: "KuponToken" });
+
+  // Onchain Transfer Activity Feed
+  const {
+    data: transferHistory,
+    isLoading: isLoadingHistory,
+    refetch: refetchHistory,
+  } = useQuery({
+    queryKey: ["investorTransferHistory", tokenInfo?.address, connectedAddress],
+    queryFn: async () => {
+      if (!publicClient || !tokenInfo?.address || !tokenInfo?.abi || !connectedAddress) return [];
+
+      try {
+        const logs = await publicClient.getContractEvents({
+          address: tokenInfo.address,
+          abi: tokenInfo.abi,
+          eventName: "Transfer",
+          fromBlock: 0n,
+        });
+
+        const userLower = connectedAddress.toLowerCase();
+        const userLogs = logs.filter(log => {
+          const from = typeof log.args.from === "string" ? log.args.from.toLowerCase() : "";
+          const to = typeof log.args.to === "string" ? log.args.to.toLowerCase() : "";
+          return from === userLower || to === userLower;
+        });
+
+        const parsed = userLogs.map(log => {
+          const from = (log.args.from as string) ?? "";
+          const to = (log.args.to as string) ?? "";
+          const rawVal = (log.args.value as bigint) ?? 0n;
+          const isMint = from === ZERO_ADDRESS;
+          const isReceived = to.toLowerCase() === userLower && !isMint;
+          const isSent = from.toLowerCase() === userLower;
+
+          let type: "MINT" | "RECEIVED" | "SENT" = "MINT";
+          if (isMint) type = "MINT";
+          else if (isReceived) type = "RECEIVED";
+          else if (isSent) type = "SENT";
+
+          const amountFormatted = formatEther(rawVal);
+          const principalIDR = Number(amountFormatted) * 1_000_000;
+
+          return {
+            type,
+            from,
+            to,
+            counterparty: isMint ? "National Registrar (Primary Tranche)" : isReceived ? from : to,
+            value: rawVal,
+            formattedAmount: amountFormatted,
+            principalIDR,
+            blockNumber: log.blockNumber,
+            transactionHash: log.transactionHash,
+            logIndex: log.logIndex,
+          };
+        });
+
+        parsed.sort((a, b) => {
+          if (b.blockNumber !== a.blockNumber) {
+            return Number(b.blockNumber - a.blockNumber);
+          }
+          return Number(b.logIndex - a.logIndex);
+        });
+
+        return parsed;
+      } catch (err) {
+        console.error("Error fetching transfer history:", err);
+        return [];
+      }
+    },
+    enabled: Boolean(publicClient && tokenInfo?.address && connectedAddress),
+  });
+
   const senderHasClaim =
     hasResidency === undefined || hasAccredited === undefined ? undefined : hasResidency || hasAccredited;
 
@@ -440,7 +518,7 @@ const InvestorPage: NextPage = () => {
         args: [connectedAddress, parsedOrderAmount],
       });
       notification.success(`Successfully subscribed to ${orderAmount} KPON (${selectedBond.code})!`);
-      await Promise.all([refetchBalance(), refetchSupply()]);
+      await Promise.all([refetchBalance(), refetchSupply(), refetchHistory()]);
     } catch (e) {
       notification.error(translateRevert(e), { duration: 9000 });
     } finally {
@@ -514,7 +592,7 @@ const InvestorPage: NextPage = () => {
       });
       notification.success(`Successfully sent ${sendAmount} KPON to ${sendTo.slice(0, 6)}…${sendTo.slice(-4)}`);
       setSendAmount("");
-      await refetchBalance();
+      await Promise.all([refetchBalance(), refetchHistory()]);
     } catch (e) {
       notification.error(translateRevert(e), { duration: 8000 });
     } finally {
@@ -722,6 +800,126 @@ const InvestorPage: NextPage = () => {
                     Legal Framework →
                   </Link>
                 </div>
+              </div>
+
+              {/* =============================================================== */}
+              {/* INVESTOR TRANSACTION HISTORY (ONCHAIN TRANSFERS FEED) */}
+              {/* =============================================================== */}
+              <div className="bg-[#F8F3E5] p-6 rounded-xl border border-kupon-gold/30 flex flex-col gap-4">
+                <div className="flex items-center justify-between pb-3 border-b border-kupon-gold/20">
+                  <div className="space-y-0.5">
+                    <h3 className="text-base font-serif font-bold text-kupon-ink m-0">Transaction History</h3>
+                    <p className="text-[11px] text-kupon-ink/65 font-sans m-0">
+                      Onchain bond issuances and compliant secondary transfers.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => refetchHistory()}
+                    className="btn btn-ghost btn-xs text-kupon-ink/60 hover:text-kupon-ink p-1 cursor-pointer"
+                    title="Refresh history"
+                  >
+                    <ArrowPathIcon className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {isLoadingHistory ? (
+                  <div className="py-8 text-center text-xs font-mono text-kupon-ink/60 flex items-center justify-center gap-2">
+                    <span className="loading loading-spinner loading-xs" />
+                    <span>Indexing onchain transfers...</span>
+                  </div>
+                ) : transferHistory && transferHistory.length > 0 ? (
+                  <div className="flex flex-col gap-2.5 max-h-[380px] overflow-y-auto pr-1">
+                    {transferHistory.map((tx, idx) => {
+                      const isMint = tx.type === "MINT";
+                      const isReceived = tx.type === "RECEIVED";
+                      const isSent = tx.type === "SENT";
+
+                      return (
+                        <div
+                          key={`${tx.transactionHash}-${idx}`}
+                          className="bg-[#FAF6EC] p-3 rounded-lg border border-kupon-gold/20 flex items-center justify-between gap-3 text-xs font-sans transition-colors hover:border-kupon-gold/40"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div
+                              className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                                isMint || isReceived
+                                  ? "bg-kupon-emerald/10 text-kupon-emerald"
+                                  : "bg-error/10 text-error"
+                              }`}
+                            >
+                              {isMint ? (
+                                <SparklesIcon className="w-3.5 h-3.5 text-kupon-gold" />
+                              ) : isReceived ? (
+                                <ArrowDownLeftIcon className="w-3.5 h-3.5" />
+                              ) : (
+                                <ArrowUpRightIcon className="w-3.5 h-3.5" />
+                              )}
+                            </div>
+
+                            <div className="space-y-0.5 min-w-0">
+                              <div className="font-semibold text-kupon-ink truncate flex items-center gap-1.5">
+                                <span>
+                                  {isMint
+                                    ? "Primary Subscription"
+                                    : isReceived
+                                      ? "Received Secondary"
+                                      : "Sent Secondary"}
+                                </span>
+                                <span
+                                  className={`text-[9px] font-mono px-1 py-0.2 rounded uppercase ${
+                                    isMint
+                                      ? "bg-kupon-gold/15 text-kupon-gold font-bold"
+                                      : isReceived
+                                        ? "bg-kupon-emerald/15 text-kupon-emerald font-semibold"
+                                        : "bg-base-200 text-kupon-ink/60"
+                                  }`}
+                                >
+                                  {tx.type}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-kupon-ink/60 truncate font-mono">
+                                {isMint ? (
+                                  "DJPPR Ministry Tranche"
+                                ) : isReceived ? (
+                                  <span>
+                                    From {tx.from.slice(0, 6)}…{tx.from.slice(-4)}
+                                  </span>
+                                ) : (
+                                  <span>
+                                    To {tx.to.slice(0, 6)}…{tx.to.slice(-4)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0 space-y-0.5">
+                            <div
+                              className={`font-mono font-bold text-xs ${
+                                isMint || isReceived ? "text-kupon-emerald" : "text-kupon-ink"
+                              }`}
+                            >
+                              {isSent ? "-" : "+"}
+                              {tx.formattedAmount} KPON
+                            </div>
+                            <div className="text-[10px] text-kupon-ink/50 font-sans">
+                              Rp{tx.principalIDR.toLocaleString("id-ID")}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="py-8 px-4 rounded-lg bg-[#FAF6EC]/60 border border-dashed border-kupon-gold/30 text-center text-xs font-sans text-kupon-ink/60 space-y-1">
+                    <p className="m-0 font-medium text-kupon-ink/75">No transaction history yet</p>
+                    <p className="m-0 text-[11px] text-kupon-ink/50">
+                      Subscribe to your first ORI026-T3 tranche or execute a P2P secondary transfer to view live onchain
+                      events.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
