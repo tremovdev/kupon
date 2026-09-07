@@ -20,6 +20,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { GuillochePattern } from "~~/components/GuillochePattern";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { getSafeContractEvents } from "~~/utils/scaffold-eth/safeContractEvents";
 
 const Home: NextPage = () => {
   const publicClient = usePublicClient();
@@ -47,11 +48,11 @@ const Home: NextPage = () => {
     queryFn: async () => {
       if (!publicClient || !registryInfo?.address || !registryInfo?.abi) return [];
       try {
-        return await publicClient.getContractEvents({
+        return await getSafeContractEvents({
+          publicClient,
           address: registryInfo.address,
           abi: registryInfo.abi,
           eventName: "ClaimGranted",
-          fromBlock: 0n,
         });
       } catch {
         return [];

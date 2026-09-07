@@ -22,6 +22,7 @@ import { GuillochePattern } from "~~/components/GuillochePattern";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { fetchRegulatoryAuditTrail } from "~~/services/thegraph/client";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
+import { getSafeContractEvents } from "~~/utils/scaffold-eth/safeContractEvents";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
 
@@ -209,17 +210,19 @@ const RegulatorPage: NextPage = () => {
         }
 
         const [grantedLogs, revokedLogs] = await Promise.all([
-          publicClient.getContractEvents({
+          getSafeContractEvents({
+            publicClient,
             address: registryInfo.address,
             abi: registryInfo.abi,
             eventName: "ClaimGranted",
-            fromBlock: 0n,
+            chunks: 4,
           }),
-          publicClient.getContractEvents({
+          getSafeContractEvents({
+            publicClient,
             address: registryInfo.address,
             abi: registryInfo.abi,
             eventName: "ClaimRevoked",
-            fromBlock: 0n,
+            chunks: 4,
           }),
         ]);
 

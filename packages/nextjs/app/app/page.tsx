@@ -27,6 +27,7 @@ import { GuillochePattern } from "~~/components/GuillochePattern";
 import { PrivyAuthButton } from "~~/components/auth/PrivyAuthButton";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
+import { getSafeContractEvents } from "~~/utils/scaffold-eth/safeContractEvents";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
 const RESIDENCY_ID = keccak256(toHex("RESIDENCY_ID"));
@@ -353,24 +354,27 @@ const InvestorPage: NextPage = () => {
       if (!publicClient || !tokenInfo?.address || !tokenInfo?.abi || !connectedAddress) return [];
 
       try {
-        const logs = await publicClient.getContractEvents({
+        const logs = await getSafeContractEvents({
+          publicClient,
           address: tokenInfo.address,
           abi: tokenInfo.abi,
           eventName: "Transfer",
-          fromBlock: 0n,
+          chunks: 4,
         });
 
         const userLower = connectedAddress.toLowerCase();
         const userLogs = logs.filter(log => {
-          const from = typeof log.args.from === "string" ? log.args.from.toLowerCase() : "";
-          const to = typeof log.args.to === "string" ? log.args.to.toLowerCase() : "";
+          const args = log.args as { from?: string; to?: string; value?: bigint };
+          const from = typeof args?.from === "string" ? args.from.toLowerCase() : "";
+          const to = typeof args?.to === "string" ? args.to.toLowerCase() : "";
           return from === userLower || to === userLower;
         });
 
         const parsed = userLogs.map(log => {
-          const from = (log.args.from as string) ?? "";
-          const to = (log.args.to as string) ?? "";
-          const rawVal = (log.args.value as bigint) ?? 0n;
+          const args = log.args as { from?: string; to?: string; value?: bigint };
+          const from = (args?.from as string) ?? "";
+          const to = (args?.to as string) ?? "";
+          const rawVal = (args?.value as bigint) ?? 0n;
           const isMint = from === ZERO_ADDRESS;
           const isReceived = to.toLowerCase() === userLower && !isMint;
           const isSent = from.toLowerCase() === userLower;
