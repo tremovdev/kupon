@@ -130,6 +130,48 @@
   box-shadow: none;
 }
 
+/* Refine @scaffold-ui debug-contracts buttons */
+.btn-dc {
+  box-shadow: none !important;
+}
+
+.btn-dc-secondary {
+  background-color: #0e5e4a !important;
+  color: #faf6ec !important;
+  border: 1px solid #0e5e4a !important;
+  border-radius: 0.5rem !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-dc-secondary:hover {
+  background-color: #0b4b3b !important;
+  border-color: #0b4b3b !important;
+  opacity: 90% !important;
+}
+
+.btn-dc-secondary:disabled {
+  opacity: 50% !important;
+  background-color: #0e5e4a !important;
+}
+
+/* Full-width 2-column layout for Debug Contracts */
+.debug-contracts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .debug-contracts-grid {
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+  }
+}
+
 .link {
   text-underline-offset: 2px;
 }

@@ -1,0 +1,248 @@
+diff --git a/dist/esm/Contract.js b/dist/esm/Contract.js
+index 12564b5c3723d3d0cb1f92f655bc933f2fc13b55..d5df123651158745f9565b1df33df4307dd25a73 100644
+--- a/dist/esm/Contract.js
++++ b/dist/esm/Contract.js
+@@ -9,6 +9,7 @@ import { Toaster } from "react-hot-toast";
+ import * as chains from "viem/chains";
+ import { ContractConfigProvider } from "./contexts/ContractConfigContext";
+ import { NETWORKS_EXTRA_DATA } from "./utils/common";
++
+ export const Contract = ({ contractName, contract, chainId, blockExplorerBaseUrl }) => {
+     const [refreshDisplayVariables, triggerRefreshDisplayVariables] = useReducer((value) => !value, false);
+     const chain = extractChain({
+@@ -23,5 +24,166 @@ export const Contract = ({ contractName, contract, chainId, blockExplorerBaseUrl
+     const balanceStyle = useMemo(() => ({
+         fontSize: "0.75rem",
+     }), []);
+-    return (_jsxs(ContractConfigProvider, { config: { resolveAddressLink, chain, chainId }, children: [_jsx("div", { className: "grid grid-cols-1 lg:grid-cols-6 px-6 lg:px-10 lg:gap-12 w-full max-w-7xl my-0 font-sans", children: _jsxs("div", { className: "col-span-5 grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10", children: [_jsxs("div", { className: "col-span-1 flex flex-col", children: [_jsx("div", { className: "bg-sui-base-100 border-sui-primary-subtle dark:border-sui-primary border shadow-md shadow-sui-primary-subtle px-6 lg:px-8 mb-6 space-y-1 py-4", children: _jsx("div", { className: "flex", children: _jsxs("div", { className: "flex flex-col gap-1", children: [_jsx("span", { className: "font-bold", children: contractName }), _jsx(Address, { address: contract.address, onlyEnsOrAddress: true, size: "base", chain: chain, blockExplorerAddressLink: resolveAddressLink(contract.address) }), _jsxs("div", { className: "flex gap-1 items-center mt-1", children: [_jsx("span", { className: "font-bold text-sm", children: "Balance:" }), contract.address && _jsx(Balance, { address: contract.address, style: balanceStyle })] }), _jsxs("p", { className: "my-0 text-sm", children: [_jsx("span", { className: "font-bold", children: "Network" }), ":", " ", _jsx("span", { style: { color: NETWORKS_EXTRA_DATA[chainId]?.color }, children: chain.id === 31_337 ? "Localhost" : chain.name })] })] }) }) }), _jsx("div", { className: "bg-sui-primary-subtle dark:bg-sui-primary px-6 lg:px-8 py-4 shadow-lg shadow-sui-primary-subtle dark:shadow-sui-primary overflow-y-auto", children: _jsx(ContractVariables, { refreshDisplayVariables: refreshDisplayVariables, contract: contract }) })] }), _jsxs("div", { className: "col-span-1 lg:col-span-2 flex flex-col gap-6", children: [_jsx("div", { className: "z-10", children: _jsxs("div", { className: "bg-sui-base-100 shadow-md shadow-sui-primary-subtle border border-sui-primary-subtle dark:border-sui-primary flex flex-col mt-10 relative", children: [_jsx("div", { className: "h-[5rem] w-[5.5rem] bg-sui-primary-subtle dark:bg-sui-primary absolute self-start -top-[38px] -left-[1px] -z-10 py-[0.65rem] shadow-lg shadow-sui-primary-subtle dark:shadow-sui-primary", children: _jsx("div", { className: "flex items-center justify-center space-x-2", children: _jsx("p", { className: "my-0 text-sm", children: "Read" }) }) }), _jsx("div", { className: "p-5 divide-y divide-sui-primary-subtle", children: _jsx(ContractReadMethods, { contract: contract }) })] }) }), _jsx("div", { className: "z-10", children: _jsxs("div", { className: "bg-sui-base-100 shadow-md shadow-sui-primary-subtle dark:border-sui-primary border border-sui-primary-subtle flex flex-col mt-10 relative", children: [_jsx("div", { className: "h-[5rem] w-[5.5rem] bg-sui-primary-subtle dark:bg-sui-primary absolute self-start -top-[38px] -left-[1px] -z-10 py-[0.65rem] shadow-lg shadow-sui-primary-subtle dark:shadow-sui-primary", children: _jsx("div", { className: "flex items-center justify-center space-x-2", children: _jsx("p", { className: "my-0 text-sm", children: "Write" }) }) }), _jsx("div", { className: "p-5 divide-y divide-sui-primary-subtle", children: _jsx(ContractWriteMethods, { contract: contract, onChange: triggerRefreshDisplayVariables }) })] }) })] })] }) }), _jsx(Toaster, {})] }));
++
++    return (
++        _jsxs(ContractConfigProvider, {
++            config: { resolveAddressLink, chain, chainId },
++            children: [
++                _jsx("div", {
++                    className: "w-full my-0 font-sans",
++                    children: _jsxs("div", {
++                        className: "debug-contracts-grid",
++                        children: [
++                            // LEFT COLUMN: Contract Overview & State Variables
++                            _jsxs("div", {
++                                className: "flex flex-col gap-6",
++                                children: [
++                                    // 1. Contract Overview Card
++                                    _jsxs("div", {
++                                        className: "bg-[#FAF6EC] border border-kupon-gold/30 rounded-xl p-5 shadow-xs flex flex-col gap-3",
++                                        children: [
++                                            _jsxs("div", {
++                                                className: "flex items-center justify-between border-b border-kupon-gold/20 pb-2",
++                                                children: [
++                                                    _jsx("span", {
++                                                        className: "font-serif font-bold text-base text-kupon-ink",
++                                                        children: contractName,
++                                                    }),
++                                                    _jsx("span", {
++                                                        className: "text-[10px] font-mono text-kupon-emerald font-semibold bg-kupon-emerald/10 px-2 py-0.5 rounded border border-kupon-emerald/25",
++                                                        children: "Deployed",
++                                                    }),
++                                                ],
++                                            }),
++                                            _jsx(Address, {
++                                                address: contract.address,
++                                                onlyEnsOrAddress: true,
++                                                size: "sm",
++                                                chain: chain,
++                                                blockExplorerAddressLink: resolveAddressLink(contract.address),
++                                            }),
++                                            _jsxs("div", {
++                                                className: "flex items-center justify-between text-xs font-mono text-kupon-ink/75 pt-2 border-t border-kupon-gold/15",
++                                                children: [
++                                                    _jsx("span", { className: "text-kupon-ink/60", children: "Treasury Balance:" }),
++                                                    contract.address && _jsx(Balance, { address: contract.address, style: balanceStyle }),
++                                                ],
++                                            }),
++                                            _jsxs("div", {
++                                                className: "flex items-center justify-between text-xs font-mono text-kupon-ink/75",
++                                                children: [
++                                                    _jsx("span", { className: "text-kupon-ink/60", children: "Target Network:" }),
++                                                    _jsx("span", {
++                                                        style: { color: NETWORKS_EXTRA_DATA[chainId]?.color || "#0e5e4a" },
++                                                        className: "font-bold",
++                                                        children: chain.id === 31_337 ? "Localhost" : chain.name,
++                                                    }),
++                                                ],
++                                            }),
++                                        ],
++                                    }),
++                                    // 2. Variables & Storage Card
++                                    _jsxs("div", {
++                                        className: "bg-[#FAF6EC] border border-kupon-gold/30 rounded-xl p-5 shadow-xs flex flex-col gap-3",
++                                        children: [
++                                            _jsxs("div", {
++                                                className: "flex items-center justify-between border-b border-kupon-gold/20 pb-2",
++                                                children: [
++                                                    _jsx("span", {
++                                                        className: "text-xs font-mono font-bold uppercase tracking-wider text-kupon-ink/65",
++                                                        children: "State Storage & Constants",
++                                                    }),
++                                                    _jsx("button", {
++                                                        type: "button",
++                                                        onClick: triggerRefreshDisplayVariables,
++                                                        className: "text-[11px] font-mono text-kupon-emerald hover:underline cursor-pointer",
++                                                        children: "Refresh",
++                                                    }),
++                                                ],
++                                            }),
++                                            _jsx("div", {
++                                                className: "flex flex-col gap-3",
++                                                children: _jsx(ContractVariables, {
++                                                    refreshDisplayVariables: refreshDisplayVariables,
++                                                    contract: contract,
++                                                }),
++                                            }),
++                                        ],
++                                    }),
++                                ],
++                            }),
++                            // RIGHT COLUMN: Read & Write Methods (Full Width)
++                            _jsxs("div", {
++                                className: "flex flex-col gap-6",
++                                children: [
++                                    // Read Methods Panel
++                                    _jsxs("div", {
++                                        className: "bg-[#FAF6EC] border border-kupon-gold/30 rounded-xl p-6 shadow-xs flex flex-col gap-4",
++                                        children: [
++                                            _jsxs("div", {
++                                                className: "flex items-center justify-between border-b border-kupon-gold/20 pb-3",
++                                                children: [
++                                                    _jsxs("div", {
++                                                        className: "flex items-center gap-2",
++                                                        children: [
++                                                            _jsx("span", { className: "w-2.5 h-2.5 rounded-full bg-kupon-emerald" }),
++                                                            _jsx("h3", {
++                                                                className: "font-serif font-bold text-base text-kupon-ink m-0",
++                                                                children: "Read Functions (View / Pure Query)",
++                                                            }),
++                                                        ],
++                                                    }),
++                                                    _jsx("span", {
++                                                        className: "text-[11px] font-mono text-kupon-emerald bg-kupon-emerald/10 px-2 py-0.5 rounded border border-kupon-emerald/20",
++                                                        children: "0 Gas · Free Query",
++                                                    }),
++                                                ],
++                                            }),
++                                            _jsx("div", {
++                                                className: "divide-y divide-kupon-gold/15",
++                                                children: _jsx(ContractReadMethods, { contract: contract }),
++                                            }),
++                                        ],
++                                    }),
++                                    // Write Methods Panel
++                                    _jsxs("div", {
++                                        className: "bg-[#FAF6EC] border border-kupon-gold/30 rounded-xl p-6 shadow-xs flex flex-col gap-4",
++                                        children: [
++                                            _jsxs("div", {
++                                                className: "flex items-center justify-between border-b border-kupon-gold/20 pb-3",
++                                                children: [
++                                                    _jsxs("div", {
++                                                        className: "flex items-center gap-2",
++                                                        children: [
++                                                            _jsx("span", { className: "w-2.5 h-2.5 rounded-full bg-kupon-gold" }),
++                                                            _jsx("h3", {
++                                                                className: "font-serif font-bold text-base text-kupon-ink m-0",
++                                                                children: "Write Functions (State Mutations)",
++                                                            }),
++                                                        ],
++                                                    }),
++                                                    _jsx("span", {
++                                                        className: "text-[11px] font-mono text-kupon-gold bg-kupon-gold/10 px-2 py-0.5 rounded border border-kupon-gold/20",
++                                                        children: "Sign Transaction",
++                                                    }),
++                                                ],
++                                            }),
++                                            _jsx("div", {
++                                                className: "divide-y divide-kupon-gold/15",
++                                                children: _jsx(ContractWriteMethods, {
++                                                    contract: contract,
++                                                    onChange: triggerRefreshDisplayVariables,
++                                                }),
++                                            }),
++                                        ],
++                                    }),
++                                ],
++                            }),
++                        ],
++                    }),
++                }),
++                _jsx(Toaster, {}),
++            ],
++        })
++    );
+ };
+diff --git a/dist/esm/components/DisplayVariable.js b/dist/esm/components/DisplayVariable.js
+index b14928f2cf773dee59dfa62d00297749b4b7be0b..e9d10cb72ceb4944206e8b183478763be7b453fd 100644
+--- a/dist/esm/components/DisplayVariable.js
++++ b/dist/esm/components/DisplayVariable.js
+@@ -8,9 +8,10 @@ import { InheritanceTooltip } from "./InheritanceTooltip";
+ import { displayTxResult } from "../utils/utilsDisplay";
+ import { notification } from "../utils/notification";
+ import { useContractConfig } from "../contexts/ContractConfigContext";
+-export const DisplayVariable = ({ contractAddress, abiFunction, refreshDisplayVariables, abi, inheritedFrom, }) => {
++
++export const DisplayVariable = ({ contractAddress, abiFunction, refreshDisplayVariables, abi, inheritedFrom }) => {
+     const { chainId } = useContractConfig();
+-    const { data: result, isFetching, refetch, error, } = useReadContract({
++    const { data: result, isFetching, refetch, error } = useReadContract({
+         address: contractAddress,
+         functionName: abiFunction.name,
+         abi: abi,
+@@ -20,9 +21,11 @@ export const DisplayVariable = ({ contractAddress, abiFunction, refreshDisplayVa
+         },
+     });
+     const { showAnimation } = useAnimationConfig(result);
++
+     useEffect(() => {
+         refetch();
+     }, [refetch, refreshDisplayVariables]);
++
+     useEffect(() => {
+         if (error) {
+             const parsedError = getParsedError(error);
+@@ -30,5 +33,37 @@ export const DisplayVariable = ({ contractAddress, abiFunction, refreshDisplayVa
+             notification.error(parsedError);
+         }
+     }, [error]);
+-    return (_jsxs("div", { className: "space-y-1 pb-2", children: [_jsxs("div", { className: "flex items-center", children: [_jsx("h3", { className: "font-medium text-lg mb-0 break-all", children: abiFunction.name }), _jsx("button", { className: "p-1 text-sui-primary-content/60 hover:text-sui-primary-content dark:hover:bg-sui-primary-neutral hover:bg-sui-primary transition-colors duration-200 cursor-pointer ml-1", onClick: async () => await refetch(), children: isFetching ? (_jsx("div", { className: "w-3 h-3 border border-sui-primary-subtle border-t-transparent animate-spin" })) : (_jsx(ArrowPathIcon, { className: "h-3 w-3 cursor-pointer", "aria-hidden": "true" })) }), _jsx(InheritanceTooltip, { inheritedFrom: inheritedFrom })] }), _jsx("div", { className: "text-sui-primary-content/80 flex flex-col items-start", children: _jsx("div", { children: _jsx("div", { className: `block transition ${showAnimation ? "bg-[#e2d563] animate-pulse-fast" : "bg-transparent"}`, children: displayTxResult(result, "base") }) }) })] }));
++
++    return (
++        _jsxs("div", {
++            className: "space-y-1.5 pb-2.5 border-b border-kupon-gold/15 last:border-none last:pb-0",
++            children: [
++                _jsxs("div", {
++                    className: "flex items-center justify-between gap-1",
++                    children: [
++                        _jsx("span", {
++                            className: "font-mono font-bold text-xs text-kupon-ink break-words flex-1",
++                            children: abiFunction.name,
++                        }),
++                        _jsx("button", {
++                            type: "button",
++                            className: "p-1 text-kupon-ink/40 hover:text-kupon-emerald transition-colors duration-200 cursor-pointer",
++                            onClick: async () => await refetch(),
++                            children: isFetching
++                                ? _jsx("div", { className: "w-3 h-3 border border-kupon-gold border-t-transparent animate-spin rounded-full" })
++                                : _jsx(ArrowPathIcon, { className: "h-3.5 w-3.5 cursor-pointer", "aria-hidden": "true" }),
++                        }),
++                        _jsx(InheritanceTooltip, { inheritedFrom: inheritedFrom }),
++                    ],
++                }),
++                _jsx("div", {
++                    className: "text-xs font-mono text-kupon-ink/80 bg-[#FAF6EC] px-2.5 py-1.5 rounded border border-kupon-gold/20 break-all select-all",
++                    children: _jsx("div", {
++                        className: `block transition ${showAnimation ? "bg-kupon-gold/20 animate-pulse-fast" : "bg-transparent"}`,
++                        children: displayTxResult(result, "base"),
++                    }),
++                }),
++            ],
++        })
++    );
+ };

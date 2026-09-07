@@ -4214,7 +4214,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scaffold-ui/debug-contracts@patch:@scaffold-ui/debug-contracts@npm%3A0.1.11#~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch":
+"@scaffold-ui/debug-contracts@patch:@scaffold-ui/debug-contracts@npm%3A0.1.11#~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch::version=0.1.11&hash=978252":
   version: 0.1.11
   resolution: "@scaffold-ui/debug-contracts@patch:@scaffold-ui/debug-contracts@npm%3A0.1.11#~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch::version=0.1.11&hash=978252"
   dependencies:
@@ -4229,6 +4229,24 @@ __metadata:
     viem: ^2.23.0
     wagmi: ^2.14.11
   checksum: 10/d5e8ef3c71857f343aef26612665cbbe3ee0abb059ff33f1f03ab33a53c731d7a8c0549b04598c6fa33f6246888f72c84917e33e97a52917fe68c0cfe84cda89
+  languageName: node
+  linkType: hard
+
+"@scaffold-ui/debug-contracts@patch:@scaffold-ui/debug-contracts@patch%3A@scaffold-ui/debug-contracts@npm%253A0.1.11%23~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch%3A%3Aversion=0.1.11&hash=978252#~/.yarn/patches/@scaffold-ui-debug-contracts-patch-45d4929e4a.patch":
+  version: 0.1.11
+  resolution: "@scaffold-ui/debug-contracts@patch:@scaffold-ui/debug-contracts@patch%3A@scaffold-ui/debug-contracts@npm%253A0.1.11%23~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch%3A%3Aversion=0.1.11&hash=978252#~/.yarn/patches/@scaffold-ui-debug-contracts-patch-45d4929e4a.patch::version=0.1.11&hash=a4e6db"
+  dependencies:
+    "@heroicons/react": "npm:^2.2.0"
+    react-hot-toast: "npm:^2.5.2"
+  peerDependencies:
+    "@scaffold-ui/components": 0.1.12
+    "@scaffold-ui/hooks": 0.1.8
+    "@tanstack/react-query": ^5.59.15
+    "@types/react": ^19.0.7
+    react: ^19.2.3
+    viem: ^2.23.0
+    wagmi: ^2.14.11
+  checksum: 10/bdea63b65c1977df9b3b6791e23b01f8b89dd5104f9bcb01d41b65059c4ea5ffd6fc18a84273029e302cdafa264963790222fa0e3c5c19cb8c6f6863886f3fd6
   languageName: node
   linkType: hard
 
@@ -4382,7 +4400,7 @@ __metadata:
     "@rainbow-me/rainbowkit": "npm:2.2.11"
     "@react-native-async-storage/async-storage": "npm:~2.2.0"
     "@scaffold-ui/components": "npm:^0.1.12"
-    "@scaffold-ui/debug-contracts": "patch:@scaffold-ui/debug-contracts@npm%3A0.1.11#~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch"
+    "@scaffold-ui/debug-contracts": "patch:@scaffold-ui/debug-contracts@patch%3A@scaffold-ui/debug-contracts@npm%253A0.1.11%23~/.yarn/patches/@scaffold-ui-debug-contracts-npm-0.1.11-d32700232a.patch%3A%3Aversion=0.1.11&hash=978252#~/.yarn/patches/@scaffold-ui-debug-contracts-patch-45d4929e4a.patch"
     "@scaffold-ui/hooks": "npm:^0.1.8"
     "@tailwindcss/postcss": "npm:4.2.4"
     "@tanstack/react-query": "npm:~5.100.5"
