@@ -15,7 +15,11 @@ import {
   BanknotesIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ClockIcon,
   ExclamationCircleIcon,
+  InformationCircleIcon,
   KeyIcon,
   LockClosedIcon,
   PaperAirplaneIcon,
@@ -269,6 +273,8 @@ const InvestorPage: NextPage = () => {
 
   // Mode: Primary Market (Buy SBN) vs Secondary Market (Transfer P2P)
   const [activeMarketMode, setActiveMarketMode] = useState<"primary" | "secondary">("primary");
+
+  const [showPayoutRules, setShowPayoutRules] = useState(false);
 
   // Primary Market Subscription State
   const [selectedSeriesId, setSelectedSeriesId] = useState<string>("ori026-t3");
@@ -606,8 +612,11 @@ const InvestorPage: NextPage = () => {
   const benchmarkRate = 0.064; // 6.40% p.a. benchmark
   const annualIncomeIDR = balanceIDR * benchmarkRate;
   const monthlyIncomeIDR = annualIncomeIDR / 12;
+  const tenorYears = 3;
+  const cumulativeProfitIDR = annualIncomeIDR * tenorYears;
+  const totalMaturityPayoutIDR = balanceIDR + cumulativeProfitIDR;
+  const totalProfitPercentage = (benchmarkRate * tenorYears * 100).toFixed(2);
   const capProgressPercent = Math.min(100, (balanceNum / 5000) * 100);
-
   return (
     <div className="flex flex-col w-full min-h-screen bg-[#FAF6EC] text-[#14201C] selection:bg-kupon-gold/30">
       {/* Delicate Guilloche Watermark */}
@@ -656,64 +665,189 @@ const InvestorPage: NextPage = () => {
 
           {/* Portfolio Wealth & Yield Strip (Single Clean Border) */}
           {connectedAddress && (
-            <div className="bg-[#F8F3E5] p-6 rounded-xl border border-kupon-gold/30 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Total Holdings */}
-              <div className="space-y-1">
-                <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
-                  Your Bond Holdings (ORI026-T3)
-                </span>
-                <div className="text-2xl sm:text-3xl font-serif font-bold text-kupon-ink">
-                  {balance !== undefined ? Number(formatEther(balance)).toLocaleString("en-US") : "0"}{" "}
-                  <span className="text-sm font-sans font-normal text-kupon-ink/60">KPON</span>
-                </div>
-                <span className="text-xs text-kupon-ink/65 font-sans">
-                  ≈ Rp{balanceIDR.toLocaleString("id-ID")} Par Value · 1 KPON = Rp1M
-                </span>
-              </div>
-
-              {/* Monthly Yield Cashflow */}
-              <div className="space-y-1">
-                <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
-                  Estimated Monthly Coupon
-                </span>
-                <div className="text-2xl sm:text-3xl font-serif font-bold text-kupon-emerald">
-                  Rp{Math.round(monthlyIncomeIDR).toLocaleString("id-ID")}
-                </div>
-                <span className="text-xs text-kupon-ink/65 font-sans">Auto-credited / month (6.40% p.a.)</span>
-              </div>
-
-              {/* Benchmark Fixed Yield */}
-              <div className="space-y-1">
-                <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
-                  Sovereign Coupon Rate
-                </span>
-                <div className="text-2xl sm:text-3xl font-serif font-bold text-kupon-gold">
-                  6.40% <span className="text-sm font-sans font-normal text-kupon-ink/60">p.a.</span>
-                </div>
-                <span className="text-xs text-kupon-ink/65 font-sans">Zero default risk · UU APBN Guaranteed</span>
-              </div>
-
-              {/* Holding Cap Headroom */}
-              <div className="space-y-1.5 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-xs font-sans">
-                  <span className="text-kupon-ink/60 font-mono">Retail Quota Headroom:</span>
-                  <span className="font-semibold text-kupon-ink">
-                    {hasAccredited ? "Cap-Exempt" : `${balanceNum.toLocaleString("en-US")} / 5,000`}
+            <div className="bg-[#F8F3E5] p-6 rounded-xl border border-kupon-gold/30 flex flex-col gap-6 shadow-xs">
+              {/* Layer 1: 4 Key Financial Metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* 1. Capital Invested */}
+                <div className="space-y-1">
+                  <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
+                    Capital Invested (ORI026-T3)
+                  </span>
+                  <div className="text-2xl sm:text-3xl font-serif font-bold text-kupon-ink">
+                    Rp{balanceIDR.toLocaleString("id-ID")}
+                  </div>
+                  <span className="text-xs text-kupon-ink/65 font-sans flex items-center gap-1">
+                    <strong className="font-mono text-kupon-ink">{balanceNum.toLocaleString("en-US")} KPON</strong>
+                    <span>· Par Value (Rp1M / unit)</span>
                   </span>
                 </div>
-                <div className="w-full bg-[#E5DEC7] h-2 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-500 rounded-full ${
-                      capProgressPercent >= 95 ? "bg-error" : "bg-kupon-emerald"
-                    }`}
-                    style={{ width: `${hasAccredited ? 0 : capProgressPercent}%` }}
-                  />
+
+                {/* 2. Monthly Passive Income */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
+                      Monthly Passive Income
+                    </span>
+                    <span className="text-[10px] font-mono font-semibold text-kupon-emerald bg-kupon-emerald/10 px-1.5 py-0.2 rounded">
+                      Liquid / Mo
+                    </span>
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-serif font-bold text-kupon-emerald">
+                    Rp{Math.round(monthlyIncomeIDR).toLocaleString("id-ID")}
+                  </div>
+                  <span className="text-xs text-kupon-ink/65 font-sans">
+                    Auto-credited on the 15th · Liquid cashflow
+                  </span>
                 </div>
-                <span className="text-[11px] text-kupon-ink/60 font-sans">
-                  {hasAccredited
-                    ? "Institutional account exempt from statutory cap"
-                    : `Remaining: ${(5000 - balanceNum).toLocaleString("en-US")} KPON allowed`}
-                </span>
+
+                {/* 3. Cumulative Profit (3Y Tenor) */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono uppercase tracking-wider text-kupon-ink/60">
+                      Profit at Maturity (3Y)
+                    </span>
+                    <span className="text-[10px] font-mono font-semibold text-kupon-gold bg-kupon-gold/15 px-1.5 py-0.2 rounded">
+                      +{totalProfitPercentage}% Total
+                    </span>
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-serif font-bold text-kupon-gold">
+                    +Rp{Math.round(cumulativeProfitIDR).toLocaleString("id-ID")}
+                  </div>
+                  <span className="text-xs text-kupon-ink/65 font-sans">
+                    Accumulated yield over 3 years (6.40% p.a.)
+                  </span>
+                </div>
+
+                {/* 4. Retail Quota Headroom & Maturity Liquidity */}
+                <div className="space-y-1.5 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-xs font-sans">
+                    <span className="text-kupon-ink/60 font-mono">Retail Quota Headroom:</span>
+                    <span className="font-semibold text-kupon-ink">
+                      {hasAccredited ? "Cap-Exempt" : `${balanceNum.toLocaleString("en-US")} / 5,000`}
+                    </span>
+                  </div>
+                  <div className="w-full bg-[#E5DEC7] h-2 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-500 rounded-full ${
+                        capProgressPercent >= 95 ? "bg-error" : "bg-kupon-emerald"
+                      }`}
+                      style={{ width: `${hasAccredited ? 0 : capProgressPercent}%` }}
+                    />
+                  </div>
+                  <div className="text-[11px] text-kupon-ink/65 font-sans flex items-center justify-between">
+                    <span>
+                      {hasAccredited
+                        ? "Institutional account exempt"
+                        : `Remaining: ${(5000 - balanceNum).toLocaleString("en-US")} KPON allowed`}
+                    </span>
+                    <span className="font-mono font-semibold text-kupon-emerald">
+                      End: Rp{totalMaturityPayoutIDR.toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Layer 2: Indonesian SBN Payout & Liquidity Mechanics */}
+              <div className="pt-4 border-t border-kupon-gold/20 flex flex-col gap-3 text-xs font-sans">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <BanknotesIcon className="w-4 h-4 text-kupon-emerald shrink-0" />
+                    <span className="font-semibold text-kupon-ink">
+                      Indonesian SBN Sovereign Cashflow & Payout Rules (DJPPR & KSEI Mandate):
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPayoutRules(prev => !prev)}
+                    className="text-kupon-emerald hover:underline font-mono text-[11px] flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+                  >
+                    <span>{showPayoutRules ? "Hide Details" : "How Payout & Liquidity Works"}</span>
+                    {showPayoutRules ? <ChevronUpIcon className="w-3 h-3" /> : <ChevronDownIcon className="w-3 h-3" />}
+                  </button>
+                </div>
+
+                {/* Always-Visible Quick Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="bg-[#FAF6EC] p-3 rounded-lg border border-kupon-gold/20 flex items-start gap-2.5">
+                    <CalendarDaysIcon className="w-4 h-4 text-kupon-emerald shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <strong className="text-kupon-ink text-[11px] block">
+                        1. Monthly Coupon Payout (Bisa Dicairkan Tiap Bulan)
+                      </strong>
+                      <p className="m-0 text-[11px] text-kupon-ink/75 leading-relaxed">
+                        Kupon bulanan dibayarkan otomatis setiap tanggal <strong>15 setiap bulan</strong>. Tidak dikunci
+                        3 tahun — profit langsung cair dan bebas digunakan.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#FAF6EC] p-3 rounded-lg border border-kupon-gold/20 flex items-start gap-2.5">
+                    <ShieldCheckIcon className="w-4 h-4 text-kupon-gold shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <strong className="text-kupon-ink text-[11px] block">
+                        2. Principal Return at Maturity (Pelunasan Pokok 100%)
+                      </strong>
+                      <p className="m-0 text-[11px] text-kupon-ink/75 leading-relaxed">
+                        Pada <strong>15 Oktober 2029</strong> (akhir tenor), modal pokok Rp1.000.000 per unit
+                        dikembalikan utuh 100% oleh kas negara (UU APBN menjamin zero default risk).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#FAF6EC] p-3 rounded-lg border border-kupon-gold/20 flex items-start gap-2.5">
+                    <ClockIcon className="w-4 h-4 text-kupon-emerald shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <strong className="text-kupon-ink text-[11px] block">
+                        3. 24/7 Early Exit via Secondary Market
+                      </strong>
+                      <p className="m-0 text-[11px] text-kupon-ink/75 leading-relaxed">
+                        Butuh modal sebelum 2029? Sebagai seri tradable (ORI), investor dapat melikuidasi KPON kapan
+                        saja 24/7 di <strong>Pasar Sekunder P2P ($T+0$)</strong> tanpa penalti.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expandable Step-by-Step Flow Explanation */}
+                {showPayoutRules && (
+                  <div className="bg-[#F4EEDC]/80 p-4 rounded-xl border border-kupon-gold/30 mt-1 space-y-2.5 transition-all">
+                    <div className="font-semibold text-kupon-ink text-xs flex items-center gap-1.5">
+                      <InformationCircleIcon className="w-4 h-4 text-kupon-emerald" />
+                      <span>
+                        Alur Lengkap Proses Pencairan SBN Ritel Indonesia (Sesuai PMK Kemenkeu & Standar KSEI):
+                      </span>
+                    </div>
+                    <ol className="m-0 pl-4 space-y-1.5 text-[11px] text-kupon-ink/80 leading-relaxed list-decimal">
+                      <li>
+                        <strong>Perhitungan Hak Kupon:</strong> KSEI dan Kementerian Keuangan melakukan{" "}
+                        <em>recording date</em> saldo setiap investor untuk menghitung proporsi kupon pada suku bunga
+                        acuan 6.40% p.a.
+                      </li>
+                      <li>
+                        <strong>Pencairan Otomatis (Auto-Credited):</strong> Pada tanggal 15 setiap bulan, dana kupon
+                        bulanan ditransfer langsung ke rekening kas / dompet terdaftar tanpa perlu klaim manual (
+                        <em>passive cashflow</em>).
+                      </li>
+                      <li>
+                        <strong>Perlakuan Pajak Obligasi:</strong> Sesuai PP No. 91/2021, pajak bunga obligasi domestik
+                        hanya
+                        <strong> 10%</strong> (jauh lebih hemat dibanding pajak bunga deposito perbankan yang mencapai
+                        20%).
+                      </li>
+                      <li>
+                        <strong>Pelunasan Modal Akhir (Maturity Redemption):</strong> Tepat di akhir tenor (15 Okt
+                        2029), negara melunasi seluruh nominal pokok sebesar Rp1.000.000 per unit secara utuh, sehingga
+                        investor menerima total kumulatif:{" "}
+                        <span className="font-mono font-bold text-kupon-ink">Pokok + Total Kupon</span>.
+                      </li>
+                      <li>
+                        <strong>Likuiditas Darurat (Secondary Market P2P):</strong> Jika investor membutuhkan dana pokok
+                        sebelum jatuh tempo, investor dapat mentransfer unit KPON di tab <em>Secondary Market</em> ke
+                        sesama investor WNI terverifikasi dengan penyelesaian onchain instan ($T+0$).
+                      </li>
+                    </ol>
+                  </div>
+                )}
               </div>
             </div>
           )}
