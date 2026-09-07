@@ -21,15 +21,38 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
   const [isSimulating, setIsSimulating] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [nullifier, setNullifier] = useState<string | null>(null);
+  const [isLoadingQr, setIsLoadingQr] = useState(false);
 
-  const [rpContext] = useState(() => ({
+  const [rpContext, setRpContext] = useState({
     rp_id: CONFIGURED_RP_ID,
     nonce: "0x1234567890abcdef",
-    created_at: Math.floor(Date.now() / 1000),
-    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    created_at: 1725700000,
+    expires_at: 1725703600,
     signature: "0x0000000000000000000000000000000000000000000000000000000000000000",
-  }));
+  });
 
+  const handleOpenLiveQr = async () => {
+    setIsLoadingQr(true);
+    try {
+      const res = await fetch(`/api/world-id/rp-signature?action=verify-residency-ksei`);
+      if (res.ok) {
+        const data = await res.json();
+        setRpContext({
+          rp_id: CONFIGURED_RP_ID,
+          nonce: data.nonce,
+          created_at: data.created_at,
+          expires_at: data.expires_at,
+          signature: data.sig,
+        });
+      }
+    } catch (err) {
+      console.warn("Failed to fetch dynamic RP signature:", err);
+    } finally {
+      setIsLoadingQr(false);
+      setIsSimulatorOpen(false);
+      setIsOpen(true);
+    }
+  };
   const handleVerify = async (result: IDKitResult) => {
     console.log("World ID proof verification for:", investorAddress || "generic", result);
   };
@@ -211,14 +234,21 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
 
               <button
                 type="button"
-                onClick={() => {
-                  setIsSimulatorOpen(false);
-                  setIsOpen(true);
-                }}
-                className="w-full py-2 px-4 rounded-xl border border-kupon-gold/40 hover:bg-kupon-paper text-kupon-ink font-sans text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                disabled={isLoadingQr}
+                onClick={handleOpenLiveQr}
+                className="w-full py-2 px-4 rounded-xl border border-kupon-gold/40 hover:bg-kupon-paper text-kupon-ink font-sans text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
               >
-                <span>Scan with World App (QR Code)</span>
-                <span>📱</span>
+                {isLoadingQr ? (
+                  <>
+                    <span className="loading loading-spinner loading-xs" />
+                    <span>Signing World ID Request...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Scan with World App (Live QR Code)</span>
+                    <span>📱</span>
+                  </>
+                )}
               </button>
             </div>
 
