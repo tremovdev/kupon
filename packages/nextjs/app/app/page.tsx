@@ -780,15 +780,21 @@ const InvestorPage: NextPage = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {SBN_SERIES_CATALOG.map(series => {
                       const isSelected = selectedSeriesId === series.id;
+                      const isScheduled = series.status === "scheduled";
                       return (
                         <button
                           key={series.id}
                           type="button"
-                          onClick={() => setSelectedSeriesId(series.id)}
-                          className={`p-3.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between gap-2 ${
-                            isSelected
-                              ? "bg-[#FAF6EC] border-kupon-emerald ring-1 ring-kupon-emerald"
-                              : "bg-[#FAF6EC]/60 border-kupon-gold/20 hover:border-kupon-gold/40"
+                          disabled={isScheduled}
+                          onClick={() => {
+                            if (!isScheduled) setSelectedSeriesId(series.id);
+                          }}
+                          className={`p-3.5 rounded-lg border text-left transition-all flex flex-col justify-between gap-2 ${
+                            isScheduled
+                              ? "bg-[#FAF6EC]/25 border-kupon-gold/10 opacity-50 cursor-not-allowed select-none"
+                              : isSelected
+                                ? "bg-[#FAF6EC] border-kupon-emerald ring-1 ring-kupon-emerald cursor-pointer shadow-xs"
+                                : "bg-[#FAF6EC]/60 border-kupon-gold/20 hover:border-kupon-gold/40 cursor-pointer"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2">
@@ -797,11 +803,11 @@ const InvestorPage: NextPage = () => {
                                 <span>{series.code}</span>
                                 {series.status === "active" ? (
                                   <span className="text-[9px] font-mono uppercase bg-kupon-emerald/15 text-kupon-emerald px-1.5 py-0.5 rounded font-bold">
-                                    Live Tranche ($KPON)
+                                    Open for Subscription
                                   </span>
                                 ) : (
-                                  <span className="text-[9px] font-mono uppercase bg-[#EAE2C8] text-kupon-ink/60 px-1.5 py-0.5 rounded">
-                                    Scheduled
+                                  <span className="text-[9px] font-mono uppercase bg-[#EAE2C8]/70 text-kupon-ink/45 px-1.5 py-0.5 rounded font-medium">
+                                    Scheduled · DJPPR
                                   </span>
                                 )}
                               </div>
@@ -812,9 +818,11 @@ const InvestorPage: NextPage = () => {
 
                             <span
                               className={`text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0 ${
-                                series.category === "Sharia"
-                                  ? "bg-kupon-gold/15 text-kupon-gold font-semibold"
-                                  : "bg-base-200 text-kupon-ink/60"
+                                isScheduled
+                                  ? "bg-base-200/40 text-kupon-ink/40"
+                                  : series.category === "Sharia"
+                                    ? "bg-kupon-gold/15 text-kupon-gold font-semibold"
+                                    : "bg-base-200 text-kupon-ink/60"
                               }`}
                             >
                               {series.category}
@@ -822,8 +830,10 @@ const InvestorPage: NextPage = () => {
                           </div>
 
                           <div className="flex items-center justify-between text-[11px] font-mono pt-1.5 border-t border-kupon-gold/15">
-                            <span className="text-kupon-emerald font-semibold">{series.couponRate}% p.a.</span>
-                            <span className="text-kupon-ink/60">
+                            <span className={isScheduled ? "text-kupon-ink/40" : "text-kupon-emerald font-semibold"}>
+                              {series.couponRate}% p.a.
+                            </span>
+                            <span className="text-kupon-ink/50">
                               {series.tenorYears} Yrs ({series.maturityDate.slice(-4)})
                             </span>
                           </div>
@@ -831,30 +841,6 @@ const InvestorPage: NextPage = () => {
                       );
                     })}
                   </div>
-
-                  {/* Scheduled Tranche Notice Banner */}
-                  {selectedBond.status === "scheduled" && (
-                    <div className="bg-[#FAF6EC] p-4 rounded-xl border border-kupon-gold/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-sans">
-                      <div className="space-y-1">
-                        <div className="font-bold text-kupon-ink flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-kupon-gold" />
-                          <span>DJPPR National Issuance Schedule (2026/2027)</span>
-                        </div>
-                        <p className="m-0 text-kupon-ink/75 leading-relaxed">
-                          {selectedBond.name} is on the calendar for subsequent national offering windows. Live on-chain
-                          subscription and 24/7 compliant secondary transfers are currently active for benchmark series{" "}
-                          <strong className="text-kupon-emerald">ORI026-T3 ($KPON)</strong>.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedSeriesId("ori026-t3")}
-                        className="btn btn-sm btn-outline border-kupon-emerald text-kupon-emerald hover:bg-kupon-emerald hover:text-kupon-ivory font-mono text-[11px] shrink-0"
-                      >
-                        Select Active ORI026-T3
-                      </button>
-                    </div>
-                  )}
 
                   {/* Volume Input & Presets */}
                   <div className="space-y-2">
@@ -1008,9 +994,7 @@ const InvestorPage: NextPage = () => {
                       <KeyIcon className="w-4 h-4" />
                     )}
                     <span>
-                      {selectedBond.status === "active"
-                        ? `Subscribe to ${orderAmount ? `${orderAmount} KPON` : "SBN"} (${selectedBond.code})`
-                        : `Scheduled Tranche (${selectedBond.code} · Switch to ORI026-T3)`}
+                      Subscribe to {orderAmount ? `${orderAmount} KPON` : "SBN"} ({selectedBond.code})
                     </span>
                   </button>
                 </div>
