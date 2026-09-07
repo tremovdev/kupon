@@ -1,4 +1,5 @@
-import { Abi, PublicClient } from "viem";
+import { Abi, PublicClient, createPublicClient, fallback, http } from "viem";
+import { baseSepolia } from "viem/chains";
 
 interface SafeContractEventsParams {
   publicClient: PublicClient;
@@ -8,6 +9,14 @@ interface SafeContractEventsParams {
   chunks?: number;
   chunkSize?: bigint;
 }
+
+// Dedicated public RPC transport for Base Sepolia event indexing.
+// Bypasses Alchemy Free Tier's restrictive 10-block eth_getLogs limit
+// by using the official Coinbase/Base Sepolia RPC and PublicNode (both supporting 10,000 blocks).
+const baseSepoliaLogsClient = createPublicClient({
+  chain: baseSepolia,
+  transport: fallback([http("https://sepolia.base.org"), http("https://base-sepolia-rpc.publicnode.com")]),
+});
 
 /**
  * Safely queries contract events across block ranges without violating
@@ -24,11 +33,15 @@ export async function getSafeContractEvents({
   chunkSize = 8000n,
 }: SafeContractEventsParams) {
   try {
-    const currentBlock = await publicClient.getBlockNumber();
+    const isBaseSepolia = publicClient?.chain?.id === 84532;
+    // Use the dedicated Base Sepolia client to ensure Alchemy Free Tier's 10-block limit is never hit
+    const clientToUse = isBaseSepolia ? (baseSepoliaLogsClient as unknown as PublicClient) : publicClient;
+
+    const currentBlock = await clientToUse.getBlockNumber();
 
     // On local chains (Hardhat / Anvil) with small block heights, query from 0 directly
     if (currentBlock <= chunkSize) {
-      return await publicClient.getContractEvents({
+      return await clientToUse.getContractEvents({
         address,
         abi,
         eventName,
@@ -45,7 +58,7 @@ export async function getSafeContractEvents({
       const fromBlock = toBlock > chunkSize ? toBlock - chunkSize : 0n;
 
       promises.push(
-        publicClient
+        clientToUse
           .getContractEvents({
             address,
             abi,
