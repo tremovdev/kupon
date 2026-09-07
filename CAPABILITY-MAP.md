@@ -11,3 +11,15 @@
 | `tests-docs` | Core-path tests, 3 fuzz invariant JS-seeded, threat model 1 halaman, README (disclosure + sitasi) | menempel ke semua |
 
 Build order: `token-core` → `frontend` → `infra`; `tests-docs` menyertai tiap modul (test dulu per slice).
+
+## Partner Integrations (ETHOnline Partner Prizes)
+
+> Ditambahkan 7 Sep 2026: Strategi 3 Partner Prizes tanpa overhaul smart contract core.
+
+| Module id | Responsibility | Depends on |
+|---|---|---|
+| `partner-privy` | Social/Email onboarding -> embedded wallet instan untuk Investor Portal (`/app`) | `frontend` |
+| `partner-world` | Proof of Personhood / Human verification via `@worldcoin/idkit` di Meja Registrar (`/registrar`) | `frontend` |
+| `partner-thegraph` | Subgraph indexing untuk event registry & token di Base Sepolia -> GraphQL telemetry untuk Regulator (`/regulator`) | `token-core`, `infra` |
+
+Build order: `partner-privy` → `partner-world` → `partner-thegraph`

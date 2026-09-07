@@ -1,0 +1,33 @@
+"""
+Kupon Regulatory Audit Trail & Compliance Subgraph Schema
+Indexes on-chain claims and bond transfers for Indonesian Sovereign RWA tokens on Base Sepolia.
+"""
+
+type ClaimEvent @entity(immutable: true) {
+  id: Bytes!
+  account: Bytes!
+  claim: Bytes!
+  claimType: String!
+  action: String!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type TransferEvent @entity(immutable: true) {
+  id: Bytes!
+  from: Bytes!
+  to: Bytes!
+  value: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type InvestorComplianceState @entity {
+  id: Bytes!
+  hasResidency: Boolean!
+  hasAccredited: Boolean!
+  balance: BigInt!
+  updatedAtTimestamp: BigInt!
+}

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { hardhat } from "viem/chains";
 import { Bars3Icon } from "@heroicons/react/24/outline";
+import { PrivyAuthButton } from "~~/components/auth/PrivyAuthButton";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
@@ -133,6 +134,7 @@ export const Header = () => {
       </div>
 
       <div className="navbar-end grow flex items-center justify-end gap-2">
+        <PrivyAuthButton compact />
         <RainbowKitCustomConnectButton />
         {isLocalNetwork && <FaucetButton />}
       </div>

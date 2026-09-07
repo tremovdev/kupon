@@ -47,3 +47,12 @@
 **Checkpoint C:** SPEC success criteria checked or consciously descoped (freeze Thu night).
 
 *Deferred by default (pull-forward rule): Privy (S), Uniswap v4 hook (M) — only after core locked + Gate 1 passed, with explicit sign-off.*
+
+## Phase P — Partner Integrations (ETHOnline Partner Prizes)
+
+> Source of truth: [plan-partners.md](./plan-partners.md) and [../SPEC-PARTNERS.md](../SPEC-PARTNERS.md).
+
+- [ ] Task P1: `partner-privy` — Embedded Social/Email Web3 Onboarding (S)
+- [ ] Task P2: `partner-world` — Proof of Personhood Verification on Registrar Desk (S)
+- [ ] Task P3: `partner-thegraph` — Subgraph Indexing on Base Sepolia + GraphQL Client (M)
+- [ ] Task P4: Submission Form Answers & Documentation in `docs/partner-submissions.md` (S)

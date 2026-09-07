@@ -65,6 +65,10 @@ Requires Node ≥ 20.18 and [Yarn](https://yarnpkg.com/getting-started/install).
 - **Libraries:** [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) (ERC20, AccessControl).
 - **Reference pattern:** [ERC-3643 / T-REX](https://eips.ethereum.org/EIPS/eip-3643) permissioned-token standard. This is a **re-implementation of the pattern, simplified**: identity is a single on-chain claim registry (not a full per-wallet ONCHAINID contract). Deliberate scope decision — see [SPEC.md](./SPEC.md).
 - **AI-assisted development:** spec-driven workflow with Claude Code; all specs and prompts are committed to this repo; architecture, review, and final code are human-directed.
+- **Partner Integrations (ETHOnline 2026):**
+  - **Privy** (`@privy-io/react-auth`): 1-click email/social onboarding with embedded wallet for retail bond investors.
+  - **World ID** (`@worldcoin/idkit`): Proof of Personhood verification on the Registrar certification desk before issuing sovereign claims.
+  - **The Graph**: Subgraph on Base Sepolia (`packages/subgraph`) indexing identity claims and secondary bond transfers for regulatory supervision.
 
 ## Disclaimer
 

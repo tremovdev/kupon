@@ -24,6 +24,7 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { GuillochePattern } from "~~/components/GuillochePattern";
+import { PrivyAuthButton } from "~~/components/auth/PrivyAuthButton";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
@@ -633,7 +634,6 @@ const InvestorPage: NextPage = () => {
                 trade 24/7 onchain.
               </p>
             </div>
-
             {/* Live Compliance Identity Pill */}
             {connectedAddress && (
               <div className="inline-flex items-center gap-3 bg-[#F4EEDC] px-4 py-2.5 rounded-full text-xs font-sans self-start lg:self-auto border border-kupon-gold/30">
@@ -656,6 +656,9 @@ const InvestorPage: NextPage = () => {
               </div>
             )}
           </div>
+
+          {/* Privy Non-Crypto Citizen Onboarding Banner */}
+          <PrivyAuthButton />
 
           {/* Portfolio Wealth & Yield Strip (Single Clean Border) */}
           {connectedAddress && (

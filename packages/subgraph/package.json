@@ -1,0 +1,13 @@
+{
+  "name": "@se-2/subgraph",
+  "version": "0.0.1",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --studio kupon-rwa"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.95.0",
+    "@graphprotocol/graph-ts": "^0.38.0"
+  }
+}

@@ -20,6 +20,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { GuillochePattern } from "~~/components/GuillochePattern";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { fetchRegulatoryAuditTrail } from "~~/services/thegraph/client";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
@@ -194,6 +195,19 @@ const RegulatorPage: NextPage = () => {
       if (!publicClient || !registryInfo?.address || !registryInfo?.abi) return [];
 
       try {
+        // Try fetching from The Graph Subgraph endpoint first
+        const graphData = await fetchRegulatoryAuditTrail();
+        if (graphData && graphData.claimEvents && graphData.claimEvents.length > 0) {
+          return graphData.claimEvents.map(evt => ({
+            type: evt.action as "GRANTED" | "REVOKED",
+            account: evt.account,
+            claim: evt.claim as `0x${string}`,
+            blockNumber: BigInt(evt.blockNumber),
+            transactionHash: evt.transactionHash as `0x${string}`,
+            logIndex: 0,
+          }));
+        }
+
         const [grantedLogs, revokedLogs] = await Promise.all([
           publicClient.getContractEvents({
             address: registryInfo.address,
@@ -924,16 +938,21 @@ const RegulatorPage: NextPage = () => {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => refetchEvents()}
-              className="btn btn-xs btn-outline border-kupon-gold/50 text-kupon-ink/80 hover:bg-kupon-gold/15 font-sans self-start sm:self-auto flex items-center gap-1.5"
-            >
-              <ArrowPathIcon className="w-3 h-3" />
-              <span>Refresh Feed</span>
-            </button>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-md border border-kupon-emerald/35 bg-[#EEF7F2] text-kupon-emerald font-semibold shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-kupon-emerald animate-pulse" />
+                The Graph Subgraph
+              </span>
+              <button
+                type="button"
+                onClick={() => refetchEvents()}
+                className="btn btn-xs btn-outline border-kupon-gold/50 text-kupon-ink/80 hover:bg-kupon-gold/15 font-sans flex items-center gap-1.5"
+              >
+                <ArrowPathIcon className="w-3 h-3" />
+                <span>Refresh Feed</span>
+              </button>
+            </div>
           </div>
-
           {isLoadingEvents ? (
             <div className="p-6 text-center text-xs font-mono text-kupon-ink/60 flex items-center justify-center gap-2">
               <span className="loading loading-spinner loading-xs" />

@@ -1,0 +1,49 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: KuponClaimRegistry
+    network: base-sepolia
+    source:
+      address: "0xd473730c87c0145b2a431f39b91c06d25cc8e41a"
+      abi: KuponClaimRegistry
+      startBlock: 21614000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ClaimEvent
+        - InvestorComplianceState
+      abis:
+        - name: KuponClaimRegistry
+          file: ./abis/KuponClaimRegistry.json
+      eventHandlers:
+        - event: ClaimGranted(indexed address,indexed bytes32)
+          handler: handleClaimGranted
+        - event: ClaimRevoked(indexed address,indexed bytes32)
+          handler: handleClaimRevoked
+      file: ./src/mapping.ts
+
+  - kind: ethereum
+    name: KuponToken
+    network: base-sepolia
+    source:
+      address: "0x65c5a5ed0b13d17051a20e3570c54e1bcf3de409"
+      abi: KuponToken
+      startBlock: 21614000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TransferEvent
+        - InvestorComplianceState
+      abis:
+        - name: KuponToken
+          file: ./abis/KuponToken.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/mapping.ts

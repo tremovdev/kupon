@@ -14,6 +14,7 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { GuillochePattern } from "~~/components/GuillochePattern";
+import { WorldIDVerificationButton } from "~~/components/registrar/WorldIDVerificationButton";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
@@ -58,6 +59,7 @@ const RegistrarPage: NextPage = () => {
   // Certification state
   const [selectedClaim, setSelectedClaim] = useState<ClaimType>("RESIDENCY_ID");
   const [isProcessingClaim, setIsProcessingClaim] = useState(false);
+  const [isWorldIdVerified, setIsWorldIdVerified] = useState(false);
 
   // Contract Reads: Authority checks on connected wallet
   const targetWallet = connectedAddress ?? ZERO_ADDRESS;
@@ -503,6 +505,14 @@ const RegistrarPage: NextPage = () => {
                 </label>
               </div>
 
+              {/* World ID Proof of Personhood Verification */}
+              {selectedClaim === "RESIDENCY_ID" && (
+                <WorldIDVerificationButton
+                  investorAddress={investorAddress}
+                  onVerified={() => setIsWorldIdVerified(true)}
+                />
+              )}
+
               {/* Primary Grant Button (Dominant) */}
               <button
                 type="button"
@@ -515,10 +525,15 @@ const RegistrarPage: NextPage = () => {
                 ) : (
                   <UserPlusIcon className="w-4 h-4" />
                 )}
-                <span>
+                <span className="flex items-center gap-1.5">
                   {currentClaimActive
                     ? `Already Holds ${selectedClaim === "RESIDENCY_ID" ? "Residency" : "Accreditation"}`
                     : `Grant ${selectedClaim === "RESIDENCY_ID" ? "Indonesian Residency" : "Accreditation"} Claim`}
+                  {isWorldIdVerified && selectedClaim === "RESIDENCY_ID" && (
+                    <span className="text-[10px] bg-kupon-emerald/20 text-kupon-ivory px-1 rounded">
+                      World ID Verified
+                    </span>
+                  )}
                 </span>
               </button>
 
