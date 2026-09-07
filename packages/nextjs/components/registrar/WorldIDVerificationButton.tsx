@@ -147,17 +147,19 @@ export const WorldIDVerificationButton: React.FC<WorldIDVerificationButtonProps>
           <span className="text-kupon-gold">→</span>
         </button>
 
-        <IDKitRequestWidget
-          open={isOpen}
-          onOpenChange={setIsOpen}
-          app_id={CONFIGURED_APP_ID as `app_${string}`}
-          action="verify-residency-ksei"
-          rp_context={rpContext}
-          allow_legacy_proofs={true}
-          preset={proofOfHuman()}
-          onSuccess={handleSuccess}
-          handleVerify={handleVerify}
-        />
+        {isOpen && rpContext.signature !== "0x0000000000000000000000000000000000000000000000000000000000000000" && (
+          <IDKitRequestWidget
+            open={isOpen}
+            onOpenChange={setIsOpen}
+            app_id={CONFIGURED_APP_ID as `app_${string}`}
+            action="verify-residency-ksei"
+            rp_context={rpContext}
+            allow_legacy_proofs={true}
+            preset={proofOfHuman()}
+            onSuccess={handleSuccess}
+            handleVerify={handleVerify}
+          />
+        )}
       </div>
 
       {/* World ID Proof of Personhood Verification Modal */}
