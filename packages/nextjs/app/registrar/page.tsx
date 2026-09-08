@@ -10,6 +10,7 @@ import {
   CheckCircleIcon,
   InformationCircleIcon,
   MinusCircleIcon,
+  ShieldExclamationIcon,
   UserPlusIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
@@ -117,11 +118,16 @@ const RegistrarPage: NextPage = () => {
   });
 
   const currentClaimActive = selectedClaim === "RESIDENCY_ID" ? Boolean(hasResidency) : Boolean(hasAccredited);
-
-  // Actions
   const handleGrantClaim = async () => {
     if (!isAddressValid) {
       notification.error("Please enter a valid citizen address.");
+      return;
+    }
+    if (!hasRegistrarAuthority) {
+      notification.warning(
+        `Observer Mode: Connected wallet lacks REGISTRAR_ROLE. Connect the Deployer Authority wallet (${DEPLOYER_AUTHORITY_ADDRESS.slice(0, 6)}…${DEPLOYER_AUTHORITY_ADDRESS.slice(-4)}) to sign on-chain claim grants, or test the live simulation on /regulator.`,
+        { duration: 7000 },
+      );
       return;
     }
     setIsProcessingClaim(true);
@@ -144,6 +150,13 @@ const RegistrarPage: NextPage = () => {
   const handleRevokeClaim = async () => {
     if (!isAddressValid) {
       notification.error("Please enter a valid citizen address.");
+      return;
+    }
+    if (!hasRegistrarAuthority) {
+      notification.warning(
+        `Observer Mode: Connected wallet lacks REGISTRAR_ROLE. Connect the Deployer Authority wallet (${DEPLOYER_AUTHORITY_ADDRESS.slice(0, 6)}…${DEPLOYER_AUTHORITY_ADDRESS.slice(-4)}) to revoke claims on-chain.`,
+        { duration: 7000 },
+      );
       return;
     }
     setIsProcessingClaim(true);
@@ -513,6 +526,18 @@ const RegistrarPage: NextPage = () => {
                 />
               )}
 
+              {!hasRegistrarAuthority && (
+                <div className="flex items-center gap-1.5 text-[11px] text-kupon-ink/65 bg-[#FAF4E6] px-3 py-1.5 rounded-lg border border-kupon-gold/30">
+                  <ShieldExclamationIcon className="w-3.5 h-3.5 text-kupon-gold shrink-0" />
+                  <span>
+                    Observer Mode: Authority wallet (
+                    <span className="font-mono text-kupon-emerald">
+                      {DEPLOYER_AUTHORITY_ADDRESS.slice(0, 6)}…{DEPLOYER_AUTHORITY_ADDRESS.slice(-4)}
+                    </span>
+                    ) holds <code className="font-mono text-[10px]">REGISTRAR_ROLE</code>.
+                  </span>
+                </div>
+              )}
               {/* Primary Grant Button (Dominant) */}
               <button
                 type="button"

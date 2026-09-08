@@ -25,6 +25,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { GuillochePattern } from "~~/components/GuillochePattern";
 import { PrivyAuthButton } from "~~/components/auth/PrivyAuthButton";
+import { useSafePrivy } from "~~/components/auth/PrivyProviderWrapper";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
 import { getSafeContractEvents } from "~~/utils/scaffold-eth/safeContractEvents";
@@ -204,7 +205,8 @@ function translateRevert(rawError: unknown): string {
     return "Blocked by Rule R2-CAP: Retail wallets cannot hold more than 5,000 KPON (Rp5 Billion). Total holdings would exceed the statutory cap.";
   if (ruleId === RULE_IDS.r3)
     return "Blocked by Rule R3-FROZEN: Your wallet holds zero active identity claims. Outgoing transfers are frozen until re-certified.";
-
+  if (/Connector not found/i.test(parsed) || /Wallet not connected/i.test(parsed))
+    return "Wallet Connection Notice: To execute on-chain transactions, please connect a browser wallet (e.g. MetaMask) or pre-fund your connected account on Base Sepolia.";
   if (/execution reverted/i.test(parsed))
     return "Transaction reverted by onchain compliance hook. Check identity credentials and statutory limits.";
   return parsed;
@@ -267,7 +269,9 @@ function evaluateSend(input: {
 }
 
 const InvestorPage: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
+  const { address: connectedWagmiAddress } = useAccount();
+  const { user: privyUser } = useSafePrivy();
+  const connectedAddress = connectedWagmiAddress ?? (privyUser?.wallet?.address as `0x${string}` | undefined);
 
   // Mode: Primary Market (Buy SBN) vs Secondary Market (Transfer P2P)
   const [activeMarketMode, setActiveMarketMode] = useState<"primary" | "secondary">("primary");
@@ -1220,6 +1224,18 @@ const InvestorPage: NextPage = () => {
                           : "Eligibility Verification Required"}
                       </div>
                       <p className="m-0 text-kupon-ink/80">{subscriptionValidation.text}</p>
+                      {!hasResidency && !hasAccredited && connectedAddress && (
+                        <div className="mt-2.5 pt-2 border-t border-error/20 flex items-center justify-between">
+                          <span className="text-[11px] text-kupon-ink/65">Requires KSEI SID registration</span>
+                          <Link
+                            href="/registrar"
+                            className="text-kupon-emerald font-semibold hover:underline flex items-center gap-1 text-[11px]"
+                          >
+                            <span>Authenticate at Registrar Desk</span>
+                            <span>→</span>
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1281,19 +1297,60 @@ const InvestorPage: NextPage = () => {
                     </label>
                     <AddressInput value={sendTo} onChange={setSendTo} placeholder="Recipient address (0x...)" />
 
-                    {/* Quick Presets */}
-                    <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs font-sans">
-                      <span className="text-kupon-ink/50 text-[11px]">Quick presets:</span>
-                      {DEMO_PRESETS.map(preset => (
+                    {/* 1-Click Compliance Test Scenarios */}
+                    <div className="flex flex-col gap-2 pt-1 text-xs font-sans bg-[#FAF6EC] p-3 rounded-lg border border-kupon-gold/25">
+                      <div className="flex items-center justify-between">
+                        <span className="text-kupon-ink/75 text-[11px] font-medium font-mono uppercase tracking-wider">
+                          1-Click Demo Scenarios:
+                        </span>
+                        <span className="text-[10px] text-kupon-ink/50">Instant pre-flight rule trigger</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <button
-                          key={preset.label}
                           type="button"
-                          onClick={() => setSendTo(preset.address)}
-                          className="px-2 py-0.5 rounded bg-[#FAF6EC] hover:bg-[#F4EEDC] text-kupon-ink/80 text-[11px] cursor-pointer transition-colors border border-kupon-gold/20"
+                          onClick={() => {
+                            setSendTo(DEMO_PRESETS[1].address); // Bob (Unregistered)
+                            setSendAmount("500");
+                          }}
+                          className="px-2.5 py-1.5 rounded-md bg-[#FDF2F1] hover:bg-[#FBEAE8] text-error text-[11px] font-medium cursor-pointer transition-all border border-error/25 text-left flex flex-col justify-between"
                         >
-                          {preset.label}
+                          <div className="font-semibold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-error" />
+                            <span>Trigger R1 Revert</span>
+                          </div>
+                          <span className="text-[10px] text-kupon-ink/65 mt-0.5">Send 500 KPON to Bob (Non-WNI)</span>
                         </button>
-                      ))}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSendTo(DEMO_PRESETS[0].address); // Alice
+                            setSendAmount("5000"); // 5000 + 230 = 5230 > 5000 CAP
+                          }}
+                          className="px-2.5 py-1.5 rounded-md bg-[#FEF6EE] hover:bg-[#FDF0E1] text-[#B54708] text-[11px] font-medium cursor-pointer transition-all border border-[#B54708]/25 text-left flex flex-col justify-between"
+                        >
+                          <div className="font-semibold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#B54708]" />
+                            <span>Trigger R2 Revert</span>
+                          </div>
+                          <span className="text-[10px] text-kupon-ink/65 mt-0.5">Exceed 5,000 KPON Cap (Alice)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSendTo(DEMO_PRESETS[0].address); // Alice
+                            setSendAmount("50");
+                          }}
+                          className="px-2.5 py-1.5 rounded-md bg-[#EEF7F2] hover:bg-[#E3F2E9] text-kupon-emerald text-[11px] font-medium cursor-pointer transition-all border border-kupon-emerald/25 text-left flex flex-col justify-between"
+                        >
+                          <div className="font-semibold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-kupon-emerald" />
+                            <span>Compliant DvP</span>
+                          </div>
+                          <span className="text-[10px] text-kupon-ink/65 mt-0.5">Send 50 KPON to Alice (WNI)</span>
+                        </button>
+                      </div>
                     </div>
 
                     {/* Recipient Counterparty Inspection Card */}
