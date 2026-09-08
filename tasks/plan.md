@@ -79,7 +79,7 @@ T12 demo rehearsal + submission checklist (after all)
 - [ ] **Task 10: Arbitrum Sepolia deploy + verify** — same policy, both chains.
   - Acceptance: verified on Arbiscan; identical rule behavior.
   - Verify: explorer link · Size: S
-- [ ] **Task 11: Tests-docs finalize** — threat model 1-page, architecture diagram, README build-log update + citations, `FEEDBACK.md` (Uniswap) if applicable.
+- [x] **Task 11: Tests-docs finalize** — threat model 1-page, architecture diagram, README build-log update + citations, `FEEDBACK.md` (Uniswap) if applicable.
   - Acceptance: SPEC success-criteria README items all checked.
   - Verify: checklist walk · Size: M
 - [ ] **Task 12: Demo rehearsal + submission** — clean-device rehearsal, record video (2–4 min, own voice ≥720p), submission form + ≤3 prizes.
